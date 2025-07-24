@@ -16,40 +16,39 @@ const form = useForm({
 // State tambahan
 const usernameError = ref('')
 const passwordErrors = ref([])
-const showPassword = ref(false) // 👈 toggle password
+const showPassword = ref(false) // 👁️ toggle password visibility
 
-// Validasi username realtime
+// Validasi realtime: Username
 watch(() => form.username, (val) => {
     usernameError.value = val.includes(' ') ? 'Username tidak boleh mengandung spasi' : ''
 })
 
-// Submit handler
-const submit = () => {
-    passwordErrors.value = []
-
-    const password = form.password
+// Validasi realtime: Password
+watch(() => form.password, (val) => {
     const errors = []
 
-    if (password.length < 8) {
+    if (val.length < 8) {
         errors.push('Minimal 8 karakter')
     }
-    if (!/[A-Z]/.test(password)) {
+    if (!/[A-Z]/.test(val)) {
         errors.push('Harus ada huruf besar')
     }
-    if (!/[a-z]/.test(password)) {
+    if (!/[a-z]/.test(val)) {
         errors.push('Harus ada huruf kecil')
     }
-    if (!/[0-9]/.test(password)) {
+    if (!/[0-9]/.test(val)) {
         errors.push('Harus ada angka')
     }
-    if (!/[\W_]/.test(password)) {
+    if (!/[\W_]/.test(val)) {
         errors.push('Harus ada simbol')
     }
 
-    if (errors.length > 0) {
-        passwordErrors.value = errors
-        return
-    }
+    passwordErrors.value = errors
+})
+
+// Submit form
+const submit = () => {
+    if (usernameError.value || passwordErrors.value.length > 0) return
 
     form.post('/complete-profile', {
         preserveScroll: true,
@@ -73,15 +72,16 @@ const submit = () => {
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-900">
                         <form @submit.prevent="submit" class="space-y-6">
-                            <!-- Username -->
-<!-- Notifikasi Informasi -->
-<div class="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-lg shadow-sm flex items-start gap-2">
-  <span class="text-sm font-bold pt-0.5">ⓘ</span>
-  <p class="text-sm font-medium leading-relaxed">
-    Akun Anda belum memiliki <span class="font-semibold">username</span> dan <span class="font-semibold">password</span>. Silakan lengkapi terlebih dahulu.
-  </p>
-</div>
 
+                            <!-- Informasi alert -->
+                            <div class="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-lg shadow-sm flex items-start gap-2">
+                                <span class="text-sm font-bold pt-0.5">ⓘ</span>
+                                <p class="text-sm font-medium leading-relaxed">
+                                    Akun Anda belum memiliki <span class="font-semibold">username</span> dan <span class="font-semibold">password</span>. Silakan lengkapi terlebih dahulu.
+                                </p>
+                            </div>
+
+                            <!-- Username -->
                             <div>
                                 <InputLabel for="username" value="Username" />
                                 <TextInput
@@ -95,7 +95,7 @@ const submit = () => {
                                 <InputError class="mt-2" :message="usernameError || form.errors.username" />
                             </div>
 
-                            <!-- Password dengan lihat/sembunyikan -->
+                            <!-- Password -->
                             <div>
                                 <InputLabel for="password" value="Password" />
                                 <div class="relative">
@@ -108,22 +108,22 @@ const submit = () => {
                                         autocomplete="new-password"
                                     />
 
-                                    <!-- Tombol Lihat/Sembunyikan -->
-                                  <button
-    type="button"
-    class="absolute right-3 top-2.5 text-sm text-gray-600 hover:text-gray-800 focus:outline-none"
-    @click="showPassword = !showPassword"
->
-    {{ showPassword ? 'Sembunyikan' : 'Lihat' }}
-</button>
-
+                                    <!-- Toggle show password -->
+                                    <button
+                                        type="button"
+                                        class="absolute right-3 top-2.5 text-sm text-gray-600 hover:text-gray-800 focus:outline-none"
+                                        @click="showPassword = !showPassword"
+                                    >
+                                        {{ showPassword ? 'Sembunyikan' : 'Lihat' }}
+                                    </button>
                                 </div>
 
+                                <!-- Info bantuan -->
                                 <p class="text-sm text-gray-500 mt-1">
                                     Password minimal 8 karakter, dan mengandung huruf besar, huruf kecil, angka, serta simbol.
                                 </p>
 
-                                <!-- Error lokal -->
+                                <!-- Error realtime -->
                                 <div v-if="passwordErrors.length" class="mt-2 bg-red-50 border border-red-200 text-red-700 text-sm rounded-md px-4 py-2">
                                     <ul class="list-disc list-inside space-y-1">
                                         <li v-for="(error, index) in passwordErrors" :key="index">{{ error }}</li>
@@ -134,13 +134,10 @@ const submit = () => {
                                 <InputError class="mt-2" :message="form.errors.password" />
                             </div>
 
-                            <!-- Tombol -->
-                            <div class="flex items-center gap-4">
-                                <PrimaryButton :disabled="form.processing">Simpan & Masuk</PrimaryButton>
-                                <p v-if="form.recentlySuccessful" class="text-sm text-gray-600">
-                                    Disimpan.
-                                </p>
-                            </div>
+                            <!-- Tombol Submit -->
+                            <PrimaryButton :disabled="form.processing">
+                                {{ form.processing ? 'Menyimpan...' : 'Simpan & Masuk' }}
+                            </PrimaryButton>
                         </form>
                     </div>
                 </div>
