@@ -81,6 +81,8 @@ const updatePassword = () => {
                 <InputError :message="form.errors.current_password" class="mt-2" />
             </div>
 
+
+
             <!-- New Password -->
             <div>
                 <InputLabel for="password" value="New Password" />
@@ -101,33 +103,38 @@ const updatePassword = () => {
                         {{ showNew ? 'Sembunyikan' : 'Lihat' }}
                     </button>
                 </div>
-              <!-- Validasi realtime dengan background variatif -->
-               <p class="text-sm font-semi text-gray-700 mt-2">Password Policy</p>
-<div
 
+              <!-- Validasi realtime dengan background variatif -->
+             <p class="text-sm font-semi text-gray-700 mt-2">Password Policy</p>
+<div
     class="mt-2 rounded-md px-4 py-2 shadow-sm text-sm space-y-1 text-gray-700 transition"
     :class="{
-        'bg-red-100 border border-red-300': !isPasswordLongEnough,
-  'bg-yellow-100 border border-yellow-300': isPasswordLongEnough && !isPasswordStrong,
-  'bg-blue-100 border border-blue-300': isPasswordLongEnough && isPasswordStrong && form.password !== form.password_confirmation,
-  'bg-green-100 border border-green-300': isPasswordLongEnough && isPasswordStrong && form.password === form.password_confirmation
+        'bg-slate-200 border border-slate-400': form.password === '',
+        'bg-red-100 border border-red-300': form.password !== '' && !isPasswordLongEnough,
+        'bg-yellow-100 border border-yellow-300': isPasswordLongEnough && !isPasswordStrong,
+        'bg-blue-100 border border-blue-300': isPasswordLongEnough && isPasswordStrong && form.password !== form.password_confirmation,
+        'bg-green-100 border border-green-300': isPasswordLongEnough && isPasswordStrong && form.password === form.password_confirmation
     }"
 >
     <ul>
-        <li v-if="!isPasswordLongEnough" class="text-red-600">
-             Minimal 8 karakter
+        <li v-if="form.password === ''" class="text-gray-500">
+            Masukkan password baru
+        </li>
+        <li v-else-if="!isPasswordLongEnough" class="text-red-600">
+            Minimal 8 karakter
         </li>
         <li v-else-if="!isPasswordStrong" class="text-yellow-700">
-             Gunakan huruf besar, kecil, angka, dan simbol
+            Gunakan huruf besar, kecil, angka, dan simbol
         </li>
         <li v-else-if="form.password !== form.password_confirmation" class="text-green-700">
-             Konfirmasi password belum sama
+            Konfirmasi password belum sama
         </li>
         <li v-else class="text-green-700 font-medium">
             ✓ Password valid dan cocok!
         </li>
     </ul>
 </div>
+
 
                 <InputError :message="form.errors.password" class="mt-2" />
             </div>

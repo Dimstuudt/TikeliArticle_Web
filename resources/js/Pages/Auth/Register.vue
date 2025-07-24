@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import GuestLayout from '@/Layouts/GuestLayout.vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
@@ -15,10 +15,21 @@ const form = useForm({
     password_confirmation: '',
 });
 
-// Validasi langsung: username tidak boleh mengandung spasi
-const usernameHasSpace = computed(() => {
-    return /\s/.test(form.username);
-});
+// Validasi username
+const usernameHasSpace = computed(() => /\s/.test(form.username));
+
+// Validasi password realtime
+const isPasswordLongEnough = computed(() => form.password.length >= 8);
+const isPasswordStrong = computed(() =>
+    /[a-z]/.test(form.password) &&
+    /[A-Z]/.test(form.password) &&
+    /[0-9]/.test(form.password) &&
+    /[^A-Za-z0-9]/.test(form.password)
+);
+
+// Toggle show/hide password
+const showPassword = ref(false);
+const showConfirm = ref(false);
 
 const submit = () => {
     form.post(route('register'), {
@@ -34,7 +45,6 @@ const submit = () => {
         <form @submit.prevent="submit">
             <div>
                 <InputLabel for="name" value="Name" />
-
                 <TextInput
                     id="name"
                     type="text"
@@ -44,13 +54,11 @@ const submit = () => {
                     autofocus
                     autocomplete="name"
                 />
-
                 <InputError class="mt-2" :message="form.errors.name" />
             </div>
 
             <div class="mt-4">
                 <InputLabel for="username" value="Username" />
-
                 <TextInput
                     id="username"
                     type="text"
@@ -59,9 +67,7 @@ const submit = () => {
                     required
                     autocomplete="username"
                 />
-
                 <InputError class="mt-2" :message="form.errors.username" />
-
                 <p v-if="usernameHasSpace" class="text-sm text-red-500 mt-1">
                     Username tidak boleh mengandung spasi.
                 </p>
@@ -69,7 +75,6 @@ const submit = () => {
 
             <div class="mt-4">
                 <InputLabel for="email" value="Email" />
-
                 <TextInput
                     id="email"
                     type="email"
@@ -78,42 +83,81 @@ const submit = () => {
                     required
                     autocomplete="username"
                 />
-
                 <InputError class="mt-2" :message="form.errors.email" />
             </div>
 
+            <!-- Password -->
             <div class="mt-4">
                 <InputLabel for="password" value="Password" />
+                <div class="relative">
+                    <TextInput
+                        id="password"
+                        :type="showPassword ? 'text' : 'password'"
+                        class="mt-1 block w-full pr-10"
+                        v-model="form.password"
+                        required
+                        autocomplete="new-password"
+                    />
+                    <button
+                        type="button"
+                        @click="showPassword = !showPassword"
+                        class="absolute inset-y-0 right-2 text-sm text-gray-500 focus:outline-none"
+                    >
+                        {{ showPassword ? 'Sembunyikan' : 'Lihat' }}
+                    </button>
+                </div>
 
-                <TextInput
-                    id="password"
-                    type="password"
-                    class="mt-1 block w-full"
-                    v-model="form.password"
-                    required
-                    autocomplete="new-password"
-                />
+                <!-- Validasi realtime -->
+                <p class="text-sm font-semi text-gray-700 mt-2">Password Policy</p>
+                <div
+                    class="mt-2 rounded-md px-4 py-2 shadow-sm text-sm space-y-1 text-gray-700 transition"
+                    :class="{
+                        'bg-red-100 border border-red-300': !isPasswordLongEnough,
+                        'bg-yellow-100 border border-yellow-300': isPasswordLongEnough && !isPasswordStrong,
+                        'bg-blue-100 border border-blue-300': isPasswordLongEnough && isPasswordStrong && form.password !== form.password_confirmation,
+                        'bg-green-100 border border-green-300': isPasswordLongEnough && isPasswordStrong && form.password === form.password_confirmation
+                    }"
+                >
+                    <ul>
+                        <li v-if="!isPasswordLongEnough" class="text-red-600">
+                            Minimal 8 karakter
+                        </li>
+                        <li v-else-if="!isPasswordStrong" class="text-yellow-700">
+                            Gunakan huruf besar, kecil, angka, dan simbol
+                        </li>
+                        <li v-else-if="form.password !== form.password_confirmation" class="text-green-700">
+                            Konfirmasi password belum sama
+                        </li>
+                        <li v-else class="text-green-700 font-medium">
+                            ✓ Password valid dan cocok!
+                        </li>
+                    </ul>
+                </div>
 
                 <InputError class="mt-2" :message="form.errors.password" />
             </div>
 
+            <!-- Konfirmasi Password -->
             <div class="mt-4">
                 <InputLabel for="password_confirmation" value="Confirm Password" />
-
-                <TextInput
-                    id="password_confirmation"
-                    type="password"
-                    class="mt-1 block w-full"
-                    v-model="form.password_confirmation"
-                    required
-                    autocomplete="new-password"
-                />
-
+                <div class="relative">
+                    <TextInput
+                        id="password_confirmation"
+                        :type="showConfirm ? 'text' : 'password'"
+                        class="mt-1 block w-full pr-10"
+                        v-model="form.password_confirmation"
+                        required
+                        autocomplete="new-password"
+                    />
+                    <button
+                        type="button"
+                        @click="showConfirm = !showConfirm"
+                        class="absolute inset-y-0 right-2 text-sm text-gray-500 focus:outline-none"
+                    >
+                        {{ showConfirm ? 'Sembunyikan' : 'Lihat' }}
+                    </button>
+                </div>
                 <InputError class="mt-2" :message="form.errors.password_confirmation" />
-
-                <p class="text-sm text-gray-500 mt-2">
-                    Your password must be at least 8 characters long and include uppercase letters, lowercase letters, numbers, and symbols.
-                </p>
             </div>
 
             <div class="mt-4 flex items-center justify-end">
@@ -126,8 +170,8 @@ const submit = () => {
 
                 <PrimaryButton
                     class="ms-4"
-                    :class="{ 'opacity-25': form.processing || usernameHasSpace }"
-                    :disabled="form.processing || usernameHasSpace"
+                    :class="{ 'opacity-25': form.processing || usernameHasSpace || !isPasswordLongEnough || !isPasswordStrong }"
+                    :disabled="form.processing || usernameHasSpace || !isPasswordLongEnough || !isPasswordStrong"
                 >
                     Register
                 </PrimaryButton>
