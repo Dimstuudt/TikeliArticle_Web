@@ -44,25 +44,24 @@ const verificationLinkSent = computed(() => {
                     Resend Verification Email
                 </PrimaryButton>
 
-                <Link
-                    :href="route('logout')"
-                    method="post"
-                    as="button"
-                    class="ml-4 text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none"
-                >
-                    Log Out
-                </Link>
+             
             </div>
 
 <br>
 
 <div class="mt-6 text-center text-sm text-gray-600">
     Sudah verifikasi?
-    <Link
-        :href="route('login')"
-        class="text-blue-600 underline hover:text-blue-800">
-        Tekan di sini untuk login kembali
-    </Link>
+
+
+<Link
+                    :href="route('logout')"
+                    method="post"
+                    as="button"
+                    class="ml-4 text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none"
+                >
+                    Login Kembali
+                </Link>
+
 </div>
 
 

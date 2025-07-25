@@ -7,48 +7,40 @@ import PrimaryButton from '@/Components/PrimaryButton.vue'
 import { Head, useForm, router } from '@inertiajs/vue3'
 import { ref, watch } from 'vue'
 
-// Form state
 const form = useForm({
     username: '',
     password: '',
+    password_confirmation: '',
 })
 
-// State tambahan
 const usernameError = ref('')
-const passwordErrors = ref([])
-const showPassword = ref(false) // 👁️ toggle password visibility
+const showPassword = ref(false)
+const isPasswordLongEnough = ref(false)
+const isPasswordStrong = ref(false)
 
-// Validasi realtime: Username
+// Validasi username
 watch(() => form.username, (val) => {
     usernameError.value = val.includes(' ') ? 'Username tidak boleh mengandung spasi' : ''
 })
 
-// Validasi realtime: Password
+// Validasi password
 watch(() => form.password, (val) => {
-    const errors = []
-
-    if (val.length < 8) {
-        errors.push('Minimal 8 karakter')
-    }
-    if (!/[A-Z]/.test(val)) {
-        errors.push('Harus ada huruf besar')
-    }
-    if (!/[a-z]/.test(val)) {
-        errors.push('Harus ada huruf kecil')
-    }
-    if (!/[0-9]/.test(val)) {
-        errors.push('Harus ada angka')
-    }
-    if (!/[\W_]/.test(val)) {
-        errors.push('Harus ada simbol')
-    }
-
-    passwordErrors.value = errors
+    isPasswordLongEnough.value = val.length >= 8
+    isPasswordStrong.value =
+        /[A-Z]/.test(val) &&
+        /[a-z]/.test(val) &&
+        /[0-9]/.test(val) &&
+        /[\W_]/.test(val)
 })
 
-// Submit form
+// Submit
 const submit = () => {
-    if (usernameError.value || passwordErrors.value.length > 0) return
+    if (
+        usernameError.value ||
+        !isPasswordLongEnough.value ||
+        !isPasswordStrong.value ||
+        form.password !== form.password_confirmation
+    ) return
 
     form.post('/complete-profile', {
         preserveScroll: true,
@@ -72,8 +64,7 @@ const submit = () => {
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-gray-900">
                         <form @submit.prevent="submit" class="space-y-6">
-
-                            <!-- Informasi alert -->
+                            <!-- Alert -->
                             <div class="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-lg shadow-sm flex items-start gap-2">
                                 <span class="text-sm font-bold pt-0.5">ⓘ</span>
                                 <p class="text-sm font-medium leading-relaxed">
@@ -107,35 +98,65 @@ const submit = () => {
                                         required
                                         autocomplete="new-password"
                                     />
-
-                                    <!-- Toggle show password -->
                                     <button
                                         type="button"
-                                        class="absolute right-3 top-2.5 text-sm text-gray-600 hover:text-gray-800 focus:outline-none"
+                                        class="absolute right-3 top-2.5 text-sm text-gray-600 hover:text-gray-800"
                                         @click="showPassword = !showPassword"
                                     >
                                         {{ showPassword ? 'Sembunyikan' : 'Lihat' }}
                                     </button>
                                 </div>
-
-                                <!-- Info bantuan -->
-                                <p class="text-sm text-gray-500 mt-1">
-                                    Password minimal 8 karakter, dan mengandung huruf besar, huruf kecil, angka, serta simbol.
-                                </p>
-
-                                <!-- Error realtime -->
-                                <div v-if="passwordErrors.length" class="mt-2 bg-red-50 border border-red-200 text-red-700 text-sm rounded-md px-4 py-2">
-                                    <ul class="list-disc list-inside space-y-1">
-                                        <li v-for="(error, index) in passwordErrors" :key="index">{{ error }}</li>
-                                    </ul>
-                                </div>
-
-                                <!-- Error dari server -->
-                                <InputError class="mt-2" :message="form.errors.password" />
                             </div>
 
-                            <!-- Tombol Submit -->
-                            <PrimaryButton :disabled="form.processing">
+                            <!-- Konfirmasi Password -->
+                            <div>
+                                <InputLabel for="password_confirmation" value="Konfirmasi Password" />
+                                <TextInput
+                                    id="password_confirmation"
+                                    type="password"
+                                    class="mt-1 block w-full"
+                                    v-model="form.password_confirmation"
+                                    autocomplete="new-password"
+                                />
+                            </div>
+
+                            <!-- Validasi Dinamis -->
+                            <div
+                                class="mt-2 rounded-md px-4 py-2 shadow-sm text-sm space-y-1 text-gray-700 transition"
+                                :class="{
+                                    'bg-slate-200 border border-slate-400': form.password === '',
+                                    'bg-red-100 border border-red-300': form.password !== '' && !isPasswordLongEnough,
+                                    'bg-yellow-100 border border-yellow-300': isPasswordLongEnough && !isPasswordStrong,
+                                    'bg-blue-100 border border-blue-300': isPasswordLongEnough && isPasswordStrong && form.password !== form.password_confirmation,
+                                    'bg-green-100 border border-green-300': isPasswordLongEnough && isPasswordStrong && form.password === form.password_confirmation
+                                }"
+                            >
+                                <ul>
+                                    <li v-if="form.password === ''" class="text-gray-500">
+                                        Masukkan password baru
+                                    </li>
+                                    <li v-else-if="!isPasswordLongEnough" class="text-red-600">
+                                        Minimal 8 karakter
+                                    </li>
+                                    <li v-else-if="!isPasswordStrong" class="text-yellow-700">
+                                        Gunakan huruf besar, kecil, angka, dan simbol
+                                    </li>
+                                    <li v-else-if="form.password !== form.password_confirmation" class="text-blue-700">
+                                        Konfirmasi password belum sama
+                                    </li>
+                                    <li v-else class="text-green-700 font-medium">
+                                        ✓ Password valid dan cocok!
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <!-- Error dari server -->
+                            <InputError class="mt-2" :message="form.errors.password" />
+
+                            <!-- Submit -->
+                            <PrimaryButton
+                                :disabled="form.processing"
+                            >
                                 {{ form.processing ? 'Menyimpan...' : 'Simpan & Masuk' }}
                             </PrimaryButton>
                         </form>
