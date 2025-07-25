@@ -8,11 +8,10 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-
 class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -21,10 +20,11 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     protected $fillable = [
         'name',
-        'username', // ✅ tambahkan ini
+        'username', // ✅
         'email',
         'password',
-        'profile_photo_path', // ✅ ditambahkan
+        'profile_photo_path', // ✅
+        'google_id', // ✅ hanya ini yang ditambahkan
     ];
 
     /**
@@ -43,7 +43,7 @@ class User extends Authenticatable implements MustVerifyEmail
      * @var array
      */
     protected $appends = [
-        'profile_photo_url', // ✅ supaya Vue bisa pakai
+        'profile_photo_url', // ✅
     ];
 
     /**
@@ -63,11 +63,9 @@ class User extends Authenticatable implements MustVerifyEmail
      * Get the full URL for the user's profile photo.
      */
     public function getProfilePhotoUrlAttribute()
-{
-    return $this->profile_photo_path
-        ? asset('storage/' . $this->profile_photo_path)
-        : 'https://ui-avatars.com/api/?name=' . urlencode($this->name);
+    {
+        return $this->profile_photo_path
+            ? asset('storage/' . $this->profile_photo_path)
+            : 'https://ui-avatars.com/api/?name=' . urlencode($this->name);
+    }
 }
-
-}
-

@@ -10,20 +10,35 @@ use Illuminate\Http\RedirectResponse;
 class VerifyEmailController extends Controller
 {
     /**
-     * Mark the authenticated user's email address as verified.
+     * Handle the email verification request.
      */
     public function __invoke(EmailVerificationRequest $request): RedirectResponse
     {
-        if ($request->user()->hasVerifiedEmail()) {
-            auth()->logout(); // force logout
-            return redirect('/login')->with('status', 'Email berhasil diverifikasi. Silakan login.');
+        $user = $request->user();
+
+        if ($user->hasVerifiedEmail()) {
+            return $this->redirectAfterVerification($user);
         }
 
-        if ($request->user()->markEmailAsVerified()) {
-            event(new Verified($request->user()));
+        if ($user->markEmailAsVerified()) {
+            event(new Verified($user));
         }
 
-        auth()->logout(); // force logout
-        return redirect('/login')->with('status', 'Email berhasil diverifikasi. Silakan login.');
+        return $this->redirectAfterVerification($user);
+    }
+
+    /**
+     * Determine redirect destination after email verification.
+     */
+    protected function redirectAfterVerification($user): RedirectResponse
+    {
+        if ($user->google_id) {
+            // OAuth user (Google login) tetap dalam sesi dan langsung ke dashboard
+            return redirect()->route('dashboard');
+        }
+
+        // User biasa (registrasi manual) → logout lalu ke login
+        auth()->logout();
+        return redirect()->route('login')->with('status', 'Email berhasil diverifikasi. Silakan login.');
     }
 }

@@ -18,40 +18,35 @@ use App\Models\User;
 use App\Http\Middleware\PreventBackHistory;
 use App\Http\Middleware\EnsureProfileComplete;
 
-// Google OAuth
-use Laravel\Socialite\Facades\Socialite;
+// Google OAuth routes
+Route::get('/auth/google', fn () => Socialite::driver('google')->redirect());
 
-// Redirect ke Google
-Route::get('/auth/google', function () {
-    return Socialite::driver('google')->redirect();
-});
-
-// Callback dari Google
 Route::get('/auth/google/callback', function () {
     $googleUser = Socialite::driver('google')->stateless()->user();
 
-    $user = User::where('email', $googleUser->getEmail())->first();
-
-    if (!$user) {
-        $user = User::create([
+    $user = User::firstOrCreate(
+        ['email' => $googleUser->getEmail()],
+        [
             'name' => $googleUser->getName(),
-            'email' => $googleUser->getEmail(),
             'google_id' => $googleUser->getId(),
             'password' => bcrypt(Str::random(24)),
-        ]);
-    } elseif (!$user->google_id) {
-        $user->update([
-            'google_id' => $googleUser->getId(),
-        ]);
+        ]
+    );
+
+    // Update google_id jika belum ada
+    if (!$user->google_id) {
+        $user->update(['google_id' => $googleUser->getId()]);
     }
 
     Auth::login($user);
 
+    // Kalau belum verifikasi email
     if (!$user->hasVerifiedEmail()) {
         $user->sendEmailVerificationNotification();
         return redirect()->route('verification.notice');
     }
 
+    // Kalau belum isi username dan password
     if (empty($user->username)) {
         return redirect()->route('complete-profile');
     }
@@ -59,20 +54,19 @@ Route::get('/auth/google/callback', function () {
     return redirect()->route('dashboard');
 });
 
-// Halaman root → redirect ke login
+// Root redirect
 Route::get('/', fn () => redirect('/login'));
 
-// Dashboard (harus login, verified, dan profil lengkap)
+// Dashboard
 Route::get('/dashboard', fn () => Inertia::render('Dashboard'))
     ->middleware(['auth', 'verified', PreventBackHistory::class, EnsureProfileComplete::class])
     ->name('dashboard');
 
-// Halaman untuk lengkapi profil
+// Lengkapi profil (untuk user Google)
 Route::get('/complete-profile', fn () => Inertia::render('Auth/CompleteProfile'))
-    ->middleware(['auth'])
+    ->middleware('auth')
     ->name('complete-profile');
 
-// Submit form lengkap profil
 Route::post('/complete-profile', function (Request $request) {
     $request->validate([
         'username' => ['required', 'unique:users,username', 'regex:/^\S*$/u'],
@@ -85,9 +79,9 @@ Route::post('/complete-profile', function (Request $request) {
     $user->save();
 
     return redirect()->route('dashboard');
-})->middleware(['auth']);
+})->middleware('auth');
 
-// Profil
+// Profil & Foto Profil
 Route::middleware(['auth', PreventBackHistory::class, EnsureProfileComplete::class])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -95,26 +89,22 @@ Route::middleware(['auth', PreventBackHistory::class, EnsureProfileComplete::cla
     Route::post('/profile/photo', [ProfilePhotoController::class, 'update'])->name('profile.photo.update');
 });
 
-
-// Notifikasi verifikasi email
+// Verifikasi Email
 Route::get('/email/verify', fn () => Inertia::render('Auth/VerifyEmail'))
     ->middleware('auth')
     ->name('verification.notice');
 
-// Kirim ulang link verifikasi
 Route::post('/email/verification-notification', function (Request $request) {
     $request->user()->sendEmailVerificationNotification();
     return back()->with('status', 'verification-link-sent');
 })->middleware(['auth', 'throttle:6,1'])->name('verification.send');
 
-// Tautan verifikasi dari email
 Route::get('/email/verify/{id}/{hash}', VerifyEmailController::class)
     ->middleware(['auth', 'signed', 'throttle:6,1'])
     ->name('verification.verify');
 
-// Halaman khusus ketika sudah berhasil verifikasi
 Route::get('/verified', fn () => Inertia::render('Auth/EmailVerified'))
     ->middleware('auth');
 
-// Default auth routes dari Laravel Breeze
+// Auth routes Breeze
 require __DIR__.'/auth.php';
