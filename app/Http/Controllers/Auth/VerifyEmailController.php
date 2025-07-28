@@ -28,16 +28,20 @@ class VerifyEmailController extends Controller
     }
 
     /**
-     * Determine redirect destination after email verification.
+     * Redirect user after email verification based on login method and role.
      */
     protected function redirectAfterVerification($user): RedirectResponse
     {
         if ($user->google_id) {
-            // OAuth user (Google login) tetap dalam sesi dan langsung ke dashboard
-            return redirect()->route('dashboard');
+            // User login via Google, tetap dalam sesi dan redirect sesuai role
+            return match ($user->role) {
+                'admin' => redirect()->route('admin.dashboard'),
+                'operator' => redirect()->route('operator.dashboard'),
+                default => redirect()->route('dashboard'),
+            };
         }
 
-        // User biasa (registrasi manual) → logout lalu ke login
+        // User login manual, logout dulu lalu redirect ke login dengan pesan sukses
         auth()->logout();
         return redirect()->route('login')->with('status', 'Email berhasil diverifikasi. Silakan login.');
     }
