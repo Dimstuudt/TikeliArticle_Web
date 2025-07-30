@@ -20,7 +20,16 @@ use App\Http\Middleware\PreventBackHistory;
 use App\Http\Middleware\EnsureProfileComplete;
 use App\Http\Middleware\RoleMiddleware;
 
-// === Google OAuth Routes ===
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+*/
+
+// === Redirect root ke login ===
+Route::get('/', fn () => redirect('/login'));
+
+// === Google OAuth ===
 Route::get('/auth/google', fn () => Socialite::driver('google')->redirect());
 
 Route::get('/auth/google/callback', function () {
@@ -35,34 +44,27 @@ Route::get('/auth/google/callback', function () {
         ]
     );
 
-    // Update google_id jika belum ada
     if (!$user->google_id) {
         $user->update(['google_id' => $googleUser->getId()]);
     }
 
     Auth::login($user);
 
-    // Email belum terverifikasi
     if (!$user->hasVerifiedEmail()) {
         $user->sendEmailVerificationNotification();
         return redirect()->route('verification.notice');
     }
 
-    // User belum isi username & password
     if (empty($user->username)) {
         return redirect()->route('complete-profile');
     }
 
-    // Redirect sesuai role
     return redirect()->route(
         $user->role === 'admin' ? 'admin.dashboard' : 'operator.dashboard'
     );
 });
 
-// === Redirect root ke login ===
-Route::get('/', fn () => redirect('/login'));
-
-// === Lengkapi profil (untuk user Google) ===
+// === Complete Profile ===
 Route::middleware(['auth'])->group(function () {
     Route::get('/complete-profile', fn () => Inertia::render('Auth/CompleteProfile'))
         ->name('complete-profile');
@@ -84,16 +86,20 @@ Route::middleware(['auth'])->group(function () {
     });
 });
 
-// === Dashboard Redirect berdasarkan Role ===
+// === Redirect ke dashboard sesuai role ===
 Route::get('/dashboard', function () {
     $user = auth()->user();
     return redirect()->route(
         $user->role === 'admin' ? 'admin.dashboard' : 'operator.dashboard'
     );
-})->middleware(['auth', 'verified', PreventBackHistory::class, EnsureProfileComplete::class])
-  ->name('dashboard');
+})->middleware([
+    'auth',
+    'verified',
+    PreventBackHistory::class,
+    EnsureProfileComplete::class
+])->name('dashboard');
 
-// === Dashboard Admin ===
+// === ADMIN Routes ===
 Route::middleware([
     'auth',
     'verified',
@@ -101,11 +107,14 @@ Route::middleware([
     EnsureProfileComplete::class,
     RoleMiddleware::class . ':admin'
 ])->group(function () {
-    Route::get('/admin', fn () => Inertia::render('Admin/Dashboard'))
+    Route::get('/admin', fn () => Inertia::render('admin/Dashboard'))
         ->name('admin.dashboard');
+
+    Route::get('/admin/users', fn () => Inertia::render('admin/Users'))
+        ->name('admin.users');
 });
 
-// === Dashboard Operator ===
+// === OPERATOR Routes ===
 Route::middleware([
     'auth',
     'verified',
@@ -113,19 +122,23 @@ Route::middleware([
     EnsureProfileComplete::class,
     RoleMiddleware::class . ':operator'
 ])->group(function () {
-    Route::get('/operator', fn () => Inertia::render('Operator/Dashboard'))
+    Route::get('/operator', fn () => Inertia::render('operator/Dashboard'))
         ->name('operator.dashboard');
 });
 
-// === Profile & Foto Profil (bisa diakses semua role) ===
-Route::middleware(['auth', PreventBackHistory::class, EnsureProfileComplete::class])->group(function () {
+// === Profile Routes ===
+Route::middleware([
+    'auth',
+    PreventBackHistory::class,
+    EnsureProfileComplete::class
+])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::post('/profile/photo', [ProfilePhotoController::class, 'update'])->name('profile.photo.update');
 });
 
-// === Verifikasi Email ===
+// === Email Verification Routes ===
 Route::get('/email/verify', fn () => Inertia::render('Auth/VerifyEmail'))
     ->middleware('auth')->name('verification.notice');
 
@@ -138,7 +151,10 @@ Route::get('/email/verify/{id}/{hash}', VerifyEmailController::class)
     ->middleware(['auth', 'signed', 'throttle:6,1'])
     ->name('verification.verify');
 
-Route::get('/verified', fn () => Inertia::render('Auth/EmailVerified'))->middleware('auth');
+Route::get('/verified', fn () => Inertia::render('Auth/EmailVerified'))
+    ->middleware('auth');
 
-// === Auth Routes dari Breeze ===
+
+
+// === Breeze Auth Routes ===
 require __DIR__.'/auth.php';
