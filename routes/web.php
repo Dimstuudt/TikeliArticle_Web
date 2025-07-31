@@ -2,7 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Laravel\Socialite\Facades\Socialite;
@@ -21,13 +20,7 @@ use App\Http\Middleware\RoleMiddleware;
 // Models
 use App\Models\User;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-*/
-
-// === Redirect root ke login ===
+// Redirect root ke login
 Route::get('/', fn () => redirect('/login'));
 
 // === Google OAuth ===
@@ -36,14 +29,19 @@ Route::get('/auth/google', fn () => Socialite::driver('google')->redirect());
 Route::get('/auth/google/callback', function () {
     $googleUser = Socialite::driver('google')->stateless()->user();
 
-    $user = User::firstOrCreate(
-        ['email' => $googleUser->getEmail()],
-        [
-            'name' => $googleUser->getName(),
-            'google_id' => $googleUser->getId(),
-            'password' => bcrypt(Str::random(24)),
-        ]
-    );
+    $user = User::where('email', $googleUser->getEmail())->first();
+
+    if (!$user) {
+        return redirect()->route('login')->withErrors([
+            'email' => 'Akun tidak terdaftar.',
+        ]);
+    }
+
+    if (!$user->is_active) {
+        return redirect()->route('login')->withErrors([
+            'email' => 'Akun Anda telah dinonaktifkan.',
+        ]);
+    }
 
     if (!$user->google_id) {
         $user->update(['google_id' => $googleUser->getId()]);
@@ -65,7 +63,7 @@ Route::get('/auth/google/callback', function () {
     );
 });
 
-// === Complete Profile ===
+// === Lengkapi Profil ===
 Route::middleware('auth')->group(function () {
     Route::get('/complete-profile', fn () => Inertia::render('Auth/CompleteProfile'))
         ->name('complete-profile');
@@ -88,7 +86,7 @@ Route::middleware('auth')->group(function () {
     });
 });
 
-// === Redirect ke dashboard sesuai role ===
+// === Dashboard Redirect sesuai role ===
 Route::middleware([
     'auth',
     'verified',
@@ -111,11 +109,14 @@ Route::middleware([
 ])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', fn () => Inertia::render('admin/Dashboard'))->name('dashboard');
 
-    // === User Management ===
+    // User Management
     Route::get('/users', [UserController::class, 'index'])->name('users');
     Route::post('/users', [UserController::class, 'store'])->name('users.store');
     Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
     Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+
+    // Toggle aktif/nonaktif user
+    Route::patch('/users/{user}/toggle-active', [UserController::class, 'toggleActive'])->name('users.toggleActive');
 });
 
 // === OPERATOR Routes ===

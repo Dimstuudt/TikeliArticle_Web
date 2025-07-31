@@ -25,7 +25,7 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string'], // email/username jadi 1 input
+            'email'    => ['required', 'string'], // input bisa email atau username
             'password' => ['required', 'string'],
         ];
     }
@@ -46,6 +46,17 @@ class LoginRequest extends FormRequest
 
             throw ValidationException::withMessages([
                 'email' => trans('auth.failed'),
+            ]);
+        }
+
+        // Cek apakah user aktif
+        $user = Auth::user();
+        if (! $user->is_active) {
+            Auth::logout();
+            RateLimiter::hit($this->throttleKey());
+
+            throw ValidationException::withMessages([
+                'email' => 'Akun Anda telah dinonaktifkan.',
             ]);
         }
 

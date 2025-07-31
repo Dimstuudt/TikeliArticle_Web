@@ -10,7 +10,6 @@ use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasApiTokens, HasFactory, Notifiable;
 
     /**
@@ -20,12 +19,13 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     protected $fillable = [
         'name',
-        'username', // ✅
+        'username',
         'email',
         'password',
-         'role',
-        'profile_photo_path', // ✅
-        'google_id', // ✅ hanya ini yang ditambahkan
+        'role',
+        'profile_photo_path',
+        'google_id',
+        'is_active', // ✅ benar, hanya string
     ];
 
     /**
@@ -34,7 +34,6 @@ class User extends Authenticatable implements MustVerifyEmail
      * @var list<string>
      */
     protected $hidden = [
-      //  'password',
         'remember_token',
     ];
 
@@ -44,7 +43,7 @@ class User extends Authenticatable implements MustVerifyEmail
      * @var array
      */
     protected $appends = [
-        'profile_photo_url', // ✅
+        'profile_photo_url',
     ];
 
     /**
@@ -57,6 +56,7 @@ class User extends Authenticatable implements MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean', // ✅ cast ke boolean
         ];
     }
 

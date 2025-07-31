@@ -1,14 +1,12 @@
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, computed } from 'vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import DangerButton from '@/Components/DangerButton.vue';
 import Modal from '@/Components/Modal.vue';
 
-const props = defineProps({
-  users: Array
-});
+const props = defineProps({ users: Array });
 
 const showModal = ref(false);
 const editMode = ref(false);
@@ -18,30 +16,37 @@ const form = useForm({
   name: '',
   email: '',
   username: '',
+  role: 'operator',
+  is_active: true,
   password: '',
   password_confirmation: '',
-  role: 'operator',
 });
 
 const openModal = (user = null) => {
   showModal.value = true;
   editMode.value = !!user;
   selectedUser.value = user;
+
   if (user) {
     form.name = user.name;
     form.email = user.email;
     form.username = user.username;
     form.role = user.role;
+    form.is_active = !!user.is_active;
     form.password = '';
     form.password_confirmation = '';
   } else {
     form.reset();
+    form.role = 'operator';
+    form.is_active = true;
   }
 };
 
 const closeModal = () => {
-  showModal.value = false;
   form.reset();
+  form.role = 'operator';
+  form.is_active = true;
+  showModal.value = false;
 };
 
 const saveUser = () => {
@@ -49,23 +54,47 @@ const saveUser = () => {
     form.put(route('admin.users.update', selectedUser.value.id), {
       preserveScroll: true,
       onSuccess: () => closeModal(),
+      onError: () => console.log(form.errors),
     });
   } else {
     form.post(route('admin.users.store'), {
       preserveScroll: true,
       onSuccess: () => closeModal(),
+      onError: () => console.log(form.errors),
     });
   }
 };
 
+const toggleStatus = (user) => {
+  form.clearErrors();
+
+  form.name = user.name;
+  form.email = user.email;
+  form.username = user.username;
+  form.role = user.role;
+  form.is_active = !user.is_active;
+
+  form.put(route('admin.users.update', user.id), {
+    preserveScroll: true,
+    onSuccess: () => {
+      user.is_active = !user.is_active;
+    },
+    onError: () => alert('Gagal update status'),
+  });
+};
+
 const deleteUser = (id) => {
   if (confirm('Yakin hapus user ini?')) {
-    form.delete(route('admin.users.destroy', id));
+    form.delete(route('admin.users.destroy', id), {
+      preserveScroll: true,
+    });
   }
 };
 
 const isPasswordLongEnough = computed(() => form.password.length >= 8);
-const isPasswordStrong = computed(() => /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])/.test(form.password));
+const isPasswordStrong = computed(() =>
+  /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])/.test(form.password)
+);
 </script>
 
 <template>
@@ -77,7 +106,7 @@ const isPasswordStrong = computed(() => /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_
 
     <div class="py-12">
       <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-        <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
+        <div class="bg-white shadow-xl sm:rounded-lg p-6">
           <div class="flex justify-between mb-4">
             <h3 class="text-lg font-bold text-gray-700">Daftar User</h3>
             <PrimaryButton @click="openModal()">Tambah User</PrimaryButton>
@@ -90,6 +119,7 @@ const isPasswordStrong = computed(() => /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_
                 <th class="px-4 py-2">Username</th>
                 <th class="px-4 py-2">Email</th>
                 <th class="px-4 py-2">Role</th>
+                <th class="px-4 py-2">Status</th>
                 <th class="px-4 py-2">Aksi</th>
               </tr>
             </thead>
@@ -98,7 +128,16 @@ const isPasswordStrong = computed(() => /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_
                 <td class="px-4 py-2">{{ user.name }}</td>
                 <td class="px-4 py-2">{{ user.username }}</td>
                 <td class="px-4 py-2">{{ user.email }}</td>
-                <td class="px-4 py-2">{{ user.role }}</td>
+                <td class="px-4 py-2 capitalize">{{ user.role }}</td>
+                <td class="px-4 py-2">
+                  <button
+                    @click="toggleStatus(user)"
+                    class="text-xs px-3 py-1 rounded-full font-semibold transition"
+                    :class="user.is_active ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-red-100 text-red-700 hover:bg-red-200'"
+                  >
+                    {{ user.is_active ? 'Aktif' : 'Nonaktif' }}
+                  </button>
+                </td>
                 <td class="px-4 py-2 space-x-2">
                   <PrimaryButton @click="openModal(user)">Edit</PrimaryButton>
                   <DangerButton @click="deleteUser(user.id)">Hapus</DangerButton>
@@ -110,6 +149,7 @@ const isPasswordStrong = computed(() => /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_
       </div>
     </div>
 
+    <!-- Modal Form -->
     <Modal :show="showModal" @close="closeModal">
       <div class="p-6">
         <h2 class="text-lg font-semibold mb-4">
@@ -118,59 +158,67 @@ const isPasswordStrong = computed(() => /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_
 
         <form @submit.prevent="saveUser" class="space-y-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700">Nama</label>
-            <input v-model="form.name" class="w-full mt-1 border-gray-300 rounded-md shadow-sm" type="text" />
+            <label class="block text-sm font-medium">Nama</label>
+            <input v-model="form.name" class="w-full mt-1 rounded-md shadow-sm" type="text" />
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700">Email</label>
-            <input v-model="form.email" class="w-full mt-1 border-gray-300 rounded-md shadow-sm" type="email" />
+            <label class="block text-sm font-medium">Email</label>
+            <input v-model="form.email" class="w-full mt-1 rounded-md shadow-sm" type="email" />
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700">Username</label>
-            <input v-model="form.username" class="w-full mt-1 border-gray-300 rounded-md shadow-sm" type="text" />
+            <label class="block text-sm font-medium">Username</label>
+            <input v-model="form.username" class="w-full mt-1 rounded-md shadow-sm" type="text" />
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700">Role</label>
-            <select v-model="form.role" class="w-full mt-1 border-gray-300 rounded-md shadow-sm">
+            <label class="block text-sm font-medium">Role</label>
+            <select v-model="form.role" class="w-full mt-1 rounded-md shadow-sm">
               <option value="admin">Admin</option>
               <option value="operator">Operator</option>
             </select>
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700">Password</label>
-            <input v-model="form.password" class="w-full mt-1 border-gray-300 rounded-md shadow-sm" type="password" />
+            <label class="block text-sm font-medium">Status</label>
+            <select v-model="form.is_active" class="w-full mt-1 rounded-md shadow-sm">
+              <option :value="true">Aktif</option>
+              <option :value="false">Nonaktif</option>
+            </select>
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700">Konfirmasi Password</label>
-            <input v-model="form.password_confirmation" class="w-full mt-1 border-gray-300 rounded-md shadow-sm" type="password" />
+            <label class="block text-sm font-medium">Password</label>
+            <input v-model="form.password" class="w-full mt-1 rounded-md shadow-sm" type="password" />
           </div>
 
-          <!-- Realtime Validasi -->
-          <p class="text-sm font-semi text-gray-700 mt-2">Password Policy</p>
-          <div class="mt-2 rounded-md px-4 py-2 shadow-sm text-sm space-y-1 text-gray-700 transition"
+          <div>
+            <label class="block text-sm font-medium">Konfirmasi Password</label>
+            <input v-model="form.password_confirmation" class="w-full mt-1 rounded-md shadow-sm" type="password" />
+          </div>
+
+          <div
+            class="mt-2 rounded-md px-4 py-2 text-sm"
             :class="{
               'bg-red-100 border border-red-300': !isPasswordLongEnough,
               'bg-yellow-100 border border-yellow-300': isPasswordLongEnough && !isPasswordStrong,
               'bg-blue-100 border border-blue-300': isPasswordLongEnough && isPasswordStrong && form.password !== form.password_confirmation,
               'bg-green-100 border border-green-300': isPasswordLongEnough && isPasswordStrong && form.password === form.password_confirmation
-            }">
+            }"
+          >
             <ul>
               <li v-if="!isPasswordLongEnough" class="text-red-600">Minimal 8 karakter</li>
               <li v-else-if="!isPasswordStrong" class="text-yellow-700">Gunakan huruf besar, kecil, angka, dan simbol</li>
-              <li v-else-if="form.password !== form.password_confirmation" class="text-green-700">Konfirmasi password belum sama</li>
-              <li v-else class="text-green-700 font-medium">✓ Password valid dan cocok!</li>
+              <li v-else-if="form.password !== form.password_confirmation" class="text-green-700">Konfirmasi belum cocok</li>
+              <li v-else class="text-green-700 font-medium">✓ Password valid!</li>
             </ul>
           </div>
 
           <div class="mt-6 flex justify-end space-x-2">
             <DangerButton type="button" @click="closeModal">Batal</DangerButton>
             <PrimaryButton type="submit" :disabled="form.processing">
-              {{ editMode ? 'Simpan Perubahan' : 'Tambah User' }}
+              {{ editMode ? 'Simpan' : 'Tambah' }}
             </PrimaryButton>
           </div>
         </form>
