@@ -23,6 +23,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'username', // ✅
         'email',
         'password',
+         'role',
         'profile_photo_path', // ✅
         'google_id', // ✅ hanya ini yang ditambahkan
     ];
@@ -33,7 +34,7 @@ class User extends Authenticatable implements MustVerifyEmail
      * @var list<string>
      */
     protected $hidden = [
-        'password',
+      //  'password',
         'remember_token',
     ];
 

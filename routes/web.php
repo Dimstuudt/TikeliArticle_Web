@@ -11,14 +11,15 @@ use Laravel\Socialite\Facades\Socialite;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProfilePhotoController;
 use App\Http\Controllers\Auth\VerifyEmailController;
-
-// Models
-use App\Models\User;
+use App\Http\Controllers\Admin\UserController;
 
 // Middleware
 use App\Http\Middleware\PreventBackHistory;
 use App\Http\Middleware\EnsureProfileComplete;
 use App\Http\Middleware\RoleMiddleware;
+
+// Models
+use App\Models\User;
 
 /*
 |--------------------------------------------------------------------------
@@ -65,7 +66,7 @@ Route::get('/auth/google/callback', function () {
 });
 
 // === Complete Profile ===
-Route::middleware(['auth'])->group(function () {
+Route::middleware('auth')->group(function () {
     Route::get('/complete-profile', fn () => Inertia::render('Auth/CompleteProfile'))
         ->name('complete-profile');
 
@@ -76,9 +77,10 @@ Route::middleware(['auth'])->group(function () {
         ]);
 
         $user = Auth::user();
-        $user->username = $request->username;
-        $user->password = bcrypt($request->password);
-        $user->save();
+        $user->update([
+            'username' => $request->username,
+            'password' => bcrypt($request->password),
+        ]);
 
         return redirect()->route(
             $user->role === 'admin' ? 'admin.dashboard' : 'operator.dashboard'
@@ -87,17 +89,17 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // === Redirect ke dashboard sesuai role ===
-Route::get('/dashboard', function () {
+Route::middleware([
+    'auth',
+    'verified',
+    PreventBackHistory::class,
+    EnsureProfileComplete::class,
+])->get('/dashboard', function () {
     $user = auth()->user();
     return redirect()->route(
         $user->role === 'admin' ? 'admin.dashboard' : 'operator.dashboard'
     );
-})->middleware([
-    'auth',
-    'verified',
-    PreventBackHistory::class,
-    EnsureProfileComplete::class
-])->name('dashboard');
+})->name('dashboard');
 
 // === ADMIN Routes ===
 Route::middleware([
@@ -105,13 +107,15 @@ Route::middleware([
     'verified',
     PreventBackHistory::class,
     EnsureProfileComplete::class,
-    RoleMiddleware::class . ':admin'
-])->group(function () {
-    Route::get('/admin', fn () => Inertia::render('admin/Dashboard'))
-        ->name('admin.dashboard');
+    RoleMiddleware::class . ':admin',
+])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/', fn () => Inertia::render('admin/Dashboard'))->name('dashboard');
 
-    Route::get('/admin/users', fn () => Inertia::render('admin/Users'))
-        ->name('admin.users');
+    // === User Management ===
+    Route::get('/users', [UserController::class, 'index'])->name('users');
+    Route::post('/users', [UserController::class, 'store'])->name('users.store');
+    Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
+    Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
 });
 
 // === OPERATOR Routes ===
@@ -120,17 +124,16 @@ Route::middleware([
     'verified',
     PreventBackHistory::class,
     EnsureProfileComplete::class,
-    RoleMiddleware::class . ':operator'
-])->group(function () {
-    Route::get('/operator', fn () => Inertia::render('operator/Dashboard'))
-        ->name('operator.dashboard');
+    RoleMiddleware::class . ':operator',
+])->prefix('operator')->name('operator.')->group(function () {
+    Route::get('/', fn () => Inertia::render('operator/Dashboard'))->name('dashboard');
 });
 
 // === Profile Routes ===
 Route::middleware([
     'auth',
     PreventBackHistory::class,
-    EnsureProfileComplete::class
+    EnsureProfileComplete::class,
 ])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -154,7 +157,5 @@ Route::get('/email/verify/{id}/{hash}', VerifyEmailController::class)
 Route::get('/verified', fn () => Inertia::render('Auth/EmailVerified'))
     ->middleware('auth');
 
-
-
-// === Breeze Auth Routes ===
+// === Auth routes dari Laravel Breeze ===
 require __DIR__.'/auth.php';
