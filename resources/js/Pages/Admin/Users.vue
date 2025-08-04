@@ -11,6 +11,7 @@ const props = defineProps({ users: Array });
 const showModal = ref(false);
 const editMode = ref(false);
 const selectedUser = ref(null);
+const search = ref('');
 
 const form = useForm({
   name: '',
@@ -67,7 +68,6 @@ const saveUser = () => {
 
 const toggleStatus = (user) => {
   form.clearErrors();
-
   form.name = user.name;
   form.email = user.email;
   form.username = user.username;
@@ -95,6 +95,13 @@ const isPasswordLongEnough = computed(() => form.password.length >= 8);
 const isPasswordStrong = computed(() =>
   /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])/.test(form.password)
 );
+
+const filteredUsers = computed(() => {
+  if (!search.value) return props.users;
+  return props.users.filter(user =>
+    user.username.toLowerCase().includes(search.value.toLowerCase())
+  );
+});
 </script>
 
 <template>
@@ -112,6 +119,14 @@ const isPasswordStrong = computed(() =>
             <PrimaryButton @click="openModal()">Tambah User</PrimaryButton>
           </div>
 
+          <!-- Input Pencarian -->
+          <input
+            v-model="search"
+            type="text"
+            placeholder="Cari username..."
+            class="border rounded px-3 py-1 mb-4 w-1/3"
+          />
+
           <table class="w-full text-sm text-left">
             <thead class="bg-gray-100">
               <tr>
@@ -124,7 +139,7 @@ const isPasswordStrong = computed(() =>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="user in users" :key="user.id" class="border-t">
+              <tr v-for="user in filteredUsers" :key="user.id" class="border-t">
                 <td class="px-4 py-2">{{ user.name }}</td>
                 <td class="px-4 py-2">{{ user.username }}</td>
                 <td class="px-4 py-2">{{ user.email }}</td>

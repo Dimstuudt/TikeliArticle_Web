@@ -69,4 +69,13 @@ class User extends Authenticatable implements MustVerifyEmail
             ? asset('storage/' . $this->profile_photo_path)
             : 'https://ui-avatars.com/api/?name=' . urlencode($this->name);
     }
+
+// artikel
+public function articles()
+{
+    return $this->hasMany(Article::class);
 }
+
+
+}
+
