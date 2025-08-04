@@ -15,9 +15,11 @@ class EnsureProfileComplete
     {
         $user = $request->user();
 
-        if ($user && (is_null($user->username) || is_null($user->password))) {
-            // Jangan redirect kalau user sudah di halaman complete-profile
-            if (!$request->is('complete-profile')) {
+        if ($user && (
+            empty($user->username) ||              // Belum isi username
+            str_starts_with($user->username, 'google_') // Dummy username dari login Google
+        )) {
+            if (!$request->is('complete-profile') && !$request->is('logout')) {
                 return redirect()->route('complete-profile');
             }
         }

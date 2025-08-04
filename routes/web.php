@@ -11,6 +11,9 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProfilePhotoController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\ArticleController;
+use App\Http\Controllers\Auth\GoogleController;
+
 
 // Middleware
 use App\Http\Middleware\PreventBackHistory;
@@ -23,45 +26,12 @@ use App\Models\User;
 // Redirect root ke login
 Route::get('/', fn () => redirect('/login'));
 
+
 // === Google OAuth ===
-Route::get('/auth/google', fn () => Socialite::driver('google')->redirect());
+Route::get('/auth/google', [GoogleController::class, 'redirect'])->name('login.google');
+Route::get('/auth/google/callback', [GoogleController::class, 'callback']);
 
-Route::get('/auth/google/callback', function () {
-    $googleUser = Socialite::driver('google')->stateless()->user();
 
-    $user = User::where('email', $googleUser->getEmail())->first();
-
-    if (!$user) {
-        return redirect()->route('login')->withErrors([
-            'email' => 'Akun tidak terdaftar.',
-        ]);
-    }
-
-    if (!$user->is_active) {
-        return redirect()->route('login')->withErrors([
-            'email' => 'Akun Anda telah dinonaktifkan.',
-        ]);
-    }
-
-    if (!$user->google_id) {
-        $user->update(['google_id' => $googleUser->getId()]);
-    }
-
-    Auth::login($user);
-
-    if (!$user->hasVerifiedEmail()) {
-        $user->sendEmailVerificationNotification();
-        return redirect()->route('verification.notice');
-    }
-
-    if (empty($user->username)) {
-        return redirect()->route('complete-profile');
-    }
-
-    return redirect()->route(
-        $user->role === 'admin' ? 'admin.dashboard' : 'operator.dashboard'
-    );
-});
 
 // === Lengkapi Profil ===
 Route::middleware('auth')->group(function () {
@@ -117,6 +87,11 @@ Route::middleware([
 
     // Toggle aktif/nonaktif user
     Route::patch('/users/{user}/toggle-active', [UserController::class, 'toggleActive'])->name('users.toggleActive');
+
+    // Artikel admin
+    Route::get('/articles', [ArticleController::class, 'index'])->name('articles.index');
+    Route::put('/articles/{article}/approve', [ArticleController::class, 'approve'])->name('articles.approve');
+    Route::put('/articles/{article}/reject', [ArticleController::class, 'reject'])->name('articles.reject');
 });
 
 // === OPERATOR Routes ===
@@ -128,6 +103,16 @@ Route::middleware([
     RoleMiddleware::class . ':operator',
 ])->prefix('operator')->name('operator.')->group(function () {
     Route::get('/', fn () => Inertia::render('operator/Dashboard'))->name('dashboard');
+
+    // Artikel operator
+    Route::get('/articles/create', [ArticleController::class, 'create'])->name('articles.create');
+    Route::post('/articles', [ArticleController::class, 'store'])->name('articles.store');
+  Route::get('/articles/mine', [ArticleController::class, 'mine'])->name('articles.mine');
+Route::get('/articles/{article}/edit', [ArticleController::class, 'edit'])->name('articles.edit');
+Route::put('/articles/{article}', [ArticleController::class, 'update'])->name('articles.update');
+
+
+
 });
 
 // === Profile Routes ===
@@ -157,6 +142,7 @@ Route::get('/email/verify/{id}/{hash}', VerifyEmailController::class)
 
 Route::get('/verified', fn () => Inertia::render('Auth/EmailVerified'))
     ->middleware('auth');
+
 
 // === Auth routes dari Laravel Breeze ===
 require __DIR__.'/auth.php';
