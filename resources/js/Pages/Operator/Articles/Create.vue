@@ -3,6 +3,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import { Head, router, useForm } from '@inertiajs/vue3'
 import { QuillEditor } from '@vueup/vue-quill'
 import '@vueup/vue-quill/dist/vue-quill.snow.css'
+import { ref } from 'vue'
 
 const form = useForm({
   title: '',
@@ -12,10 +13,18 @@ const form = useForm({
   cover: null,
 })
 
+const coverPreview = ref(null)
+
+const onCoverChange = (e) => {
+  const file = e.target.files[0]
+  form.cover = file
+  coverPreview.value = file ? URL.createObjectURL(file) : null
+}
+
 const submit = () => {
   form.post('/operator/articles', {
     preserveScroll: true,
-    forceFormData: true, // supaya file terkirim
+    forceFormData: true,
     onSuccess: () => {
       router.visit('/operator/articles/mine')
     }
@@ -65,12 +74,18 @@ const saveDraft = () => {
               <label class="block text-sm font-medium text-gray-700 mb-1">Cover</label>
               <input
                 type="file"
-                @change="e => form.cover = e.target.files[0]"
+                @change="onCoverChange"
                 accept="image/*"
                 class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring focus:ring-blue-200 focus:outline-none"
               />
               <div v-if="form.errors.cover" class="text-sm text-red-600 mt-1">
                 {{ form.errors.cover }}
+              </div>
+
+              <!-- Preview Cover -->
+              <div v-if="coverPreview" class="mt-3">
+                <p class="text-xs text-gray-500 mb-1">Preview Cover:</p>
+                <img :src="coverPreview" alt="Preview" class="w-32 h-20 object-cover rounded border" />
               </div>
             </div>
 
@@ -90,12 +105,12 @@ const saveDraft = () => {
             <!-- Konten -->
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Konten</label>
-              <div class="border border-gray-300 rounded-md overflow-y-auto max-h-64">
+              <div class="border border-gray-300 rounded-md">
                 <QuillEditor
                   v-model:content="form.content"
                   contentType="html"
                   theme="snow"
-                  class="min-h-[200px] max-h-64"
+                  class="min-h-[200px]"
                 />
               </div>
               <div v-if="form.errors.content" class="text-sm text-red-600 mt-1">
@@ -103,7 +118,7 @@ const saveDraft = () => {
               </div>
             </div>
 
-            <!-- Tombol -->
+            <!-- Tombol Aksi -->
             <div class="flex justify-between gap-4">
               <button
                 type="button"

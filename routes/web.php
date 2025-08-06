@@ -22,6 +22,7 @@ use App\Http\Middleware\RoleMiddleware;
 
 // Models
 use App\Models\User;
+use App\Models\Article;
 
 // Redirect root ke login
 Route::get('/', fn () => redirect('/login'));
@@ -148,6 +149,37 @@ Route::get('/email/verify/{id}/{hash}', VerifyEmailController::class)
 
 Route::get('/verified', fn () => Inertia::render('Auth/EmailVerified'))
     ->middleware('auth');
+
+Route::get('/welcome', function () {
+    $articles = Article::where('status', 'approved')
+        ->with('user')
+        ->latest()
+        ->take(6)
+        ->get()
+        ->map(function ($article) {
+            return [
+                'id' => $article->id,
+                'title' => $article->title,
+                'summary' => $article->summary,
+                'content' => $article->content,
+                'cover' => $article->cover ? asset('storage/' . $article->cover) : null,
+                'updated_at' => $article->updated_at->toISOString(), // ✅ tambahkan ini
+                'created_at' => $article->created_at->diffForHumans(),
+                'author' => [
+                    'id' => $article->user->id,
+                    'name' => $article->user->name,
+                ],
+            ];
+        });
+
+    return Inertia::render('guest/Welcome', [
+        'articles' => $articles,
+    ]);
+})->name('guest.welcome');
+
+//guest see
+Route::get('/articles/{id}', [ArticleController::class, 'guestShow'])->name('guest.articles.show');
+
 
 
 // === Auth routes dari Laravel Breeze ===

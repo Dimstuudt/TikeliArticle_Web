@@ -3,11 +3,13 @@ import { Head, useForm, router } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import { QuillEditor } from '@vueup/vue-quill'
 import '@vueup/vue-quill/dist/vue-quill.snow.css'
-import { onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 
 const props = defineProps({
   article: Object
 })
+
+const coverPreview = ref(props.article.cover_url ?? null)
 
 const form = useForm({
   title: '',
@@ -24,7 +26,15 @@ onMounted(() => {
   form.status = props.article.status ?? ''
 })
 
-const submit = () => {
+const onCoverChange = (e) => {
+  const file = e.target.files[0]
+  form.cover = file
+  coverPreview.value = file ? URL.createObjectURL(file) : null
+}
+
+const submit = (status) => {
+  form.status = status
+
   form
     .transform(data => ({
       ...data,
@@ -39,15 +49,8 @@ const submit = () => {
     })
 }
 
-const sendForApproval = () => {
-  form.status = 'pending'
-  submit()
-}
-
-const saveAsDraft = () => {
-  form.status = 'draft'
-  submit()
-}
+const sendForApproval = () => submit('pending')
+const saveAsDraft = () => submit('draft')
 </script>
 
 <template>
@@ -61,7 +64,9 @@ const saveAsDraft = () => {
     <div class="py-8">
       <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
         <div class="bg-white shadow-md rounded-lg p-6">
-          <form @submit.prevent="sendForApproval" class="space-y-6">
+          <!-- Tidak pakai @submit.prevent -->
+          <form class="space-y-6">
+            <!-- Judul -->
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Judul</label>
               <input
@@ -72,17 +77,24 @@ const saveAsDraft = () => {
               <div v-if="form.errors.title" class="text-sm text-red-600 mt-1">{{ form.errors.title }}</div>
             </div>
 
+            <!-- Cover -->
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Ganti Cover (Opsional)</label>
               <input
                 type="file"
                 accept="image/*"
-                @change="e => form.cover = e.target.files[0]"
+                @change="onCoverChange"
                 class="w-full border border-gray-300 rounded-md px-4 py-2"
               />
               <div v-if="form.errors.cover" class="text-sm text-red-600 mt-1">{{ form.errors.cover }}</div>
+
+              <div v-if="coverPreview" class="mt-3">
+                <p class="text-xs text-gray-500 mb-1">Preview Cover:</p>
+                <img :src="coverPreview" alt="Cover Preview" class="w-32 h-20 object-cover rounded border" />
+              </div>
             </div>
 
+            <!-- Ringkasan -->
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Ringkasan</label>
               <textarea
@@ -93,6 +105,7 @@ const saveAsDraft = () => {
               <div v-if="form.errors.summary" class="text-sm text-red-600 mt-1">{{ form.errors.summary }}</div>
             </div>
 
+            <!-- Konten -->
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Konten</label>
               <div class="border border-gray-300 rounded-md">
@@ -106,6 +119,7 @@ const saveAsDraft = () => {
               <div v-if="form.errors.content" class="text-sm text-red-600 mt-1">{{ form.errors.content }}</div>
             </div>
 
+            <!-- Tombol -->
             <div class="flex justify-between">
               <button
                 type="button"
@@ -116,7 +130,8 @@ const saveAsDraft = () => {
               </button>
 
               <button
-                type="submit"
+                type="button"
+                @click="sendForApproval"
                 class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-md text-sm font-medium"
               >
                 Kirim Artikel

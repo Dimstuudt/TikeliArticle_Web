@@ -52,9 +52,32 @@ class ArticleController extends Controller
     }
 
     // Operator - Lihat Artikel Milik Sendiri
- public function mine()
+public function mine(Request $request)
 {
-    $articles = auth()->user()->articles()->latest()->get()->map(function ($article) {
+    // Ambil filter status dari query string (array atau string)
+    $statusParam = $request->query('status', []);
+    $statuses = is_array($statusParam)
+        ? $statusParam
+        : explode(',', $statusParam);
+
+    // Ambil keyword pencarian dari query string
+    $search = $request->query('search');
+
+    // Ambil query artikel milik user yang sedang login
+    $query = auth()->user()->articles()->latest();
+
+    // Filter berdasarkan status jika ada
+    if (!empty($statuses)) {
+        $query->whereIn('status', $statuses);
+    }
+
+    // Filter berdasarkan judul jika search tidak kosong
+    if (!empty($search)) {
+        $query->where('title', 'like', '%' . $search . '%');
+    }
+
+    // Ambil dan format data artikel
+    $articles = $query->get()->map(function ($article) {
         return [
             'id' => $article->id,
             'title' => $article->title,
@@ -62,13 +85,28 @@ class ArticleController extends Controller
             'status' => $article->status,
             'cover_url' => $article->cover ? asset('storage/' . $article->cover) : null,
             'created_at' => $article->created_at,
+            'rejection_reason' => $article->rejection_reason,
         ];
     });
 
+    // Hitung jumlah artikel berdasarkan status
+    $stats = auth()->user()->articles()
+        ->selectRaw('status, COUNT(*) as count')
+        ->groupBy('status')
+        ->pluck('count', 'status');
+
+    // Kirim data ke tampilan
     return Inertia::render('operator/Articles/Mine', [
         'articles' => $articles,
+        'filters' => [
+            'status' => $statuses,
+            'search' => $search,
+        ],
+        'stats' => $stats,
     ]);
 }
+
+
 
     // Operator - Form Edit Artikel
     public function edit(Article $article)
@@ -173,19 +211,25 @@ class ArticleController extends Controller
         return redirect()->back();
     }
 
-    public function reject($id)
-    {
-        $article = Article::findOrFail($id);
-        $article->status = 'rejected';
-        $article->save();
+    public function reject(Request $request, $id)
+{
+    $request->validate([
+        'reason' => 'required|string|max:1000',
+    ]);
 
-        return redirect()->back();
-    }
+    $article = Article::findOrFail($id);
+    $article->status = 'rejected';
+    $article->rejection_reason = $request->reason;
+    $article->save();
+
+    return back()->with('message', 'Artikel berhasil ditolak.');
+}
+
 
     // Helper - Autentikasi untuk edit
     private function authorizeEdit(Article $article)
     {
-        if ($article->user_id !== auth()->id() || !in_array($article->status, ['draft', 'rejected'])) {
+        if ($article->user_id !== auth()->id() || !in_array($article->status, ['draft', 'rejected', 'pending'])) {
             abort(403, 'Unauthorized');
         }
     }
@@ -244,6 +288,55 @@ public function show(Article $article)
     ]);
 }
 
+//tampilan
+
+public function landing()
+{
+    $articles = Article::where('status', 'approved')
+        ->with('user') // untuk ambil nama penulis
+        ->latest()
+        ->take(6)
+        ->get()
+        ->map(function ($article) {
+            return [
+                'id' => $article->id,
+                'title' => $article->title,
+                'summary' => $article->summary,
+                'content' => $article->content,
+                'cover' => $article->cover ? asset('storage/' . $article->cover) : null,
+                'created_at' => $article->created_at, // kirim datetime asli
+                'updated_at' => $article->updated_at, // kirim datetime asli
+                'author' => [
+                    'id' => $article->user->id,
+                    'name' => $article->user->name,
+                ],
+            ];
+        });
+
+    return Inertia::render('welcome', [
+        'articles' => $articles,
+    ]);
+}
+
+public function guestShow($id)
+{
+    $article = Article::with('user')->where('status', 'approved')->findOrFail($id);
+
+    return Inertia::render('guest/Articles/Show', [
+        'article' => [
+            'id' => $article->id,
+            'title' => $article->title,
+            'summary' => $article->summary,
+            'content' => $article->content,
+            'cover' => $article->cover ? asset('storage/' . $article->cover) : null,
+            'created_at' => $article->created_at->diffForHumans(),
+            'author' => [
+                'id' => $article->user->id,
+                'name' => $article->user->name,
+            ],
+        ],
+    ]);
+}
 
 
 }

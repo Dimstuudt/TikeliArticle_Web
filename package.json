@@ -28,6 +28,7 @@
         "@tiptap/starter-kit": "^3.0.9",
         "@tiptap/vue-3": "^3.0.9",
         "@vueup/vue-quill": "^1.2.0",
+        "dayjs": "^1.11.13",
         "quill": "^2.0.3",
         "ziggy-js": "^2.5.3"
     }
