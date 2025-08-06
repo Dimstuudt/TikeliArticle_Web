@@ -52,14 +52,23 @@ class ArticleController extends Controller
     }
 
     // Operator - Lihat Artikel Milik Sendiri
-    public function mine()
-    {
-        $articles = auth()->user()->articles()->latest()->get();
+ public function mine()
+{
+    $articles = auth()->user()->articles()->latest()->get()->map(function ($article) {
+        return [
+            'id' => $article->id,
+            'title' => $article->title,
+            'summary' => $article->summary,
+            'status' => $article->status,
+            'cover_url' => $article->cover ? asset('storage/' . $article->cover) : null,
+            'created_at' => $article->created_at,
+        ];
+    });
 
-        return Inertia::render('operator/Articles/Mine', [
-            'articles' => $articles,
-        ]);
-    }
+    return Inertia::render('operator/Articles/Mine', [
+        'articles' => $articles,
+    ]);
+}
 
     // Operator - Form Edit Artikel
     public function edit(Article $article)
@@ -134,27 +143,43 @@ class ArticleController extends Controller
     // Admin - Lihat Semua Artikel
     public function index()
     {
-        $articles = Article::with('user')->latest()->get();
+        $articles = Article::with('user')->latest()->get()->map(function ($article) {
+            return [
+                'id' => $article->id,
+                'title' => $article->title,
+                'summary' => $article->summary,
+                'content' => $article->content,
+                'status' => $article->status,
+                'cover_url' => $article->cover ? asset('storage/' . $article->cover) : null,
+                'created_at' => $article->created_at->toDateTimeString(),
+                'user' => [
+                    'id' => $article->user->id,
+                    'name' => $article->user->name,
+                ],
+            ];
+        });
 
         return Inertia::render('admin/Articles/Index', [
             'articles' => $articles,
         ]);
     }
 
-    // Admin - Setujui Artikel
-    public function approve(Article $article)
+    public function approve($id)
     {
-        $article->update(['status' => 'approved']);
+        $article = Article::findOrFail($id);
+        $article->status = 'approved';
+        $article->save();
 
-        return back()->with('success', 'Artikel disetujui.');
+        return redirect()->back();
     }
 
-    // Admin - Tolak Artikel
-    public function reject(Article $article)
+    public function reject($id)
     {
-        $article->update(['status' => 'rejected']);
+        $article = Article::findOrFail($id);
+        $article->status = 'rejected';
+        $article->save();
 
-        return back()->with('success', 'Artikel ditolak.');
+        return redirect()->back();
     }
 
     // Helper - Autentikasi untuk edit
@@ -164,4 +189,61 @@ class ArticleController extends Controller
             abort(403, 'Unauthorized');
         }
     }
+
+public function saveEdit(Request $request, Article $article)
+{
+    $this->authorizeEdit($article);
+
+    $rules = [
+        'title' => 'required|string|max:255',
+        'status' => 'required|in:pending,draft',
+        'cover' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+    ];
+
+    if ($request->status === 'pending') {
+        $rules['summary'] = 'required|string|max:500';
+        $rules['content'] = 'required|string';
+    } else {
+        $rules['summary'] = 'nullable|string|max:500';
+        $rules['content'] = 'nullable|string';
+    }
+
+    $validated = $request->validate($rules);
+
+    $article->fill([
+        'title' => $validated['title'],
+        'summary' => $validated['summary'] ?? null,
+        'content' => $validated['content'] ?? null,
+        'status' => $validated['status'],
+    ]);
+
+    if ($request->hasFile('cover')) {
+        if ($article->cover && Storage::disk('public')->exists($article->cover)) {
+            Storage::disk('public')->delete($article->cover);
+        }
+        $article->cover = $request->file('cover')->store('covers', 'public');
+    }
+
+    $article->save();
+
+    return redirect()->route('operator.articles.mine')->with('success', 'Artikel berhasil diperbarui.');
+}
+
+public function show(Article $article)
+{
+    return Inertia::render('admin/articles/Show', [
+        'article' => [
+            'id' => $article->id,
+            'title' => $article->title,
+            'cover_url' => $article->cover ? asset('storage/' . $article->cover) : null,
+            'summary' => $article->summary,
+            'content' => $article->content,
+            'status' => $article->status,
+            'created_at' => $article->created_at,
+        ],
+    ]);
+}
+
+
+
 }

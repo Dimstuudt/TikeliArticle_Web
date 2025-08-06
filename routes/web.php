@@ -92,6 +92,8 @@ Route::middleware([
     Route::get('/articles', [ArticleController::class, 'index'])->name('articles.index');
     Route::put('/articles/{article}/approve', [ArticleController::class, 'approve'])->name('articles.approve');
     Route::put('/articles/{article}/reject', [ArticleController::class, 'reject'])->name('articles.reject');
+    Route::get('/admin/articles/{article}', [ArticleController::class, 'show'])->name('admin.articles.show');
+
 });
 
 // === OPERATOR Routes ===
@@ -110,6 +112,9 @@ Route::middleware([
   Route::get('/articles/mine', [ArticleController::class, 'mine'])->name('articles.mine');
 Route::get('/articles/{article}/edit', [ArticleController::class, 'edit'])->name('articles.edit');
 Route::put('/articles/{article}', [ArticleController::class, 'update'])->name('articles.update');
+Route::post('/articles/{article}/edit-save', [ArticleController::class, 'saveEdit'])->name('articles.saveEdit');
+Route::delete('/articles/{article}', [ArticleController::class, 'destroy'])->name('articles.destroy');
+
 
 
 

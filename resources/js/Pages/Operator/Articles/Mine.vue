@@ -2,7 +2,9 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import { Head, Link, useForm } from '@inertiajs/vue3'
 
-defineProps({ articles: Array })
+defineProps({
+  articles: Array,
+})
 
 const form = useForm({})
 
@@ -14,7 +16,6 @@ const destroy = (id) => {
   }
 }
 
-// Hapus semua HTML tag (biar konten bersih)
 const stripHtml = (html) => {
   const div = document.createElement('div')
   div.innerHTML = html
@@ -39,33 +40,51 @@ const stripHtml = (html) => {
             <div
               v-for="article in articles"
               :key="article.id"
-              class="border border-gray-200 p-4 rounded-lg shadow-sm bg-white flex flex-col justify-between"
+              class="border border-gray-200 p-4 rounded-lg shadow-sm bg-white flex flex-col space-y-4"
             >
-              <div class="flex justify-between items-start mb-2">
-                <h3 class="text-lg font-semibold text-gray-800">{{ article.title }}</h3>
-                <span
-                  class="px-2 py-1 text-xs font-medium rounded-full capitalize"
-                  :class="{
-                    'bg-yellow-100 text-yellow-800': article.status === 'pending',
-                    'bg-green-100 text-green-800': article.status === 'approved',
-                    'bg-red-100 text-red-800': article.status === 'rejected',
-                    'bg-gray-100 text-gray-800': article.status === 'draft'
-                  }"
-                >
-                  {{ article.status }}
-                </span>
+              <!-- Bagian Cover -->
+              <div>
+                <h4 class="text-sm font-semibold text-gray-600 mb-1">Cover</h4>
+                <img
+                  v-if="article.cover_url"
+                  :src="article.cover_url"
+                  alt="Cover"
+                  class="w-full h-48 object-cover rounded"
+                />
+                <p v-else class="text-sm text-gray-400 italic">Tidak ada cover</p>
               </div>
 
-              <!-- Konten singkat, dibatasi 2 baris -->
-              <p
-                class="text-sm text-gray-700 line-clamp-2 mb-3"
-              >
-                {{ stripHtml(article.summary) }}
-              </p>
+              <!-- Judul & Status -->
+              <div>
+                <h4 class="text-sm font-semibold text-gray-600 mb-1">Judul & Status</h4>
+                <div class="flex justify-between items-center">
+                  <h3 class="text-lg font-semibold text-gray-800">{{ article.title }}</h3>
+                  <span
+                    class="px-2 py-1 text-xs font-medium rounded-full capitalize"
+                    :class="{
+                      'bg-yellow-100 text-yellow-800': article.status === 'pending',
+                      'bg-green-100 text-green-800': article.status === 'approved',
+                      'bg-red-100 text-red-800': article.status === 'rejected',
+                      'bg-gray-100 text-gray-800': article.status === 'draft'
+                    }"
+                  >
+                    {{ article.status }}
+                  </span>
+                </div>
+              </div>
 
+              <!-- Ringkasan -->
+              <div>
+                <h4 class="text-sm font-semibold text-gray-600 mb-1">Ringkasan</h4>
+                <p class="text-sm text-gray-700 line-clamp-3">
+                  {{ stripHtml(article.summary) }}
+                </p>
+              </div>
+
+              <!-- Tombol Aksi -->
               <div
                 v-if="['draft', 'rejected'].includes(article.status)"
-                class="mt-auto flex space-x-2"
+                class="flex space-x-2 pt-2 border-t border-gray-200"
               >
                 <Link
                   :href="`/operator/articles/${article.id}/edit`"
