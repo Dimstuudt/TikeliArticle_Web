@@ -13,7 +13,9 @@ class ArticleController extends Controller
     // Operator - Form Buat Artikel
     public function create()
     {
-        return Inertia::render('operator/Articles/Create');
+        return Inertia::render('operator/Articles/Create', [
+            'categories' => $this->categories(),
+        ]);
     }
 
     // Operator - Simpan Artikel Baru
@@ -22,6 +24,7 @@ class ArticleController extends Controller
         $rules = [
             'title' => 'required|string|max:255',
             'status' => 'required|in:pending,draft',
+            'category' => 'nullable|string|in:' . implode(',', $this->categories()),
             'cover' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ];
 
@@ -52,61 +55,49 @@ class ArticleController extends Controller
     }
 
     // Operator - Lihat Artikel Milik Sendiri
-public function mine(Request $request)
-{
-    // Ambil filter status dari query string (array atau string)
-    $statusParam = $request->query('status', []);
-    $statuses = is_array($statusParam)
-        ? $statusParam
-        : explode(',', $statusParam);
+    public function mine(Request $request)
+    {
+        $statusParam = $request->query('status', []);
+        $statuses = is_array($statusParam) ? $statusParam : explode(',', $statusParam);
+        $search = $request->query('search');
 
-    // Ambil keyword pencarian dari query string
-    $search = $request->query('search');
+        $query = auth()->user()->articles()->latest();
 
-    // Ambil query artikel milik user yang sedang login
-    $query = auth()->user()->articles()->latest();
+        if (!empty($statuses)) {
+            $query->whereIn('status', $statuses);
+        }
 
-    // Filter berdasarkan status jika ada
-    if (!empty($statuses)) {
-        $query->whereIn('status', $statuses);
+        if (!empty($search)) {
+            $query->where('title', 'like', '%' . $search . '%');
+        }
+
+        $articles = $query->get()->map(function ($article) {
+            return [
+                'id' => $article->id,
+                'title' => $article->title,
+                'summary' => $article->summary,
+                'status' => $article->status,
+                'category' => $article->category,
+                'cover_url' => $article->cover ? asset('storage/' . $article->cover) : null,
+                'created_at' => $article->created_at,
+                'rejection_reason' => $article->rejection_reason,
+            ];
+        });
+
+        $stats = auth()->user()->articles()
+            ->selectRaw('status, COUNT(*) as count')
+            ->groupBy('status')
+            ->pluck('count', 'status');
+
+        return Inertia::render('operator/Articles/Mine', [
+            'articles' => $articles,
+            'filters' => [
+                'status' => $statuses,
+                'search' => $search,
+            ],
+            'stats' => $stats,
+        ]);
     }
-
-    // Filter berdasarkan judul jika search tidak kosong
-    if (!empty($search)) {
-        $query->where('title', 'like', '%' . $search . '%');
-    }
-
-    // Ambil dan format data artikel
-    $articles = $query->get()->map(function ($article) {
-        return [
-            'id' => $article->id,
-            'title' => $article->title,
-            'summary' => $article->summary,
-            'status' => $article->status,
-            'cover_url' => $article->cover ? asset('storage/' . $article->cover) : null,
-            'created_at' => $article->created_at,
-            'rejection_reason' => $article->rejection_reason,
-        ];
-    });
-
-    // Hitung jumlah artikel berdasarkan status
-    $stats = auth()->user()->articles()
-        ->selectRaw('status, COUNT(*) as count')
-        ->groupBy('status')
-        ->pluck('count', 'status');
-
-    // Kirim data ke tampilan
-    return Inertia::render('operator/Articles/Mine', [
-        'articles' => $articles,
-        'filters' => [
-            'status' => $statuses,
-            'search' => $search,
-        ],
-        'stats' => $stats,
-    ]);
-}
-
-
 
     // Operator - Form Edit Artikel
     public function edit(Article $article)
@@ -120,8 +111,10 @@ public function mine(Request $request)
                 'summary' => $article->summary,
                 'content' => $article->content,
                 'status' => $article->status,
+                'category' => $article->category,
                 'cover_url' => $article->cover ? asset('storage/' . $article->cover) : null,
             ],
+            'categories' => $this->categories(),
         ]);
     }
 
@@ -134,6 +127,7 @@ public function mine(Request $request)
         $rules = [
             'title' => 'required|string|max:255',
             'status' => 'required|in:pending,draft',
+            'category' => 'nullable|string|in:' . implode(',', $this->categories()),
             'cover' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ];
 
@@ -151,6 +145,7 @@ public function mine(Request $request)
         $article->summary = $validated['summary'] ?? null;
         $article->content = $validated['content'] ?? null;
         $article->status = $validated['status'];
+        $article->category = $validated['category'] ?? null;
 
         if ($request->hasFile('cover')) {
             if ($article->cover && Storage::disk('public')->exists($article->cover)) {
@@ -164,18 +159,46 @@ public function mine(Request $request)
         return redirect()->route('operator.articles.mine')->with('success', 'Artikel berhasil diperbarui.');
     }
 
-    // Operator - Hapus Artikel
-    public function destroy(Article $article)
+    // Save edit (alternatif route)
+    public function saveEdit(Request $request, Article $article)
     {
         $this->authorizeEdit($article);
 
-        if ($article->cover && Storage::disk('public')->exists($article->cover)) {
-            Storage::disk('public')->delete($article->cover);
+        $rules = [
+            'title' => 'required|string|max:255',
+            'status' => 'required|in:pending,draft',
+            'category' => 'nullable|string|in:' . implode(',', $this->categories()),
+            'cover' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        ];
+
+        if ($request->status === 'pending') {
+            $rules['summary'] = 'required|string|max:500';
+            $rules['content'] = 'required|string';
+        } else {
+            $rules['summary'] = 'nullable|string|max:500';
+            $rules['content'] = 'nullable|string';
         }
 
-        $article->delete();
+        $validated = $request->validate($rules);
 
-        return redirect()->route('operator.articles.mine')->with('success', 'Artikel berhasil dihapus.');
+        $article->fill([
+            'title' => $validated['title'],
+            'summary' => $validated['summary'] ?? null,
+            'content' => $validated['content'] ?? null,
+            'status' => $validated['status'],
+            'category' => $validated['category'] ?? null,
+        ]);
+
+        if ($request->hasFile('cover')) {
+            if ($article->cover && Storage::disk('public')->exists($article->cover)) {
+                Storage::disk('public')->delete($article->cover);
+            }
+            $article->cover = $request->file('cover')->store('covers', 'public');
+        }
+
+        $article->save();
+
+        return redirect()->route('operator.articles.mine')->with('success', 'Artikel berhasil diperbarui.');
     }
 
     // Admin - Lihat Semua Artikel
@@ -188,6 +211,7 @@ public function mine(Request $request)
                 'summary' => $article->summary,
                 'content' => $article->content,
                 'status' => $article->status,
+                'category' => $article->category,
                 'cover_url' => $article->cover ? asset('storage/' . $article->cover) : null,
                 'created_at' => $article->created_at->toDateTimeString(),
                 'user' => [
@@ -212,21 +236,88 @@ public function mine(Request $request)
     }
 
     public function reject(Request $request, $id)
-{
-    $request->validate([
-        'reason' => 'required|string|max:1000',
-    ]);
+    {
+        $request->validate([
+            'reason' => 'required|string|max:1000',
+        ]);
 
-    $article = Article::findOrFail($id);
-    $article->status = 'rejected';
-    $article->rejection_reason = $request->reason;
-    $article->save();
+        $article = Article::findOrFail($id);
+        $article->status = 'rejected';
+        $article->rejection_reason = $request->reason;
+        $article->save();
 
-    return back()->with('message', 'Artikel berhasil ditolak.');
-}
+        return back()->with('message', 'Artikel berhasil ditolak.');
+    }
 
+    public function show(Article $article)
+    {
+        return Inertia::render('admin/articles/Show', [
+            'article' => [
+                'id' => $article->id,
+                'title' => $article->title,
+                'summary' => $article->summary,
+                'content' => $article->content,
+                'status' => $article->status,
+                'category' => $article->category,
+                'cover_url' => $article->cover ? asset('storage/' . $article->cover) : null,
+                'created_at' => $article->created_at,
+            ],
+        ]);
+    }
 
-    // Helper - Autentikasi untuk edit
+    public function landing()
+    {
+        $articles = Article::where('status', 'approved')
+            ->with('user')
+            ->latest()
+            ->take(6)
+            ->get()
+            ->map(function ($article) {
+                return [
+                    'id' => $article->id,
+                    'title' => $article->title,
+                    'summary' => $article->summary,
+                    'content' => $article->content,
+                    'category' => $article->category,
+                    'cover' => $article->cover ? asset('storage/' . $article->cover) : null,
+                    'created_at' => $article->created_at,
+                    'updated_at' => $article->updated_at,
+                    'author' => [
+                        'id' => $article->user->id,
+                        'name' => $article->user->name,
+                    ],
+                ];
+            });
+
+        return Inertia::render('welcome', [
+            'articles' => $articles,
+        ]);
+    }
+
+    public function guestShow($id)
+    {
+        $article = Article::with('user')->where('status', 'approved')->findOrFail($id);
+
+        return Inertia::render('guest/Articles/Show', [
+            'article' => [
+                'id' => $article->id,
+                'title' => $article->title,
+                'summary' => $article->summary,
+                'content' => $article->content,
+                'category' => $article->category,
+                'cover' => $article->cover ? asset('storage/' . $article->cover) : null,
+                'created_at' => $article->created_at->diffForHumans(),
+                'author' => [
+                    'id' => $article->user->id,
+                    'name' => $article->user->name,
+                    'role' => $article->user->role,
+                    'profile_photo_path' => $article->user->profile_photo_path,
+                ],
+            ],
+            'from' => request('from'), // ⬅️ Tambahkan ini
+        ]);
+    }
+
     private function authorizeEdit(Article $article)
     {
         if ($article->user_id !== auth()->id() || !in_array($article->status, ['draft', 'rejected', 'pending'])) {
@@ -234,109 +325,30 @@ public function mine(Request $request)
         }
     }
 
-public function saveEdit(Request $request, Article $article)
-{
-    $this->authorizeEdit($article);
-
-    $rules = [
-        'title' => 'required|string|max:255',
-        'status' => 'required|in:pending,draft',
-        'cover' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-    ];
-
-    if ($request->status === 'pending') {
-        $rules['summary'] = 'required|string|max:500';
-        $rules['content'] = 'required|string';
-    } else {
-        $rules['summary'] = 'nullable|string|max:500';
-        $rules['content'] = 'nullable|string';
+    private function categories(): array
+    {
+        return [
+            'ulasan',
+            'teknologi',
+            'hiburan',
+            'hoby',
+            'opini',
+            'fiksi',
+            'tutorial',
+            'biografi',
+            'comparison',
+        ];
     }
 
-    $validated = $request->validate($rules);
-
-    $article->fill([
-        'title' => $validated['title'],
-        'summary' => $validated['summary'] ?? null,
-        'content' => $validated['content'] ?? null,
-        'status' => $validated['status'],
-    ]);
-
-    if ($request->hasFile('cover')) {
-        if ($article->cover && Storage::disk('public')->exists($article->cover)) {
-            Storage::disk('public')->delete($article->cover);
-        }
-        $article->cover = $request->file('cover')->store('covers', 'public');
-    }
-
-    $article->save();
-
-    return redirect()->route('operator.articles.mine')->with('success', 'Artikel berhasil diperbarui.');
-}
-
-public function show(Article $article)
+    //halaman guest setting
+    public function indexPublic()
 {
-    return Inertia::render('admin/articles/Show', [
-        'article' => [
-            'id' => $article->id,
-            'title' => $article->title,
-            'cover_url' => $article->cover ? asset('storage/' . $article->cover) : null,
-            'summary' => $article->summary,
-            'content' => $article->content,
-            'status' => $article->status,
-            'created_at' => $article->created_at,
-        ],
-    ]);
-}
-
-//tampilan
-
-public function landing()
-{
-    $articles = Article::where('status', 'approved')
-        ->with('user') // untuk ambil nama penulis
+    $articles = Article::with('author') // atau relasi yang kamu butuh
         ->latest()
-        ->take(6)
-        ->get()
-        ->map(function ($article) {
-            return [
-                'id' => $article->id,
-                'title' => $article->title,
-                'summary' => $article->summary,
-                'content' => $article->content,
-                'cover' => $article->cover ? asset('storage/' . $article->cover) : null,
-                'created_at' => $article->created_at, // kirim datetime asli
-                'updated_at' => $article->updated_at, // kirim datetime asli
-                'author' => [
-                    'id' => $article->user->id,
-                    'name' => $article->user->name,
-                ],
-            ];
-        });
+        ->paginate(6); // <== BATASI 6 PER HALAMAN
 
-    return Inertia::render('welcome', [
+    return Inertia::render('Welcome', [
         'articles' => $articles,
     ]);
 }
-
-public function guestShow($id)
-{
-    $article = Article::with('user')->where('status', 'approved')->findOrFail($id);
-
-    return Inertia::render('guest/Articles/Show', [
-        'article' => [
-            'id' => $article->id,
-            'title' => $article->title,
-            'summary' => $article->summary,
-            'content' => $article->content,
-            'cover' => $article->cover ? asset('storage/' . $article->cover) : null,
-            'created_at' => $article->created_at->diffForHumans(),
-            'author' => [
-                'id' => $article->user->id,
-                'name' => $article->user->name,
-            ],
-        ],
-    ]);
-}
-
-
 }

@@ -16,6 +16,7 @@ class Article extends Model
     'content',
     'status',
     'cover',
+    'category',
 ];
     public function user()
     {

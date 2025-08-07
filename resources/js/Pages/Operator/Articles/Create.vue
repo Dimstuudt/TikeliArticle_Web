@@ -11,6 +11,7 @@ const form = useForm({
   content: '',
   status: 'pending',
   cover: null,
+  category: 'ulasan',
 })
 
 const coverPreview = ref(null)
@@ -56,6 +57,7 @@ const saveDraft = () => {
       <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
         <div class="bg-white shadow-md rounded-lg p-6">
           <form @submit.prevent="sendArticle" class="space-y-6">
+
             <!-- Judul -->
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Judul</label>
@@ -66,6 +68,28 @@ const saveDraft = () => {
               />
               <div v-if="form.errors.title" class="text-sm text-red-600 mt-1">
                 {{ form.errors.title }}
+              </div>
+            </div>
+
+            <!-- Kategori -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
+              <select
+                v-model="form.category"
+                class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring focus:ring-blue-200 focus:outline-none"
+              >
+                <option value="ulasan">Ulasan</option>
+                <option value="teknologi">Teknologi</option>
+                <option value="hiburan">Hiburan</option>
+                <option value="hoby">Hoby</option>
+                <option value="opini">Opini</option>
+                <option value="fiksi">Fiksi</option>
+                <option value="tutorial">Tutorial</option>
+                <option value="biografi">Biografi</option>
+                <option value="comparison">Comparison</option>
+              </select>
+              <div v-if="form.errors.category" class="text-sm text-red-600 mt-1">
+                {{ form.errors.category }}
               </div>
             </div>
 
@@ -135,6 +159,7 @@ const saveDraft = () => {
                 Kirim Artikel
               </button>
             </div>
+
           </form>
         </div>
       </div>

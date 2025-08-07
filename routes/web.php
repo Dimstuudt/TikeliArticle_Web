@@ -150,37 +150,63 @@ Route::get('/email/verify/{id}/{hash}', VerifyEmailController::class)
 Route::get('/verified', fn () => Inertia::render('Auth/EmailVerified'))
     ->middleware('auth');
 
+// === Guest Routes ===
+
 Route::get('/welcome', function () {
     $articles = Article::where('status', 'approved')
         ->with('user')
         ->latest()
-        ->take(6)
-        ->get()
-        ->map(function ($article) {
+        ->paginate(6) // ✅ Gunakan paginate, bukan take+get
+        ->through(function ($article) {
             return [
                 'id' => $article->id,
                 'title' => $article->title,
                 'summary' => $article->summary,
                 'content' => $article->content,
+                'category' => $article->category,
                 'cover' => $article->cover ? asset('storage/' . $article->cover) : null,
-                'updated_at' => $article->updated_at->toISOString(), // ✅ tambahkan ini
+                'updated_at' => $article->updated_at->toISOString(),
                 'created_at' => $article->created_at->diffForHumans(),
                 'author' => [
                     'id' => $article->user->id,
                     'name' => $article->user->name,
+                    'role' => $article->user->role,
+    'profile_photo_path' => $article->user->profile_photo_path,
                 ],
             ];
         });
 
+
+        // Ambil 3 user terbaru
+    $latestUsers = User::latest()->take(3)->get(['id', 'name', 'profile_photo_path']);
+
     return Inertia::render('guest/Welcome', [
         'articles' => $articles,
+       'latestUsers' => User::latest()->take(3)->get(['id', 'name', 'role', 'profile_photo_path']),
+
     ]);
 })->name('guest.welcome');
 
 //guest see
 Route::get('/articles/{id}', [ArticleController::class, 'guestShow'])->name('guest.articles.show');
+Route::get('/users/{user}', function (User $user) {
+    $approvedArticles = Article::where('status', 'approved')
+        ->where('user_id', $user->id)
+        ->latest()
+        ->get(['id', 'title', 'cover', 'category', 'created_at']);
 
-
+    return Inertia::render('guest/UserProfile', [
+        'user' => [
+            'id' => $user->id,
+            'name' => $user->name,
+            'role' => $user->role,
+            'profile_photo_path' => $user->profile_photo_path,
+            'background_photo_path' => $user->background_photo_path,
+            'bio' => $user->bio,
+        ],
+        'articles' => $approvedArticles,
+    ]);
+})->name('guest.profile');
 
 // === Auth routes dari Laravel Breeze ===
 require __DIR__.'/auth.php';

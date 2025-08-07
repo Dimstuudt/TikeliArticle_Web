@@ -1,21 +1,26 @@
 <script setup>
-import { Head, Link } from '@inertiajs/vue3'
+import { Head } from '@inertiajs/vue3'
 import { defineProps } from 'vue'
+import PublicLayout from '@/Layouts/PublicLayout.vue'
 
 const props = defineProps({
   article: Object,
+  from: String, // dikirim saat navigasi
 })
+
+const goBack = () => {
+  if (window.history.state?.back) {
+    window.history.back()
+  } else if (props.from) {
+    window.location.href = props.from
+  } else {
+    window.location.href = '/welcome'
+  }
+}
 </script>
 
 <template>
-  <div class="bg-gray-50 min-h-screen flex flex-col">
-    <!-- Navbar -->
-    <header class="bg-blue-600 text-white py-4 px-6 shadow-md flex justify-between items-center">
-      <h1 class="text-2xl font-bold tracking-wide">Tikeli</h1>
-      <nav class="hidden md:flex space-x-6 text-sm"></nav>
-      <a href="/login" class="text-sm hover:underline">Login / Register</a>
-    </header>
-
+  <PublicLayout>
     <!-- Page Title -->
     <Head :title="article.title" />
 
@@ -33,7 +38,18 @@ const props = defineProps({
       <div class="bg-white rounded-lg shadow-md border p-6 space-y-6">
         <!-- Judul & Info -->
         <div>
-          <h1 class="text-4xl font-bold text-gray-800 leading-tight mb-2">{{ article.title }}</h1>
+          <h1 class="text-4xl font-bold text-gray-800 leading-tight mb-1">
+            {{ article.title }}
+          </h1>
+
+          <!-- Badge Kategori -->
+          <div
+            v-if="article.category"
+            class="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-3 py-1 rounded-full mb-2"
+          >
+            {{ article.category }}
+          </div>
+
           <p class="text-sm text-gray-500">
             Oleh <span class="font-medium">{{ article.author.name }}</span> • {{ article.created_at }}
           </p>
@@ -53,24 +69,45 @@ const props = defineProps({
         <!-- Konten -->
         <div class="prose prose-lg prose-blue max-w-none text-gray-800" v-html="article.content" />
 
+        <!-- About the Author -->
+        <div class="bg-gray-50 border border-gray-200 rounded-lg p-6 shadow-md">
+          <h2 class="text-lg font-semibold text-gray-800 mb-4">Tentang Penulis</h2>
+          <div class="flex items-center gap-4">
+            <!-- Foto profil -->
+            <img
+              :src="article.author.profile_photo_path
+                ? `/storage/${article.author.profile_photo_path}`
+                : `https://ui-avatars.com/api/?name=${encodeURIComponent(article.author.name)}`"
+              alt="Foto Profil"
+              class="w-16 h-16 rounded-full object-cover border-4 border-blue-200"
+            />
+
+            <!-- Info Penulis -->
+            <div>
+              <p class="text-lg font-bold text-gray-800">{{ article.author.name }}</p>
+              <span
+                class="inline-block mt-1 text-xs font-medium px-3 py-1 rounded-full"
+                :class="{
+                  'bg-green-100 text-green-800': article.author.role === 'admin',
+                  'bg-green-50 text-green-700': article.author.role === 'operator',
+                }"
+              >
+                {{ article.author.role }}
+              </span>
+            </div>
+          </div>
+        </div>
+
         <!-- Tombol Kembali -->
         <div class="pt-6">
-          <Link
-            href="/welcome"
+          <button
+            @click="goBack"
             class="inline-block bg-blue-600 text-white px-5 py-2 rounded-md hover:bg-blue-700 transition"
           >
             ← Kembali
-          </Link>
+          </button>
         </div>
       </div>
     </main>
-
-    <!-- Footer CTA -->
-    <footer class="text-center py-6 bg-gray-100 mt-10">
-      <p class="text-gray-600">
-        Belum punya akun?
-        <a href="/register" class="text-blue-600 hover:underline font-semibold">Daftar sekarang</a>
-      </p>
-    </footer>
-  </div>
+  </PublicLayout>
 </template>

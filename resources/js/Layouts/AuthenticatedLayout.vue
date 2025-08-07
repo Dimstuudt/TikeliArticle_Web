@@ -1,7 +1,6 @@
 <script setup>
 import { ref } from 'vue'
 import { Link, usePage } from '@inertiajs/vue3'
-import ApplicationLogo from '@/Components/ApplicationLogo.vue'
 import Dropdown from '@/Components/Dropdown.vue'
 import DropdownLink from '@/Components/DropdownLink.vue'
 import NavLink from '@/Components/NavLink.vue'
@@ -13,26 +12,27 @@ const user = usePage().props.auth.user
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-100">
+  <div class="min-h-screen bg-gray-50">
     <!-- Navbar -->
-    <nav class="bg-white border-b border-gray-100">
+    <nav class="bg-blue-200 border-b border-blue-200 shadow-sm">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
-          <!-- Left Section -->
-          <div class="flex items-center">
-            <Link :href="route('dashboard')" class="flex items-center">
-              <ApplicationLogo class="block h-9 w-auto text-gray-800" />
+          <!-- Left: Logo dan Nav -->
+          <div class="flex items-center space-x-10">
+            <!-- Logo Tikeli -->
+            <Link
+              :href="route('dashboard')"
+              class="text-2xl font-extrabold text-blue-600 tracking-tight hover:text-blue-700 transition"
+            >
+              Tikeli
             </Link>
 
-            <div class="hidden sm:flex sm:space-x-8 sm:ml-10">
-              <NavLink :href="route('dashboard')" :active="route().current('dashboard')">
-                Dashboard
-              </NavLink>
+            <!-- Menu -->
+            <div class="hidden sm:flex space-x-8">
+              <NavLink :href="route('dashboard')" :active="route().current('dashboard')">Dashboard</NavLink>
 
               <template v-if="role === 'admin'">
-                <NavLink :href="route('admin.users')" :active="route().current('admin.users')">
-                  Users
-                </NavLink>
+                <NavLink :href="route('admin.users')" :active="route().current('admin.users')">Users</NavLink>
                 <NavLink :href="route('admin.articles.index')" :active="route().current('admin.articles.index')">
                   Manajemen Artikel
                 </NavLink>
@@ -49,11 +49,11 @@ const user = usePage().props.auth.user
             </div>
           </div>
 
-          <!-- Right Section -->
-          <div class="hidden sm:flex sm:items-center sm:ml-6">
+          <!-- Right: Profil & Dropdown -->
+          <div class="hidden sm:flex sm:items-center">
             <Dropdown align="right" width="48">
               <template #trigger>
-                <button type="button" class="flex items-center text-sm text-gray-500 hover:text-gray-700">
+                <button class="flex items-center text-sm font-medium text-gray-700 hover:text-blue-700 focus:outline-none">
                   <img
                     :src="user.profile_photo_url"
                     class="h-9 w-9 rounded-full object-cover border-2 border-blue-500"
@@ -77,11 +77,11 @@ const user = usePage().props.auth.user
             </Dropdown>
           </div>
 
-          <!-- Hamburger -->
+          <!-- Hamburger Menu (Mobile) -->
           <div class="-mr-2 flex items-center sm:hidden">
             <button
               @click="showingNavigationDropdown = !showingNavigationDropdown"
-              class="inline-flex items-center p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:outline-none"
+              class="inline-flex items-center p-2 rounded-md text-gray-500 hover:text-blue-700 hover:bg-blue-50 focus:outline-none"
             >
               <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
@@ -105,34 +105,26 @@ const user = usePage().props.auth.user
       </div>
 
       <!-- Mobile Menu -->
-      <div :class="{ block: showingNavigationDropdown, hidden: !showingNavigationDropdown }" class="sm:hidden">
+      <div :class="{ block: showingNavigationDropdown, hidden: !showingNavigationDropdown }" class="sm:hidden bg-blue-50">
         <div class="pt-2 pb-3 space-y-1">
           <ResponsiveNavLink :href="route('dashboard')" :active="route().current('dashboard')">
             Dashboard
           </ResponsiveNavLink>
 
           <template v-if="role === 'admin'">
-            <ResponsiveNavLink :href="route('admin.users')" :active="route().current('admin.users')">
-              Users
-            </ResponsiveNavLink>
-            <ResponsiveNavLink :href="route('admin.articles.index')" :active="route().current('admin.articles.index')">
-              Manajemen Artikel
-            </ResponsiveNavLink>
+            <ResponsiveNavLink :href="route('admin.users')" :active="route().current('admin.users')">Users</ResponsiveNavLink>
+            <ResponsiveNavLink :href="route('admin.articles.index')" :active="route().current('admin.articles.index')">Manajemen Artikel</ResponsiveNavLink>
           </template>
 
           <template v-if="role === 'operator'">
-            <ResponsiveNavLink :href="route('operator.articles.create')" :active="route().current('operator.articles.create')">
-              Tulis Artikel
-            </ResponsiveNavLink>
-            <ResponsiveNavLink :href="route('operator.articles.mine')" :active="route().current('operator.articles.mine')">
-              Artikel Saya
-            </ResponsiveNavLink>
+            <ResponsiveNavLink :href="route('operator.articles.create')" :active="route().current('operator.articles.create')">Tulis Artikel</ResponsiveNavLink>
+            <ResponsiveNavLink :href="route('operator.articles.mine')" :active="route().current('operator.articles.mine')">Artikel Saya</ResponsiveNavLink>
           </template>
         </div>
 
-        <div class="border-t border-gray-200 pt-4 pb-1">
+        <div class="border-t border-blue-200 pt-4 pb-1">
           <div class="px-4">
-            <div class="text-base font-medium text-gray-800">{{ user.name }}</div>
+            <div class="text-base font-medium text-blue-700">{{ user.name }}</div>
             <div class="text-sm font-medium text-gray-500">{{ user.email }}</div>
           </div>
 
@@ -145,7 +137,7 @@ const user = usePage().props.auth.user
     </nav>
 
     <!-- Header -->
-    <header v-if="$slots.header" class="bg-white shadow">
+    <header v-if="$slots.header" class="bg-white shadow-sm">
       <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         <slot name="header" />
       </div>
