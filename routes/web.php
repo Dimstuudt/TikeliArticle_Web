@@ -208,5 +208,26 @@ Route::get('/users/{user}', function (User $user) {
     ]);
 })->name('guest.profile');
 
+// MyProfile - edit profil publik (nama, bio, foto profil, background)
+Route::middleware(['auth'])->group(function () {
+    // Tampilkan halaman profil publik
+    Route::get('/my-profile', function () {
+        return Inertia::render('Profile/MyProfile');
+    })->name('my.profile');
+
+    // Update nama & bio (profil publik)
+    Route::patch('/my-profile/public', [ProfileController::class, 'updatePublicProfile'])->name('my.profile.update');
+
+    // Update foto profil
+    Route::post('/my-profile/photo', [ProfileController::class, 'updatePhoto'])->name('my.profile.photo');
+
+    // Update background
+    Route::post('/my-profile/background', [ProfileController::class, 'updateBackgroundPhoto'])->name('my.profile.background');
+});
+
+
+
+
+
 // === Auth routes dari Laravel Breeze ===
 require __DIR__.'/auth.php';

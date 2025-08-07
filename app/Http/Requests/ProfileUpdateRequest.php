@@ -44,6 +44,7 @@ class ProfileUpdateRequest extends FormRequest
                     ->numbers()
                     ->symbols(),
             ],
+            'bio' => ['nullable', 'string', 'max:500'], // Tambahkan bio
         ];
     }
 
@@ -61,4 +62,5 @@ class ProfileUpdateRequest extends FormRequest
             'password.symbols' => 'Password harus mengandung simbol.',
         ];
     }
+
 }

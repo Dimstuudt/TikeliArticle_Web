@@ -71,7 +71,8 @@ const user = usePage().props.auth.user
               </template>
 
               <template #content>
-                <DropdownLink :href="route('profile.edit')">Profil</DropdownLink>
+                <DropdownLink :href="route('profile.edit')">Data Saya</DropdownLink>
+                <DropdownLink :href="route('my.profile')">Profil Saya</DropdownLink>
                 <DropdownLink method="post" :href="route('logout')" as="button">Keluar</DropdownLink>
               </template>
             </Dropdown>
