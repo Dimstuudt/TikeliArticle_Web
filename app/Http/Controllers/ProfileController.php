@@ -71,8 +71,7 @@ class ProfileController extends Controller
 
         $user->profile_photo_path = $path;
         $user->save();
-
-        return Redirect::route('profile.edit')->with('status', 'Foto profil diperbarui.');
+return back()->with('status', 'Foto profil berhasil diperbarui.');  
     }
 
     /**
@@ -97,7 +96,7 @@ class ProfileController extends Controller
         $user->background_photo_path = $path;
         $user->save();
 
-        return Redirect::route('profile.edit')->with('status', 'Background berhasil diperbarui.');
+        return Redirect::route('my.profile')->with('status', 'Background berhasil diperbarui.');
     }
 
     /**

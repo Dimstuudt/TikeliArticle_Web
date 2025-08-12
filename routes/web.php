@@ -13,6 +13,7 @@ use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\Auth\GoogleController;
+use App\Http\Controllers\Admin\DashboardController;
 
 
 // Middleware
@@ -78,7 +79,8 @@ Route::middleware([
     EnsureProfileComplete::class,
     RoleMiddleware::class . ':admin',
 ])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/', fn () => Inertia::render('admin/Dashboard'))->name('dashboard');
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+
 
     // User Management
     Route::get('/users', [UserController::class, 'index'])->name('users');
@@ -94,6 +96,11 @@ Route::middleware([
     Route::put('/articles/{article}/approve', [ArticleController::class, 'approve'])->name('articles.approve');
     Route::put('/articles/{article}/reject', [ArticleController::class, 'reject'])->name('articles.reject');
     Route::get('/admin/articles/{article}', [ArticleController::class, 'show'])->name('admin.articles.show');
+    Route::get('/articles/approved', [ArticleController::class, 'approved'])->name('admin.articles.approved');
+Route::delete('/articles/{id}', [ArticleController::class, 'destroy'])->name('admin.articles.destroy');
+
+
+//admin dashboard
 
 });
 
@@ -152,11 +159,28 @@ Route::get('/verified', fn () => Inertia::render('Auth/EmailVerified'))
 
 // === Guest Routes ===
 
-Route::get('/welcome', function () {
-    $articles = Article::where('status', 'approved')
+Route::get('/welcome', function (Request $request) {
+    $query = Article::where('status', 'approved')
         ->with('user')
-        ->latest()
-        ->paginate(6) // ✅ Gunakan paginate, bukan take+get
+        ->latest();
+
+    // 🔍 Filter pencarian
+    if ($request->filled('search')) {
+        $query->where(function ($q) use ($request) {
+            $q->where('title', 'like', '%' . $request->search . '%')
+              ->orWhere('summary', 'like', '%' . $request->search . '%')
+              ->orWhere('content', 'like', '%' . $request->search . '%');
+        });
+    }
+
+    // 🔍 Filter kategori (jika ada)
+    if ($request->filled('category')) {
+        $query->where('category', $request->category);
+    }
+
+    // ✅ Pagination 6 per halaman + simpan query string
+    $articles = $query->paginate(6)
+        ->withQueryString()
         ->through(function ($article) {
             return [
                 'id' => $article->id,
@@ -171,21 +195,26 @@ Route::get('/welcome', function () {
                     'id' => $article->user->id,
                     'name' => $article->user->name,
                     'role' => $article->user->role,
-    'profile_photo_path' => $article->user->profile_photo_path,
+                    'profile_photo_path' => $article->user->profile_photo_path,
                 ],
             ];
         });
 
-
-        // Ambil 3 user terbaru
-    $latestUsers = User::latest()->take(3)->get(['id', 'name', 'profile_photo_path']);
+    // 👤 Ambil 3 user terbaru
+    $latestUsers = User::latest()
+        ->take(3)
+        ->get(['id', 'name', 'role', 'profile_photo_path']);
 
     return Inertia::render('guest/Welcome', [
         'articles' => $articles,
-       'latestUsers' => User::latest()->take(3)->get(['id', 'name', 'role', 'profile_photo_path']),
-
+        'latestUsers' => $latestUsers,
+        'filters' => [
+            'search' => $request->search,
+            'category' => $request->category,
+        ],
     ]);
 })->name('guest.welcome');
+
 
 //guest see
 Route::get('/articles/{id}', [ArticleController::class, 'guestShow'])->name('guest.articles.show');
@@ -224,8 +253,6 @@ Route::middleware(['auth'])->group(function () {
     // Update background
     Route::post('/my-profile/background', [ProfileController::class, 'updateBackgroundPhoto'])->name('my.profile.background');
 });
-
-
 
 
 

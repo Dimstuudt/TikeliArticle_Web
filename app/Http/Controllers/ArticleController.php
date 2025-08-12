@@ -295,28 +295,31 @@ class ArticleController extends Controller
     }
 
     public function guestShow($id)
-    {
-        $article = Article::with('user')->where('status', 'approved')->findOrFail($id);
+{
+    $article = Article::with('user')
+        ->where('status', 'approved')
+        ->findOrFail($id);
 
-        return Inertia::render('guest/Articles/Show', [
-            'article' => [
-                'id' => $article->id,
-                'title' => $article->title,
-                'summary' => $article->summary,
-                'content' => $article->content,
-                'category' => $article->category,
-                'cover' => $article->cover ? asset('storage/' . $article->cover) : null,
-                'created_at' => $article->created_at->diffForHumans(),
-                'author' => [
-                    'id' => $article->user->id,
-                    'name' => $article->user->name,
-                    'role' => $article->user->role,
-                    'profile_photo_path' => $article->user->profile_photo_path,
-                ],
+    return Inertia::render('guest/Articles/Show', [
+        'article' => [
+            'id' => $article->id,
+            'title' => $article->title,
+            'summary' => $article->summary,
+            'content' => $article->content,
+            'category' => $article->category,
+            'cover' => $article->cover ? asset('storage/' . $article->cover) : null,
+            'created_at' => $article->created_at->diffForHumans(),
+            'author' => [
+                'id' => $article->user->id,
+                'name' => $article->user->name,
+                 'bio' => $article->user->bio, // ⬅️ ini tambahan
+                'role' => $article->user->role,
+                'profile_photo_path' => $article->user->profile_photo_path,
             ],
-            'from' => request('from'), // ⬅️ Tambahkan ini
-        ]);
-    }
+        ],
+        'from' => request('from'),
+    ]);
+}
 
     private function authorizeEdit(Article $article)
     {
@@ -340,15 +343,22 @@ class ArticleController extends Controller
         ];
     }
 
-    //halaman guest setting
-    public function indexPublic()
+//aproved
+public function approved()
 {
-    $articles = Article::with('author') // atau relasi yang kamu butuh
-        ->latest()
-        ->paginate(6); // <== BATASI 6 PER HALAMAN
-
-    return Inertia::render('Welcome', [
-        'articles' => $articles,
+    $articles = Article::where('status', 'approved')->latest()->get();
+    return Inertia::render('admin/Approved', [
+        'articles' => $articles
     ]);
 }
+
+public function destroy($id)
+{
+    $article = Article::findOrFail($id);
+    $article->delete();
+
+    return redirect()->back()->with('success', 'Artikel berhasil dihapus');
+}
+
+
 }
