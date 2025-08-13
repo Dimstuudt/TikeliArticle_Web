@@ -303,10 +303,14 @@ public function guestShow($id)
         ->where('status', 'approved')
         ->findOrFail($id);
 
-    // 1️⃣ Tambah hits setiap kali dibuka
+    // 1️⃣ Tambah hits tanpa mengubah updated_at
+    $article->timestamps = false;
     $article->increment('hits');
 
-    // 2️⃣ Tambah views unik kalau user login
+    // 2️⃣ Refresh model supaya data waktu tetap Carbon
+    $article->refresh();
+
+    // 3️⃣ Tambah views unik kalau user login
     if (auth()->check()) {
         $exists = DB::table('article_views')
             ->where('article_id', $article->id)
@@ -323,12 +327,12 @@ public function guestShow($id)
         }
     }
 
-    // 3️⃣ Hitung total views unik
+    // 4️⃣ Hitung total views unik
     $viewsCount = DB::table('article_views')
         ->where('article_id', $article->id)
         ->count();
 
-    // 4️⃣ Kirim data ke Inertia
+    // 5️⃣ Kirim data mentah ke Inertia (biar Vue yang format waktu)
     return Inertia::render('guest/Articles/Show', [
         'article' => [
             'id' => $article->id,
@@ -337,8 +341,9 @@ public function guestShow($id)
             'content' => $article->content,
             'category' => $article->category,
             'cover' => $article->cover ? asset('storage/' . $article->cover) : null,
-            'created_at' => $article->created_at->diffForHumans(),
-            'hits' => $article->hits, // ⬅️ tambahkan hits
+            'created_at' => $article->created_at, // kirim mentah
+            'updated_at' => $article->updated_at, // kirim mentah
+            'hits' => $article->hits,
             'author' => [
                 'id' => $article->user->id,
                 'name' => $article->user->name,
@@ -347,7 +352,7 @@ public function guestShow($id)
                 'profile_photo_path' => $article->user->profile_photo_path,
             ],
         ],
-        'views' => $viewsCount, // ⬅️ kirim views unik
+        'views' => $viewsCount,
         'from' => request('from'),
     ]);
 }
