@@ -100,7 +100,14 @@ Route::middleware([
 Route::delete('/articles/{id}', [ArticleController::class, 'destroy'])->name('admin.articles.destroy');
 
 
-//admin dashboard
+//admin approved
+Route::get('/articles/approved', [\App\Http\Controllers\Admin\ApprovedArticleController::class, 'index'])
+            ->name('approved-articles.index');
+
+     Route::delete('/articles/approved/{id}', [\App\Http\Controllers\Admin\ApprovedArticleController::class, 'destroy'])
+    ->name('approved-articles.destroy');
+
+
 
 });
 

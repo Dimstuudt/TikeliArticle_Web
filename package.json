@@ -31,9 +31,11 @@
         "@vueup/vue-quill": "^1.2.0",
         "chart.js": "^4.5.0",
         "dayjs": "^1.11.13",
-        "quill": "^2.0.3",
+        "lucide-vue-next": "^0.539.0",
+        "quill": "^2.0.0",
         "recharts": "^3.1.2",
         "vue-chartjs": "^5.3.2",
+        "vue3-quill": "^0.3.1",
         "ziggy-js": "^2.5.3"
     }
 }

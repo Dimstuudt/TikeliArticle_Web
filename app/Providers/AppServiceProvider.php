@@ -1,9 +1,9 @@
 <?php
 
 namespace App\Providers;
+
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
-
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 
@@ -20,18 +20,28 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      */
-public function boot(): void
-{
-    Vite::prefetch(concurrency: 3);
+    public function boot(): void
+    {
+        Vite::prefetch(concurrency: 3);
 
-    Inertia::share([
-        'auth' => fn () => [
-            'user' => Auth::check() ? array_merge(
-                Auth::user()->only(['id', 'name', 'email', 'username', 'profile_photo_path']),
-                ['profile_photo_url' => Auth::user()->profile_photo_url]
-            ) : null,
-        ],
-    ]);
-}
+        // Skip share auth data saat artisan CLI dijalankan
+        if ($this->app->runningInConsole()) {
+            return;
+        }
 
+        Inertia::share([
+            'auth' => fn () => [
+                'user' => Auth::check() ? array_merge(
+                    Auth::user()->only([
+                        'id',
+                        'name',
+                        'email',
+                        'username',
+                        'profile_photo_path'
+                    ]),
+                    ['profile_photo_url' => Auth::user()->profile_photo_url]
+                ) : null,
+            ],
+        ]);
+    }
 }

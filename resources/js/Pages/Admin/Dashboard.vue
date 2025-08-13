@@ -4,22 +4,23 @@ import { Head, Link } from '@inertiajs/vue3'
 import { ref, watch } from 'vue'
 import { ChartBarIcon, ClockIcon, UsersIcon, TagIcon, CheckCircleIcon } from '@heroicons/vue/24/solid'
 
+// Props dari Laravel
 const props = defineProps({
   statsData: Object,
-  dailyApprovedData: Array
+  dailyApprovedData: Array,
+  dailyUsersData: Array
 })
 
-
+// Statistik box data
 const stats = ref([
-  { title: 'Total Artikel', value: props.statsData.totalArtikel ?? 0, bg: 'bg-gradient-to-r from-blue-500 to-blue-700', icon: ChartBarIcon },
-  { title: 'Pending Approval', value: props.statsData.pending ?? 0, bg: 'bg-gradient-to-r from-yellow-500 to-yellow-700', icon: ClockIcon },
-  { title: 'Total User', value: props.statsData.totalUser ?? 0, bg: 'bg-gradient-to-r from-green-500 to-green-700', icon: UsersIcon },
-  { title: 'Kategori', value: props.statsData.kategori ?? 0, bg: 'bg-gradient-to-r from-purple-500 to-purple-700', icon: TagIcon },
-  { title: 'Total Approved Article', value: props.statsData.approved ?? 0, bg: 'bg-gradient-to-r from-teal-500 to-teal-700', icon: CheckCircleIcon }
+  { title: 'Total Artikel', value: props.statsData.totalArtikel ?? 0, bg: 'from-blue-500 to-blue-600', icon: ChartBarIcon },
+  { title: 'Pending Approval', value: props.statsData.pending ?? 0, bg: 'from-yellow-500 to-yellow-600', icon: ClockIcon },
+  { title: 'Total User', value: props.statsData.totalUser ?? 0, bg: 'from-green-500 to-green-600', icon: UsersIcon },
+  { title: 'Kategori', value: props.statsData.kategori ?? 0, bg: 'from-purple-500 to-purple-600', icon: TagIcon },
+  { title: 'Approved Article', value: props.statsData.approved ?? 0, bg: 'from-teal-500 to-teal-600', icon: CheckCircleIcon }
 ])
 
-
-// Chart.js import
+// Import Chart.js
 import {
   Chart as ChartJS,
   Title,
@@ -34,7 +35,7 @@ import { Line } from 'vue-chartjs'
 
 ChartJS.register(Title, Tooltip, Legend, LineElement, PointElement, CategoryScale, LinearScale)
 
-// Chart Data
+// Chart data
 const chartData = ref({
   labels: [],
   datasets: [
@@ -44,20 +45,34 @@ const chartData = ref({
       backgroundColor: 'rgba(20, 184, 166, 0.2)',
       fill: true,
       tension: 0.4,
-      pointRadius: 4,
-      pointHoverRadius: 6,
+      pointRadius: 5,
+      pointHoverRadius: 7,
+      data: []
+    },
+    {
+      label: 'User Baru (15 Hari Terakhir)',
+      borderColor: '#3b82f6',
+      backgroundColor: 'rgba(59, 130, 246, 0.2)',
+      fill: true,
+      tension: 0.4,
+      pointRadius: 5,
+      pointHoverRadius: 7,
       data: []
     }
   ]
 })
 
-// Chart Options
+// Chart options
 const chartOptions = {
   responsive: true,
-  maintainAspectRatio: false, // biar tinggi container ngaruh
+  maintainAspectRatio: false,
   plugins: {
-    legend: { position: 'top' },
-    title: { display: true, text: 'Approved Article (15 Hari Terakhir)' }
+    legend: { position: 'top', labels: { font: { size: 12 } } },
+    title: {
+      display: true,
+      text: 'Statistik 15 Hari Terakhir',
+      font: { size: 16, weight: 'bold' }
+    }
   },
   scales: {
     y: {
@@ -67,12 +82,18 @@ const chartOptions = {
   }
 }
 
-// Watch perubahan data dari props
-watch(() => props.dailyApprovedData, (newVal) => {
-  if (!newVal) return
-  chartData.value.labels = newVal.map(item => item.tanggal)
-  chartData.value.datasets[0].data = newVal.map(item => item.totalApproved)
-}, { immediate: true })
+// Sinkronisasi data chart
+watch(
+  [() => props.dailyApprovedData, () => props.dailyUsersData],
+  ([approved, users]) => {
+    if (!approved || !users) return
+
+    chartData.value.labels = approved.map(item => item.tanggal)
+    chartData.value.datasets[0].data = approved.map(item => item.totalApproved)
+    chartData.value.datasets[1].data = users.map(item => item.totalUsers)
+  },
+  { immediate: true }
+)
 </script>
 
 <template>
@@ -81,58 +102,44 @@ watch(() => props.dailyApprovedData, (newVal) => {
   <AuthenticatedLayout>
     <template #header>
       <div class="flex items-center justify-between">
-        <h2 class="text-xl font-semibold leading-tight text-gray-800">
-          Dashboard Admin
-        </h2>
+        <h2 class="text-xl font-bold text-gray-800">📊 Dashboard Admin</h2>
         <Link
           :href="route('guest.welcome')"
-          class="inline-block bg-blue-600 text-white px-4 py-2 text-sm font-medium rounded hover:bg-blue-700 transition"
+          class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 text-sm font-medium rounded-lg shadow transition"
         >
           Lihat Beranda Artikel
         </Link>
       </div>
     </template>
 
-
-
-    <div class="py-12">
+    <div class="py-8">
       <div class="mx-auto max-w-7xl sm:px-6 lg:px-8 space-y-8">
 
-        <!-- Statistik -->
-<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+      <!-- Statistik Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
   <div
     v-for="(stat, i) in stats"
     :key="i"
-    class="rounded-lg shadow p-4 text-white flex items-center gap-3"
+    class="bg-gradient-to-br text-white rounded-lg shadow-md p-4 flex items-center gap-3 transition transform hover:scale-[1.015]"
     :class="stat.bg"
   >
-    <div class="p-2 bg-white/20 rounded-full">
+    <div class="p-2.5 bg-white/20 rounded-full">
       <component :is="stat.icon" class="w-6 h-6" />
     </div>
     <div>
-      <p class="text-lg font-bold">{{ stat.value }}</p>
+      <p class="text-xl font-bold">{{ stat.value }}</p>
       <p class="text-xs opacity-90">{{ stat.title }}</p>
     </div>
   </div>
 </div>
 
 
-
-        <!-- Info Box -->
-        <div class="bg-white shadow-sm sm:rounded-lg">
-          <div class="p-6 text-gray-900">
-            Anda berhasil login sebagai admin.
-          </div>
-        </div>
-
-        <!-- Grafik Line Chart -->
-        <div class="bg-white shadow-sm sm:rounded-lg p-6">
-          <div class="h-64"> <!-- Ukuran lebih kecil -->
+        <!-- Grafik -->
+        <div class="bg-white shadow-md rounded-xl p-6 border border-gray-100">
+          <div class="h-72">
             <Line :data="chartData" :options="chartOptions" />
           </div>
         </div>
-
-
       </div>
     </div>
   </AuthenticatedLayout>

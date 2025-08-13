@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\DB;
 
 class ArticleController extends Controller
 {
@@ -294,12 +295,40 @@ class ArticleController extends Controller
         ]);
     }
 
-    public function guestShow($id)
+    // Guest - Lihat Artikel
+
+public function guestShow($id)
 {
     $article = Article::with('user')
         ->where('status', 'approved')
         ->findOrFail($id);
 
+    // 1️⃣ Tambah hits setiap kali dibuka
+    $article->increment('hits');
+
+    // 2️⃣ Tambah views unik kalau user login
+    if (auth()->check()) {
+        $exists = DB::table('article_views')
+            ->where('article_id', $article->id)
+            ->where('user_id', auth()->id())
+            ->exists();
+
+        if (! $exists) {
+            DB::table('article_views')->insert([
+                'article_id' => $article->id,
+                'user_id' => auth()->id(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+    }
+
+    // 3️⃣ Hitung total views unik
+    $viewsCount = DB::table('article_views')
+        ->where('article_id', $article->id)
+        ->count();
+
+    // 4️⃣ Kirim data ke Inertia
     return Inertia::render('guest/Articles/Show', [
         'article' => [
             'id' => $article->id,
@@ -309,17 +338,20 @@ class ArticleController extends Controller
             'category' => $article->category,
             'cover' => $article->cover ? asset('storage/' . $article->cover) : null,
             'created_at' => $article->created_at->diffForHumans(),
+            'hits' => $article->hits, // ⬅️ tambahkan hits
             'author' => [
                 'id' => $article->user->id,
                 'name' => $article->user->name,
-                 'bio' => $article->user->bio, // ⬅️ ini tambahan
+                'bio' => $article->user->bio,
                 'role' => $article->user->role,
                 'profile_photo_path' => $article->user->profile_photo_path,
             ],
         ],
+        'views' => $viewsCount, // ⬅️ kirim views unik
         'from' => request('from'),
     ]);
 }
+
 
     private function authorizeEdit(Article $article)
     {
@@ -359,6 +391,7 @@ public function destroy($id)
 
     return redirect()->back()->with('success', 'Artikel berhasil dihapus');
 }
+
 
 
 }

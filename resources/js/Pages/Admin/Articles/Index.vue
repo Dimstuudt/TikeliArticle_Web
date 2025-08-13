@@ -113,32 +113,39 @@ const closeModal = () => {
               </fieldset>
 
               <div>
-                <label class="block text-xs text-gray-600">Status:</label>
-                <span
-                  class="inline-block px-2 py-1 text-xs font-medium rounded-full mt-1"
-                  :class="{
-                    'bg-yellow-100 text-yellow-800': article.status === 'pending',
-                    'bg-red-100 text-red-800': article.status === 'rejected',
-                  }"
-                >
-                  {{ article.status }}
-                </span>
+                <label class="block text-xs text-gray-600">Status & Kategori:</label>
+                <div class="flex flex-wrap gap-2 mt-1">
+                  <span
+                    class="inline-block px-2 py-1 text-xs font-semibold rounded-full"
+                    :class="{
+                      'bg-yellow-100 text-yellow-800': article.status === 'pending',
+                      'bg-red-100 text-red-800': article.status === 'rejected',
+                    }"
+                  >
+                    {{ article.status }}
+                  </span>
+                  <span
+                    class="inline-block px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 capitalize"
+                  >
+                    {{ article.category }}
+                  </span>
+                </div>
               </div>
 
               <div class="flex flex-wrap justify-between items-center gap-2 pt-2 border-t border-gray-200">
-                <button @click="openModal(article)" class="bg-blue-500 text-white text-xs px-4 py-1 rounded hover:bg-blue-600">
+                <button @click="openModal(article)" class="bg-blue-500 text-white text-xs px-4 py-1 rounded hover:bg-blue-600 transition">
                   Lihat Detail
                 </button>
                 <div v-if="article.status === 'pending'" class="flex gap-2">
                   <button
                     @click="approve(article.id)"
-                    class="bg-green-600 text-white text-xs px-4 py-1 rounded hover:bg-green-700"
+                    class="bg-green-600 text-white text-xs px-4 py-1 rounded hover:bg-green-700 transition"
                   >
                     Setujui
                   </button>
                   <button
                     @click="openRejectModal(article.id)"
-                    class="bg-red-600 text-white text-xs px-4 py-1 rounded hover:bg-red-700"
+                    class="bg-red-600 text-white text-xs px-4 py-1 rounded hover:bg-red-700 transition"
                   >
                     Tolak
                   </button>

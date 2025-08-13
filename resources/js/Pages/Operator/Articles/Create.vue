@@ -114,17 +114,20 @@ const saveDraft = () => {
             </div>
 
             <!-- Ringkasan -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Ringkasan</label>
-              <textarea
-                v-model="form.summary"
-                rows="3"
-                class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring focus:ring-blue-200 focus:outline-none"
-              ></textarea>
-              <div v-if="form.errors.summary" class="text-sm text-red-600 mt-1">
-                {{ form.errors.summary }}
-              </div>
-            </div>
+<div>
+  <label class="block text-sm font-medium text-gray-700 mb-1">Ringkasan</label>
+  <div class="border border-gray-300 rounded-md">
+    <QuillEditor
+      v-model:content="form.summary"
+      contentType="html"
+      theme="snow"
+      class="min-h-[150px]"
+    />
+  </div>
+  <div v-if="form.errors.summary" class="text-sm text-red-600 mt-1">
+    {{ form.errors.summary }}
+  </div>
+</div>
 
             <!-- Konten -->
             <div>
