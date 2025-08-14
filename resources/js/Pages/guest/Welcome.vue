@@ -279,10 +279,11 @@ const submitFilter = () => {
           {{ article.title }}
         </h4>
 
-        <!-- Summary dibatasi -->
-        <div class="text-sm text-gray-600 line-clamp-3 min-h-[60px] flex-grow">
-          {{ article.summary ?? 'Tidak ada ringkasan' }}
-        </div>
+       <!-- Tetap ada fallback kalau summary kosong -->
+<div class="text-sm text-gray-600 line-clamp-3 min-h-[60px] flex-grow"
+     v-html="article.summary || 'Tidak ada ringkasan'">
+</div>
+
 
         <!-- Penulis & waktu -->
         <div class="text-xs text-gray-400 mt-4">

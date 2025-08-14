@@ -36,7 +36,7 @@ const user = usePage().props.auth.user
                 <NavLink :href="route('admin.articles.index')" :active="route().current('admin.articles.index')">
                   Manajemen Artikel
                 </NavLink>
-                <NavLink :href="route('admin.approved-articles.index')" :active="route().current('admin.approved-articles.index')">Approved</NavLink>
+                <NavLink :href="route('admin.approved-articles.index')" :active="route().current('admin.approved- articles.index')">Approved</NavLink>
               </template>
 
               <template v-if="role === 'operator'">

@@ -140,7 +140,7 @@ const saveAsDraft = () => submit('draft')
                   v-model:content="form.content"
                   contentType="html"
                   theme="snow"
-                  class="min-h-[200px]"
+                  toolbar="essential"
                 />
               </div>
               <div v-if="form.errors.content" class="text-sm text-red-600 mt-1">{{ form.errors.content }}</div>

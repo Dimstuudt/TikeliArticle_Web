@@ -28,9 +28,10 @@ const goBack = () => {
       <!-- Ringkasan Artikel -->
       <div class="bg-white rounded-lg shadow-md p-6 border">
         <h2 class="text-xl font-semibold text-gray-800 mb-2">Ringkasan Artikel</h2>
-        <p class="text-gray-600 text-sm leading-relaxed">
-          {{ article.summary ?? 'Artikel ini membahas topik yang menarik dan informatif secara mendalam. Baca selengkapnya di bawah.' }}
-        </p>
+        <p
+          class="text-gray-600 text-sm leading-relaxed"
+          v-html="article.summary ?? 'Artikel ini membahas topik yang menarik dan informatif secara mendalam. Baca selengkapnya di bawah.'"
+        ></p>
       </div>
 
       <!-- Artikel -->
@@ -77,15 +78,27 @@ const goBack = () => {
           />
         </div>
 
-        <!-- Konten -->
-        <div
-          class="prose prose-lg prose-blue max-w-none text-gray-800"
-          v-html="article.content"
-        />
+      <!-- Konten Artikel -->
+<div class="max-w-none text-gray-900 prose
+            [&_h1]:text-4xl [&_h2]:text-3xl [&_h3]:text-2xl [&_h4]:text-xl [&_h5]:text-lg [&_h6]:text-base
+            [&_ul]:list-disc [&_ul]:pl-6
+            [&_ol]:list-decimal [&_ol]:pl-6
+            [&_pre]:bg-gray-900 [&_pre]:text-white [&_pre]:p-4 [&_pre]:rounded [&_pre]:overflow-x-auto [&_pre]:font-mono [&_pre]:text-sm [&_pre]:my-2
+            [&_code]:text-red-500
+            [&_p]:text-left
+            [&_p.ql-align-center]:text-center
+            [&_p.ql-align-right]:text-right
+            [&_blockquote]:border-l-4 [&_blockquote]:border-gray-300 [&_blockquote]:pl-4 [&_blockquote]:italic">
+  <div v-html="article.content"></div>
+</div>
+
+
 
         <!-- Tentang Penulis -->
-        <div class="rounded-lg p-4 shadow-lg flex items-center gap-4
-                    bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500">
+        <div
+          class="rounded-lg p-4 shadow-lg flex items-center gap-4
+                 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500"
+        >
           <div class="bg-white/90 backdrop-blur-sm flex items-center gap-4 p-3 rounded-lg w-full">
             <!-- Foto Profil -->
             <img

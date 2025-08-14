@@ -134,11 +134,13 @@ const saveDraft = () => {
               <label class="block text-sm font-medium text-gray-700 mb-1">Konten</label>
               <div class="border border-gray-300 rounded-md">
                 <QuillEditor
-                  v-model:content="form.content"
-                  contentType="html"
-                  theme="snow"
-                  class="min-h-[200px]"
-                />
+  v-model:content="form.content"
+  contentType="html"
+  theme="snow"
+  toolbar="essential"
+  class="min-h-[200px]"
+/>
+
               </div>
               <div v-if="form.errors.content" class="text-sm text-red-600 mt-1">
                 {{ form.errors.content }}
