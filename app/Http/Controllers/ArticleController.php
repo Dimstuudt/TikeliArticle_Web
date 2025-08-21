@@ -354,11 +354,11 @@ public function guestShow($id)
         ->where('status', 'approved')
         ->findOrFail($id);
 
-    // 1️⃣ Tambah hits tanpa mengubah updated_at
+    // 1️⃣ Tambah hits tanpa ubah updated_at
     $article->timestamps = false;
     $article->increment('hits');
 
-    // 2️⃣ Refresh model supaya data waktu tetap Carbon
+    // 2️⃣ Refresh model
     $article->refresh();
 
     // 3️⃣ Tambah views unik kalau user login
@@ -371,7 +371,7 @@ public function guestShow($id)
         if (! $exists) {
             DB::table('article_views')->insert([
                 'article_id' => $article->id,
-                'user_id' => auth()->id(),
+                'user_id'    => auth()->id(),
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -383,31 +383,54 @@ public function guestShow($id)
         ->where('article_id', $article->id)
         ->count();
 
-    // 5️⃣ Kirim data mentah ke Inertia (biar Vue yang format waktu)
+    // 5️⃣ Ambil 4 rekomendasi artikel lain (misalnya terbaru selain ini)
+   $recommendations = Article::with('user')
+    ->where('status', 'approved')
+    ->where('id', '!=', $article->id)
+    ->inRandomOrder()
+    ->take(4)
+    ->get()
+    ->map(function ($rec) {
+        return [
+            'id'         => $rec->id,
+            'title'      => $rec->title,
+            'category'   => $rec->category,
+            'cover'      => $rec->cover ? asset('storage/' . $rec->cover) : null,
+            'created_at' => $rec->created_at,
+            'views'      => DB::table('article_views')->where('article_id', $rec->id)->count(),
+            'author'     => [
+                'id'   => $rec->user->id,
+                'name' => $rec->user->name,
+            ],
+        ];
+    });
+
+
+    // 6️⃣ Kirim ke Inertia
     return Inertia::render('guest/Articles/Show', [
         'article' => [
-            'id' => $article->id,
-            'title' => $article->title,
-            'summary' => $article->summary,
-            'content' => $article->content,
-            'category' => $article->category,
-            'cover' => $article->cover ? asset('storage/' . $article->cover) : null,
-            'created_at' => $article->created_at, // kirim mentah
-            'updated_at' => $article->updated_at, // kirim mentah
-            'hits' => $article->hits,
-            'author' => [
-                'id' => $article->user->id,
-                'name' => $article->user->name,
-                'bio' => $article->user->bio,
-                'role' => $article->user->role,
+            'id'         => $article->id,
+            'title'      => $article->title,
+            'summary'    => $article->summary,
+            'content'    => $article->content,
+            'category'   => $article->category,
+            'cover'      => $article->cover ? asset('storage/' . $article->cover) : null,
+            'created_at' => $article->created_at,
+            'updated_at' => $article->updated_at,
+            'hits'       => $article->hits,
+            'author'     => [
+                'id'                 => $article->user->id,
+                'name'               => $article->user->name,
+                'bio'                => $article->user->bio,
+                'role'               => $article->user->role,
                 'profile_photo_path' => $article->user->profile_photo_path,
             ],
         ],
-        'views' => $viewsCount,
-        'from' => request('from'),
+        'views'          => $viewsCount,
+        'from'           => request('from'),
+        'recommendations'=> $recommendations,
     ]);
 }
-
 
     private function authorizeEdit(Article $article)
     {

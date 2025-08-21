@@ -95,18 +95,64 @@ const submitFilter = () => {
   opacity: 0;
   transform: translateY(-6px);
 }
+
+@keyframes fade-up {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up { animation: fade-up 1s ease forwards; }
+.animation-delay-500 { animation-delay: 0.5s; }
+.animation-delay-1000 { animation-delay: 1s; }
+.animation-delay-2000 { animation-delay: 2s; }
+
+@keyframes blob {
+  0%, 100% { transform: translate(0px,0px) scale(1); }
+  33% { transform: translate(30px,-50px) scale(1.1); }
+  66% { transform: translate(-20px,20px) scale(0.9); }
+}
+.animate-blob { animation: blob 7s infinite; }
 </style>
 <template>
   <PublicLayout>
-   <!-- Hero -->
-<section class="bg-blue-100 text-center py-6 px-4">
-  <h2 class="text-3xl md:text-4xl font-extrabold text-blue-700 tracking-tight mb-2">
-    Selamat Datang di <span class="text-cyan-600">Tikeli</span>
-  </h2>
-  <p class="text-blue-700 text-lg max-w-xl mx-auto leading-relaxed">
+
+
+ <!-- Hero Section -->
+<section class="bg-gradient-to-r from-cyan-100 via-blue-100 to-blue-200 text-center py-12 px-4 relative overflow-hidden font-sans">
+  <!-- Background shapes -->
+  <div class="absolute top-0 left-0 w-72 h-72 bg-cyan-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30"></div>
+  <div class="absolute bottom-0 right-0 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30"></div>
+
+  <!-- Heading -->
+ <h2 class="text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight mb-4">
+  <span class="bg-clip-text text-transparent bg-gradient-to-r from-cyan-600 to-blue-800">
+    Selamat Datang di
+  </span>
+ <span
+  class="relative font-bold tracking-wide"
+  style="
+    font-family: 'Inter', sans-serif;
+    letter-spacing: 1px;
+    color: #38bdf8; /* biru muda (Tailwind cyan-400) */
+    text-shadow: 0 0 6px rgba(56, 189, 248, 0.7),
+                 0 0 14px rgba(56, 189, 248, 0.5);
+  "
+>
+  Tikeli
+</span>
+
+</h2>
+
+  <!-- Paragraph -->
+  <p class="text-blue-700 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed mb-6">
     Temukan artikel terbaru dan terpercaya dari para penulis kami.
   </p>
+
+  <!-- Call to Action -->
+  <a href="#articles" class="inline-block bg-cyan-600 text-white font-semibold px-6 py-3 rounded-lg shadow-lg hover:bg-cyan-500 transition-all duration-300">
+    Jelajahi Artikel
+  </a>
 </section>
+
 
 
    <!-- Pengguna Berdasarkan Role -->
