@@ -17,7 +17,7 @@ class ApprovedArticleController extends Controller
     ->get();
 
 
-        return Inertia::render('admin/Articles/Approved', [
+        return Inertia::render('Admin/Articles/Approved', [
             'articles' => $articles
         ]);
     }

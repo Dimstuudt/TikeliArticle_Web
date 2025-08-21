@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Models\User;
 
 use App\Models\Article;
 use Illuminate\Http\Request;
@@ -14,7 +15,7 @@ class ArticleController extends Controller
     // Operator - Form Buat Artikel
     public function create()
     {
-        return Inertia::render('operator/Articles/Create', [
+        return Inertia::render('Operator/Articles/Create', [
             'categories' => $this->categories(),
         ]);
     }
@@ -90,7 +91,7 @@ class ArticleController extends Controller
             ->groupBy('status')
             ->pluck('count', 'status');
 
-        return Inertia::render('operator/Articles/Mine', [
+        return Inertia::render('Operator/Articles/Mine', [
             'articles' => $articles,
             'filters' => [
                 'status' => $statuses,
@@ -105,7 +106,7 @@ class ArticleController extends Controller
     {
         $this->authorizeEdit($article);
 
-        return Inertia::render('operator/Articles/Edit', [
+        return Inertia::render('Operator/Articles/Edit', [
             'article' => [
                 'id' => $article->id,
                 'title' => $article->title,
@@ -222,7 +223,7 @@ class ArticleController extends Controller
             ];
         });
 
-        return Inertia::render('admin/Articles/Index', [
+        return Inertia::render('Admin/Articles/Index', [
             'articles' => $articles,
         ]);
     }
@@ -252,7 +253,7 @@ class ArticleController extends Controller
 
     public function show(Article $article)
     {
-        return Inertia::render('admin/articles/Show', [
+        return Inertia::render('Admin/articles/Show', [
             'article' => [
                 'id' => $article->id,
                 'title' => $article->title,
@@ -266,34 +267,61 @@ class ArticleController extends Controller
         ]);
     }
 
-    public function landing()
-    {
-        $articles = Article::where('status', 'approved')
-            ->with('user')
-            ->latest()
-            ->take(6)
-            ->get()
-            ->map(function ($article) {
-                return [
-                    'id' => $article->id,
-                    'title' => $article->title,
-                    'summary' => $article->summary,
-                    'content' => $article->content,
-                    'category' => $article->category,
-                    'cover' => $article->cover ? asset('storage/' . $article->cover) : null,
-                    'created_at' => $article->created_at,
-                    'updated_at' => $article->updated_at,
-                    'author' => [
-                        'id' => $article->user->id,
-                        'name' => $article->user->name,
-                    ],
-                ];
-            });
+   public function landing(Request $request)
+{
+    $query = Article::where('status', 'approved')
+        ->with('user')
+        ->latest();
 
-        return Inertia::render('welcome', [
-            'articles' => $articles,
-        ]);
+    // Filter pencarian
+    if ($request->filled('search')) {
+        $query->where(function ($q) use ($request) {
+            $q->where('title', 'like', '%' . $request->search . '%')
+              ->orWhere('summary', 'like', '%' . $request->search . '%')
+              ->orWhere('content', 'like', '%' . $request->search . '%');
+        });
     }
+
+    // Filter kategori
+    if ($request->filled('category')) {
+        $query->where('category', $request->category);
+    }
+
+    // Pagination 6 per halaman + simpan query string
+    $articles = $query->paginate(6)
+        ->withQueryString()
+        ->through(fn($article) => [
+            'id' => $article->id,
+            'title' => $article->title,
+            'summary' => $article->summary,
+            'content' => $article->content,
+            'category' => $article->category,
+            'cover' => $article->cover ? asset('storage/' . $article->cover) : null,
+            'updated_at' => $article->updated_at->toISOString(),
+            'created_at' => $article->created_at->diffForHumans(),
+            'author' => [
+                'id' => $article->user->id,
+                'name' => $article->user->name,
+                'role' => $article->user->role,
+                'profile_photo_path' => $article->user->profile_photo_path,
+            ],
+        ]);
+
+    // Ambil 3 user terbaru
+    $latestUsers = User::latest()
+        ->take(3)
+        ->get(['id', 'name', 'role', 'profile_photo_path']);
+
+    return Inertia::render('guest/Welcome', [
+        'articles' => $articles,
+        'latestUsers' => $latestUsers,
+        'filters' => [
+            'search' => $request->search,
+            'category' => $request->category,
+        ],
+    ]);
+}
+
 
     // Guest - Lihat Artikel
 
@@ -384,7 +412,7 @@ public function guestShow($id)
 public function approved()
 {
     $articles = Article::where('status', 'approved')->latest()->get();
-    return Inertia::render('admin/Approved', [
+    return Inertia::render('Admin/Approved', [
         'articles' => $articles
     ]);
 }

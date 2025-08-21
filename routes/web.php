@@ -119,22 +119,23 @@ Route::middleware([
     EnsureProfileComplete::class,
     RoleMiddleware::class . ':operator',
 ])->prefix('operator')->name('operator.')->group(function () {
-    Route::get('/', fn () => Inertia::render('operator/Dashboard'))->name('dashboard');
+
+    // Dashboard operator
+    Route::get('/', fn () => Inertia::render('Operator/Dashboard'))->name('dashboard');
 
     // Artikel operator
-    Route::get('/articles/create', [ArticleController::class, 'create'])->name('articles.create');
+    Route::get('/articles/create', [ArticleController::class, 'create'])->name('articles.create'); // URL lowercase
     Route::post('/articles', [ArticleController::class, 'store'])->name('articles.store');
-  Route::get('/articles/mine', [ArticleController::class, 'mine'])->name('articles.mine');
-Route::get('/articles/{article}/edit', [ArticleController::class, 'edit'])->name('articles.edit');
-Route::put('/articles/{article}', [ArticleController::class, 'update'])->name('articles.update');
-Route::post('/articles/{article}/edit-save', [ArticleController::class, 'saveEdit'])->name('articles.saveEdit');
-Route::delete('/articles/{article}', [ArticleController::class, 'destroy'])->name('articles.destroy');
-
-
-
-
-
+    Route::get('/articles/mine', [ArticleController::class, 'mine'])->name('articles.mine');
+    Route::get('/articles/{article}/edit', [ArticleController::class, 'edit'])->name('articles.edit');
+    Route::put('/articles/{article}', [ArticleController::class, 'update'])->name('articles.update');
+    Route::post('/articles/{article}/edit-save', [ArticleController::class, 'saveEdit'])->name('articles.saveEdit');
+    Route::delete('/articles/{article}', [ArticleController::class, 'destroy'])->name('articles.destroy');
 });
+
+
+
+
 
 // === Profile Routes ===
 Route::middleware([
@@ -166,62 +167,7 @@ Route::get('/verified', fn () => Inertia::render('Auth/EmailVerified'))
 
 // === Guest Routes ===
 
-Route::get('/welcome', function (Request $request) {
-    $query = Article::where('status', 'approved')
-        ->with('user')
-        ->latest();
-
-    // 🔍 Filter pencarian
-    if ($request->filled('search')) {
-        $query->where(function ($q) use ($request) {
-            $q->where('title', 'like', '%' . $request->search . '%')
-              ->orWhere('summary', 'like', '%' . $request->search . '%')
-              ->orWhere('content', 'like', '%' . $request->search . '%');
-        });
-    }
-
-    // 🔍 Filter kategori (jika ada)
-    if ($request->filled('category')) {
-        $query->where('category', $request->category);
-    }
-
-    // ✅ Pagination 6 per halaman + simpan query string
-    $articles = $query->paginate(6)
-        ->withQueryString()
-        ->through(function ($article) {
-            return [
-                'id' => $article->id,
-                'title' => $article->title,
-                'summary' => $article->summary,
-                'content' => $article->content,
-                'category' => $article->category,
-                'cover' => $article->cover ? asset('storage/' . $article->cover) : null,
-                'updated_at' => $article->updated_at->toISOString(),
-                'created_at' => $article->created_at->diffForHumans(),
-                'author' => [
-                    'id' => $article->user->id,
-                    'name' => $article->user->name,
-                    'role' => $article->user->role,
-                    'profile_photo_path' => $article->user->profile_photo_path,
-                ],
-            ];
-        });
-
-    // 👤 Ambil 3 user terbaru
-    $latestUsers = User::latest()
-        ->take(3)
-        ->get(['id', 'name', 'role', 'profile_photo_path']);
-
-    return Inertia::render('guest/Welcome', [
-        'articles' => $articles,
-        'latestUsers' => $latestUsers,
-        'filters' => [
-            'search' => $request->search,
-            'category' => $request->category,
-        ],
-    ]);
-})->name('guest.welcome');
-
+Route::get('/welcome', [ArticleController::class, 'landing'])->name('guest.welcome');
 
 //guest see
 Route::get('/articles/{id}', [ArticleController::class, 'guestShow'])->name('guest.articles.show');
