@@ -12,6 +12,7 @@ dayjs.extend(relativeTime)
 const props = defineProps({
   articles: Object,
   latestUsers: Array,
+    topArticles: Array,
   filters: Object, // biar nilai search/category tetap setelah reload
 })
 
@@ -145,8 +146,77 @@ const submitFilter = () => {
   </div>
 </section>
 
+
+
     <!-- Artikel -->
     <main class="flex-grow max-w-7xl mx-auto px-4 py-10">
+
+<!-- Top 3 Artikel Terhits -->
+<div class="mb-8">
+  <h3 class="text-2xl font-bold text-gray-800 mb-4">Artikel Terhits</h3>
+
+  <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+    <div
+      v-for="article in props.topArticles"
+      :key="article.id"
+      class="rounded-xl p-[2px] bg-gradient-to-r from-emerald-500 via-teal-500 to-blue-500
+             hover:from-emerald-600 hover:via-teal-600 hover:to-blue-600
+             transition duration-300 cursor-pointer"
+      @click="router.visit(`/articles/${article.id}`)"
+    >
+      <div class="bg-white rounded-xl shadow-lg flex flex-col overflow-hidden h-full">
+
+        <!-- Gambar cover -->
+        <div class="relative w-full h-48">
+          <img
+            :src="article.cover ?? 'https://via.placeholder.com/600x300?text=No+Cover'"
+            alt="cover"
+            class="w-full h-full object-cover"
+          />
+          <div
+            v-if="article.category"
+            class="absolute top-2 right-2 bg-gradient-to-r from-emerald-600 to-blue-600 text-white
+                   text-[10px] px-2 py-0.5 rounded-full shadow-sm uppercase"
+          >
+            {{ article.category }}
+          </div>
+        </div>
+
+        <!-- Konten -->
+        <div class="p-5 flex flex-col flex-grow">
+          <span class="text-xs text-teal-500 uppercase font-semibold mb-1">Terhits</span>
+          <h4 class="text-lg font-semibold text-gray-800 mb-2">
+            {{ article.title ?? 'Judul tidak tersedia' }}
+          </h4>
+
+          <div class="text-sm text-gray-600 line-clamp-3 min-h-[60px] flex-grow"
+               v-html="article.summary ?? 'Tidak ada ringkasan'">
+          </div>
+
+<!-- Penulis, hits & waktu -->
+<div class="text-xs text-gray-400 mt-4 flex justify-between items-center">
+  <div>
+    <span>{{ article.author?.name ?? 'Anonim' }}</span> •
+    <span>
+      {{
+        article.updated_at
+          ? dayjs(article.updated_at).from(now.value)
+          : article.created_at
+          ? dayjs(article.created_at).from(now.value)
+          : 'Waktu tidak diketahui'
+      }}
+    </span>
+  </div>
+  <span class="text-blue-500 font-medium">{{ article.hits ?? 0 }} hits</span>
+</div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
       <h3 class="text-2xl font-bold text-blue-700 mb-6">Artikel Terbaru</h3>
 
       <!-- Filter & Search Stylish -->

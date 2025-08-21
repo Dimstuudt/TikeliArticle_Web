@@ -253,7 +253,7 @@ class ArticleController extends Controller
 
     public function show(Article $article)
     {
-        return Inertia::render('Admin/articles/Show', [
+        return Inertia::render('Admin/Articles/Show', [
             'article' => [
                 'id' => $article->id,
                 'title' => $article->title,
@@ -267,8 +267,9 @@ class ArticleController extends Controller
         ]);
     }
 
-   public function landing(Request $request)
+  public function landing(Request $request)
 {
+    // Query utama untuk artikel paginasi
     $query = Article::where('status', 'approved')
         ->with('user')
         ->latest();
@@ -287,7 +288,7 @@ class ArticleController extends Controller
         $query->where('category', $request->category);
     }
 
-    // Pagination 6 per halaman + simpan query string
+    // Pagination 6 per halaman + query string
     $articles = $query->paginate(6)
         ->withQueryString()
         ->through(fn($article) => [
@@ -312,16 +313,38 @@ class ArticleController extends Controller
         ->take(3)
         ->get(['id', 'name', 'role', 'profile_photo_path']);
 
+    // Ambil 3 artikel terhits berdasarkan kolom hits
+    $topArticles = Article::where('status', 'approved')
+    ->with('user')
+    ->orderByDesc('hits')
+    ->take(3)
+    ->get()
+    ->map(fn($article) => [
+        'id' => $article->id,
+        'title' => $article->title,
+        'summary' => $article->summary,
+        'cover' => $article->cover ? asset('storage/' . $article->cover) : null,
+        'hits' => $article->hits,
+        'created_at' => $article->created_at->toISOString(),
+        'updated_at' => $article->updated_at->toISOString(),
+        'author' => [
+            'id' => $article->user->id,
+            'name' => $article->user->name,
+            'role' => $article->user->role,
+            'profile_photo_path' => $article->user->profile_photo_path,
+        ],
+    ]);
+
     return Inertia::render('guest/Welcome', [
         'articles' => $articles,
         'latestUsers' => $latestUsers,
+        'topArticles' => $topArticles,
         'filters' => [
             'search' => $request->search,
             'category' => $request->category,
         ],
     ]);
 }
-
 
     // Guest - Lihat Artikel
 
