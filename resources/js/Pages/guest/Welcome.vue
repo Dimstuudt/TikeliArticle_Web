@@ -105,69 +105,118 @@ const submitFilter = () => {
 .animation-delay-1000 { animation-delay: 1s; }
 .animation-delay-2000 { animation-delay: 2s; }
 
+@keyframes bounce-slow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-0.8px); } /* lebih tipis, hampir seperti getar halus */
+}
+.animate-bounce-slow {
+  animation: bounce-slow 2s infinite; /* durasi lebih panjang → lebih smooth */
+}
+
+
 @keyframes blob {
   0%, 100% { transform: translate(0px,0px) scale(1); }
-  33% { transform: translate(30px,-50px) scale(1.1); }
-  66% { transform: translate(-20px,20px) scale(0.9); }
+  33% { transform: translate(15px,-25px) scale(1.05); } /* gerakan lebih kecil */
+  66% { transform: translate(-10px,10px) scale(0.95); }
 }
-.animate-blob { animation: blob 7s infinite; }
+.animate-blob {
+  animation: blob 10s infinite; /* lebih lambat supaya efek halus */
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
 </style>
 <template>
   <PublicLayout>
 
 
- <!-- Hero Section -->
-<section class="bg-gradient-to-r from-cyan-100 via-blue-100 to-blue-200 text-center py-12 px-4 relative overflow-hidden font-sans">
-  <!-- Background shapes -->
-  <div class="absolute top-0 left-0 w-72 h-72 bg-cyan-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30"></div>
-  <div class="absolute bottom-0 right-0 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30"></div>
-
-  <!-- Heading -->
- <h2 class="text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight mb-4">
-  <span class="bg-clip-text text-transparent bg-gradient-to-r from-cyan-600 to-blue-800">
-    Selamat Datang di
-  </span>
- <span
-  class="relative font-bold tracking-wide"
-  style="
-    font-family: 'Inter', sans-serif;
-    letter-spacing: 1px;
-    color: #38bdf8; /* biru muda (Tailwind cyan-400) */
-    text-shadow: 0 0 6px rgba(56, 189, 248, 0.7),
-                 0 0 14px rgba(56, 189, 248, 0.5);
-  "
+<!-- Hero Section -->
+<section
+  class="relative bg-gradient-to-br from-cyan-50 via-blue-50 to-blue-100
+         dark:from-gray-900 dark:via-gray-800 dark:to-gray-900
+         py-20 px-6 text-center overflow-hidden font-sans"
 >
-  Tikeli
-</span>
+  <!-- Decorative background shapes -->
+  <div
+    class="absolute top-0 left-0 w-80 h-80 bg-cyan-200
+           dark:bg-cyan-900
+           rounded-full mix-blend-multiply filter blur-3xl opacity-25"
+  ></div>
+  <div
+    class="absolute bottom-0 right-0 w-96 h-96 bg-blue-300
+           dark:bg-blue-900
+           rounded-full mix-blend-multiply filter blur-3xl opacity-25"
+  ></div>
 
-</h2>
+  <!-- Content -->
+  <div class="relative max-w-3xl mx-auto">
+    <!-- Heading -->
+    <h1
+      class="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6 leading-tight"
+    >
+      <span
+        class="block text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-blue-800
+               dark:from-cyan-400 dark:to-blue-500"
+      >
+        Selamat Datang di Platform Artikel Modern
+      </span>
+      <span
+        class="block text-cyan-500 dark:text-cyan-400 drop-shadow-md"
+      >
+        Tikeli
+      </span>
+    </h1>
 
-  <!-- Paragraph -->
-  <p class="text-blue-700 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed mb-6">
-    Temukan artikel terbaru dan terpercaya dari para penulis kami.
-  </p>
+    <!-- Subtitle -->
+    <p
+      class="text-blue-700 dark:text-gray-300 text-lg md:text-xl leading-relaxed mb-8"
+    >
+      Ruang inspirasi, pengetahuan, dan informasi terpercaya dari para penulis terbaik kami.
+    </p>
 
-  <!-- Call to Action -->
-  <a href="#articles" class="inline-block bg-cyan-600 text-white font-semibold px-6 py-3 rounded-lg shadow-lg hover:bg-cyan-500 transition-all duration-300">
-    Jelajahi Artikel
-  </a>
+    <!-- Call to Action -->
+    <div class="flex justify-center gap-4">
+      <a
+        href="#top-articles"
+        class="inline-block bg-cyan-600 text-white font-semibold px-8 py-3 rounded-xl shadow-md
+               hover:bg-cyan-500 dark:bg-cyan-500 dark:hover:bg-cyan-400 transition-all duration-300"
+      >
+        Jelajahi Artikel
+      </a>
+      <a
+        href="/about"
+        class="inline-block border border-cyan-600 text-cyan-700 font-semibold px-8 py-3 rounded-xl
+               hover:bg-cyan-50
+               dark:border-cyan-400 dark:text-cyan-300 dark:hover:bg-gray-800
+               transition-all duration-300"
+      >
+        Tentang Kami
+      </a>
+    </div>
+  </div>
 </section>
 
 
-
-   <!-- Pengguna Berdasarkan Role -->
+<!-- Pengguna Berdasarkan Role -->
 <section class="mb-8">
-  <div class="bg-white rounded-xl shadow-lg p-4">
-    <h3 class="text-lg font-bold text-blue-700 text-center mb-4">Pengguna Terbaru</h3>
+  <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-4">
+    <h3 class="text-lg font-bold text-blue-700 dark:text-cyan-400 text-center mb-4">
+      Pengguna Terbaru
+    </h3>
     <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
       <Link
         v-for="user in props.latestUsers"
         :key="user.id"
         :href="route('guest.profile', user.id)"
-        class="block bg-gradient-to-br from-white to-blue-50 border border-blue-100 rounded-lg p-4 shadow hover:shadow-md transition-all text-center hover:scale-[1.01]"
+        class="block bg-gradient-to-br from-white to-blue-50 dark:from-gray-800 dark:to-gray-700
+               border border-blue-100 dark:border-gray-600
+               rounded-lg p-4 shadow hover:shadow-md transition-all text-center hover:scale-[1.01]"
       >
+        <!-- Foto Profil -->
         <div class="w-16 h-16 mx-auto mb-2 relative">
-          <div class="w-16 h-16 rounded-full border-2 border-blue-300 shadow-inner overflow-hidden">
+          <div class="w-16 h-16 rounded-full border-2 border-blue-300 dark:border-cyan-500 shadow-inner overflow-hidden">
             <img
               :src="user.profile_photo_path
                 ? `/storage/${user.profile_photo_path}`
@@ -177,12 +226,18 @@ const submitFilter = () => {
             />
           </div>
         </div>
-        <p class="text-sm font-semibold text-gray-800 truncate">{{ user.name }}</p>
+
+        <!-- Nama -->
+        <p class="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">
+          {{ user.name }}
+        </p>
+
+        <!-- Badge Role Kotak -->
         <span
-          class="inline-block mt-1 px-2 py-0.5 text-[10px] font-semibold rounded-full"
+          class="inline-block mt-1 px-2 py-1 text-[11px] font-semibold rounded-md"
           :class="{
-            'bg-green-100 text-green-800 border border-green-300': user.role === 'admin',
-            'bg-green-50 text-green-600 border border-green-200': user.role === 'operator',
+            'bg-green-100 text-green-800 border border-green-300 dark:bg-green-900 dark:text-green-300 dark:border-green-700': user.role === 'admin',
+            'bg-green-50 text-green-600 border border-green-200 dark:bg-green-800 dark:text-green-200 dark:border-green-700': user.role === 'operator',
           }"
         >
           {{ user.role }}
@@ -198,8 +253,11 @@ const submitFilter = () => {
     <main class="flex-grow max-w-7xl mx-auto px-4 py-10">
 
 <!-- Top 3 Artikel Terhits -->
+<!-- Top 3 Artikel Terhits -->
 <div class="mb-8">
-  <h3 class="text-2xl font-bold text-gray-800 mb-4">Artikel Terhits</h3>
+  <h3 id="top-articles" class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">
+    Artikel Terhits
+  </h3>
 
   <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
     <div
@@ -207,10 +265,10 @@ const submitFilter = () => {
       :key="article.id"
       class="rounded-xl p-[2px] bg-gradient-to-r from-emerald-500 via-teal-500 to-blue-500
              hover:from-emerald-600 hover:via-teal-600 hover:to-blue-600
-             transition duration-300 cursor-pointer"
+             transition duration-300 cursor-pointer hover:scale-[1.01]"
       @click="router.visit(`/articles/${article.id}`)"
     >
-      <div class="bg-white rounded-xl shadow-lg flex flex-col overflow-hidden h-full">
+      <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg flex flex-col overflow-hidden h-full">
 
         <!-- Gambar cover -->
         <div class="relative w-full h-48">
@@ -222,7 +280,7 @@ const submitFilter = () => {
           <div
             v-if="article.category"
             class="absolute top-2 right-2 bg-gradient-to-r from-emerald-600 to-blue-600 text-white
-                   text-[10px] px-2 py-0.5 rounded-full shadow-sm uppercase"
+                   text-[10px] px-2 py-1 rounded-md shadow-sm uppercase font-semibold"
           >
             {{ article.category }}
           </div>
@@ -231,31 +289,39 @@ const submitFilter = () => {
         <!-- Konten -->
         <div class="p-5 flex flex-col flex-grow">
           <span class="text-xs text-teal-500 uppercase font-semibold mb-1">Terhits</span>
-          <h4 class="text-lg font-semibold text-gray-800 mb-2">
+          <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2 line-clamp-2">
             {{ article.title ?? 'Judul tidak tersedia' }}
           </h4>
 
-          <div class="text-sm text-gray-600 line-clamp-3 min-h-[60px] flex-grow"
+          <div class="text-sm text-gray-600 dark:text-gray-400 line-clamp-3 min-h-[65px] flex-grow"
                v-html="article.summary ?? 'Tidak ada ringkasan'">
           </div>
 
-<!-- Penulis, hits & waktu -->
-<div class="text-xs text-gray-400 mt-4 flex justify-between items-center">
-  <div>
-    <span>{{ article.author?.name ?? 'Anonim' }}</span> •
-    <span>
-      {{
-        article.updated_at
-          ? dayjs(article.updated_at).from(now.value)
-          : article.created_at
-          ? dayjs(article.created_at).from(now.value)
-          : 'Waktu tidak diketahui'
-      }}
-    </span>
-  </div>
-  <span class="text-blue-500 font-medium">{{ article.hits ?? 0 }} hits</span>
-</div>
+          <!-- Penulis, hits & waktu -->
+          <div class="text-xs text-gray-400 dark:text-gray-500 mt-4 flex justify-between items-center">
+            <div>
+              <span>{{ article.author?.name ?? 'Anonim' }}</span> •
+              <span>
+                {{
+                  article.updated_at
+                    ? dayjs(article.updated_at).from(now.value)
+                    : article.created_at
+                    ? dayjs(article.created_at).from(now.value)
+                    : 'Waktu tidak diketahui'
+                }}
+              </span>
+            </div>
 
+            <!-- Hits -->
+            <span class="inline-flex items-center px-3 py-1 rounded-md text-white font-semibold
+                         bg-gradient-to-r from-blue-500 via-teal-400 to-green-400
+                         hover:scale-105 transform transition duration-300
+                         shadow-md hover:shadow-[0_0_15px_rgba(0,255,255,0.7)]">
+              <!-- Emoji Api -->
+              <span class="mr-1 animate-pulse">🔥</span>
+              {{ article.hits ?? 0 }} hits
+            </span>
+          </div>
         </div>
       </div>
     </div>
@@ -263,7 +329,12 @@ const submitFilter = () => {
 </div>
 
 
-      <h3 class="text-2xl font-bold text-blue-700 mb-6">Artikel Terbaru</h3>
+      <<h3
+  class="text-2xl font-bold text-blue-700 dark:text-blue-400 mb-6 flex items-center gap-2"
+>
+  Artikel Terbaru
+  <span class="flex-1 h-[2px] bg-gradient-to-r from-blue-500 to-transparent rounded-full"></span>
+</h3>
 
       <!-- Filter & Search Stylish -->
 <div class="flex flex-col md:flex-row md:items-center gap-4 mb-6">
@@ -360,7 +431,7 @@ const submitFilter = () => {
 </div>
 
 
-      <!-- Grid Artikel -->
+     <!-- Grid Artikel -->
 <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
   <div
     v-for="article in props.articles.data"
@@ -370,7 +441,10 @@ const submitFilter = () => {
            transition duration-300 cursor-pointer"
     @click="router.visit(`/articles/${article.id}`)"
   >
-    <div class="bg-white rounded-xl shadow-sm hover:shadow-lg transition duration-300 flex flex-col overflow-hidden h-full">
+    <div
+      class="bg-white dark:bg-gray-900 rounded-xl shadow-sm hover:shadow-lg
+             transition duration-300 flex flex-col overflow-hidden h-full"
+    >
 
       <!-- Gambar cover -->
       <div class="relative w-full h-48">
@@ -381,8 +455,8 @@ const submitFilter = () => {
         />
         <div
           v-if="article.category"
-          class="absolute top-2 right-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white
-                 text-[10px] px-2 py-0.5 rounded-full shadow-sm uppercase"
+          class="absolute top-2 right-2 bg-gradient-to-r from-blue-600 to-purple-600
+                 text-white text-[10px] px-2 py-0.5 rounded-full shadow-sm uppercase"
         >
           {{ article.category }}
         </div>
@@ -391,18 +465,18 @@ const submitFilter = () => {
       <!-- Konten -->
       <div class="p-5 flex flex-col flex-grow">
         <span class="text-xs text-blue-500 uppercase font-semibold mb-1">Artikel</span>
-        <h4 class="text-lg font-semibold text-gray-800 mb-2">
+        <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">
           {{ article.title }}
         </h4>
 
-       <!-- Tetap ada fallback kalau summary kosong -->
-<div class="text-sm text-gray-600 line-clamp-3 min-h-[60px] flex-grow"
-     v-html="article.summary || 'Tidak ada ringkasan'">
-</div>
-
+        <!-- Fallback summary -->
+        <div
+          class="text-sm text-gray-600 dark:text-gray-300 line-clamp-3 min-h-[60px] flex-grow"
+          v-html="article.summary || 'Tidak ada ringkasan'"
+        ></div>
 
         <!-- Penulis & waktu -->
-        <div class="text-xs text-gray-400 mt-4">
+        <div class="text-xs text-gray-400 dark:text-gray-500 mt-4">
           {{ article.author?.name ?? 'Anonim' }} •
           {{
             article.updated_at
