@@ -22,4 +22,16 @@ class Article extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    //like
+    public function likes()
+{
+    return $this->hasMany(ArticleLike::class);
+}
+
+public function likedBy(User $user)
+{
+    return $this->likes()->where('user_id', $user->id)->exists();
+}
+
 }

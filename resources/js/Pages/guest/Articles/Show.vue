@@ -1,6 +1,6 @@
 <script setup>
-import { Head } from '@inertiajs/vue3'
-import { defineProps } from 'vue'
+import { Head, router } from '@inertiajs/vue3'
+import { defineProps, ref } from 'vue'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
 import dayjs from 'dayjs'
 import 'dayjs/locale/id'
@@ -11,8 +11,14 @@ const props = defineProps({
   article: Object,
   views: Number,
   from: String,
-  recommendations: Array, // 4 artikel rekomendasi
+  recommendations: Array,
+  likeCount: Number,
+  isLiked: Boolean,
 })
+
+// bikin state reaktif biar bisa berubah setelah klik
+const likes = ref(props.likeCount)
+const liked = ref(props.isLiked)
 
 const goBack = () => {
   if (props.from) {
@@ -27,7 +33,20 @@ const goBack = () => {
 const formatDate = (date) => {
   return dayjs(date).format('DD MMMM YYYY')
 }
+
+// like
+const toggleLike = () => {
+  router.post(route('articles.like', props.article.id), {}, {
+    preserveScroll: true,
+    onSuccess: () => {
+      // update frontend tanpa reload
+      liked.value = !liked.value
+      likes.value = liked.value ? likes.value + 1 : likes.value - 1
+    }
+  })
+}
 </script>
+
 
 <template>
   <PublicLayout>
@@ -54,24 +73,39 @@ const formatDate = (date) => {
         {{ article.title }}
       </h1>
 
-      <div class="flex flex-wrap items-center gap-2 mb-2">
-        <div
-          v-if="article.category"
-          class="inline-block bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs font-semibold px-3 py-1 rounded-full"
-        >
-          {{ article.category }}
-        </div>
-        <div
-          class="inline-block bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-xs font-semibold px-3 py-1 rounded-full"
-        >
-          👁️ {{ views ?? 0 }} Views
-        </div>
-        <div
-          class="inline-block bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 text-xs font-semibold px-3 py-1 rounded-full"
-        >
-          🔄 {{ article.hits ?? 0 }} Hits
-        </div>
-      </div>
+     <div class="flex flex-wrap items-center gap-2 mb-2">
+  <!-- Kategori -->
+  <div
+    v-if="article.category"
+    class="inline-block bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs font-semibold px-3 py-1 rounded-full"
+  >
+    {{ article.category }}
+  </div>
+
+  <!-- Views -->
+  <div
+    class="inline-block bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-xs font-semibold px-3 py-1 rounded-full"
+  >
+    👁️ {{ views ?? 0 }} Views
+  </div>
+
+  <!-- Hits -->
+  <div
+    class="inline-block bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 text-xs font-semibold px-3 py-1 rounded-full"
+  >
+    🔄 {{ article.hits ?? 0 }} Hits
+  </div>
+
+  <!-- Likes -->
+  <div
+    class="inline-flex items-center bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 text-xs font-semibold px-3 py-1 rounded-full cursor-pointer transition hover:scale-105"
+    @click="toggleLike"
+  >
+    <span class="mr-1">{{ liked ? '❤️' : '🤍' }}</span>
+    <span>{{ likes }}</span>
+  </div>
+</div>
+
 
       <p class="text-sm text-gray-500 dark:text-gray-400">
         Oleh <span class="font-medium">{{ article.author.name }}</span> •

@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\ArticleLikeController;
 
 
 // Middleware
@@ -189,6 +190,14 @@ Route::get('/users/{user}', function (User $user) {
         'articles' => $approvedArticles,
     ]);
 })->name('guest.profile');
+
+//like
+
+
+Route::post('/articles/{article}/like', [ArticleLikeController::class, 'toggle'])
+    ->middleware('auth')
+    ->name('articles.like');
+
 
 // MyProfile - edit profil publik (nama, bio, foto profil, background)
 Route::middleware(['auth'])->group(function () {

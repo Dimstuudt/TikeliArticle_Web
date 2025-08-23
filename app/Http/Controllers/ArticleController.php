@@ -297,6 +297,9 @@ class ArticleController extends Controller
             'summary' => $article->summary,
             'content' => $article->content,
             'category' => $article->category,
+             'hits'  => $article->hits,
+        'views' => DB::table('article_views')->where('article_id', $article->id)->count(),
+          'likes' => $article->likes()->count(), // 🔥 jumlah like
             'cover' => $article->cover ? asset('storage/' . $article->cover) : null,
             'updated_at' => $article->updated_at->toISOString(),
             'created_at' => $article->created_at->diffForHumans(),
@@ -323,6 +326,7 @@ class ArticleController extends Controller
         'id' => $article->id,
         'title' => $article->title,
         'summary' => $article->summary,
+          'likes' => $article->likes()->count(), // 🔥 jumlah like
         'cover' => $article->cover ? asset('storage/' . $article->cover) : null,
         'hits' => $article->hits,
         'created_at' => $article->created_at->toISOString(),
@@ -346,22 +350,21 @@ class ArticleController extends Controller
     ]);
 }
 
-    // Guest - Lihat Artikel
-
+   // Guest - Lihat Artikel
 public function guestShow($id)
 {
     $article = Article::with('user')
         ->where('status', 'approved')
         ->findOrFail($id);
 
-    // 1️⃣ Tambah hits tanpa ubah updated_at
+    /** 🔹 1. Tambah hits tanpa ubah updated_at */
     $article->timestamps = false;
     $article->increment('hits');
 
-    // 2️⃣ Refresh model
+    /** 🔹 2. Refresh model */
     $article->refresh();
 
-    // 3️⃣ Tambah views unik kalau user login
+    /** 🔹 3. Tambah views unik kalau user login */
     if (auth()->check()) {
         $exists = DB::table('article_views')
             ->where('article_id', $article->id)
@@ -378,35 +381,40 @@ public function guestShow($id)
         }
     }
 
-    // 4️⃣ Hitung total views unik
+    /** 🔹 4. Hitung total views unik */
     $viewsCount = DB::table('article_views')
         ->where('article_id', $article->id)
         ->count();
 
-    // 5️⃣ Ambil 4 rekomendasi artikel lain (misalnya terbaru selain ini)
-   $recommendations = Article::with('user')
-    ->where('status', 'approved')
-    ->where('id', '!=', $article->id)
-    ->inRandomOrder()
-    ->take(4)
-    ->get()
-    ->map(function ($rec) {
-        return [
-            'id'         => $rec->id,
-            'title'      => $rec->title,
-            'category'   => $rec->category,
-            'cover'      => $rec->cover ? asset('storage/' . $rec->cover) : null,
-            'created_at' => $rec->created_at,
-            'views'      => DB::table('article_views')->where('article_id', $rec->id)->count(),
-            'author'     => [
-                'id'   => $rec->user->id,
-                'name' => $rec->user->name,
-            ],
-        ];
-    });
+    /** 🔹 5. Ambil 4 rekomendasi artikel lain */
+    $recommendations = Article::with('user')
+        ->where('status', 'approved')
+        ->where('id', '!=', $article->id)
+        ->inRandomOrder()
+        ->take(4)
+        ->get()
+        ->map(function ($rec) {
+            return [
+                'id'         => $rec->id,
+                'title'      => $rec->title,
+                'category'   => $rec->category,
+                'cover'      => $rec->cover ? asset('storage/' . $rec->cover) : null,
+                'created_at' => $rec->created_at,
+                'views'      => DB::table('article_views')
+                                    ->where('article_id', $rec->id)
+                                    ->count(),
+                'author'     => [
+                    'id'   => $rec->user->id,
+                    'name' => $rec->user->name,
+                ],
+            ];
+        });
 
+    /** 🔹 6. Likes (total + apakah user sudah like) */
+    $likeCount = $article->likes()->count();
+    $isLiked   = auth()->check() ? $article->likedBy(auth()->user()) : false;
 
-    // 6️⃣ Kirim ke Inertia
+    /** 🔹 7. Kirim ke Inertia */
     return Inertia::render('guest/Articles/Show', [
         'article' => [
             'id'         => $article->id,
@@ -426,9 +434,11 @@ public function guestShow($id)
                 'profile_photo_path' => $article->user->profile_photo_path,
             ],
         ],
-        'views'          => $viewsCount,
-        'from'           => request('from'),
-        'recommendations'=> $recommendations,
+        'views'           => $viewsCount,
+        'likeCount'       => $likeCount,
+        'isLiked'         => $isLiked,
+        'from'            => request('from'),
+        'recommendations' => $recommendations,
     ]);
 }
 

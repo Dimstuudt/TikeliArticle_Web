@@ -14,6 +14,8 @@ const props = defineProps({
   latestUsers: Array,
     topArticles: Array,
   filters: Object, // biar nilai search/category tetap setelah reload
+  hits: Number, // total hits semua artikel
+  likes: Number, // total likes semua artikel
 })
 
 const now = ref(dayjs())
@@ -253,18 +255,16 @@ html {
     <main class="flex-grow max-w-7xl mx-auto px-4 py-10">
 
 <!-- Top 3 Artikel Terhits -->
-<!-- Top 3 Artikel Terhits -->
 <div class="mb-8">
   <h3
-  id="top-articles"
-  class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6 flex items-center gap-2"
->
-  Artikel Terhits
-  <span
-    class="flex-1 h-[2px] bg-gradient-to-r from-pink-500 via-purple-500 to-transparent rounded-full"
-  ></span>
-</h3>
-
+    id="top-articles"
+    class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6 flex items-center gap-2"
+  >
+    Artikel Terhits
+    <span
+      class="flex-1 h-[2px] bg-gradient-to-r from-pink-500 via-purple-500 to-transparent rounded-full"
+    ></span>
+  </h3>
 
   <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
     <div
@@ -300,12 +300,14 @@ html {
             {{ article.title ?? 'Judul tidak tersedia' }}
           </h4>
 
-          <div class="text-sm text-gray-600 dark:text-gray-400 line-clamp-3 min-h-[65px] flex-grow"
-               v-html="article.summary ?? 'Tidak ada ringkasan'">
-          </div>
+          <div
+            class="text-sm text-gray-600 dark:text-gray-400 line-clamp-3 min-h-[65px] flex-grow"
+            v-html="article.summary ?? 'Tidak ada ringkasan'"
+          ></div>
 
-          <!-- Penulis, hits & waktu -->
+          <!-- Penulis, hits & likes -->
           <div class="text-xs text-gray-400 dark:text-gray-500 mt-4 flex justify-between items-center">
+            <!-- Penulis & waktu -->
             <div>
               <span>{{ article.author?.name ?? 'Anonim' }}</span> •
               <span>
@@ -319,21 +321,37 @@ html {
               </span>
             </div>
 
-            <!-- Hits -->
-            <span class="inline-flex items-center px-3 py-1 rounded-md text-white font-semibold
-                         bg-gradient-to-r from-blue-500 via-teal-400 to-green-400
-                         hover:scale-105 transform transition duration-300
-                         shadow-md hover:shadow-[0_0_15px_rgba(0,255,255,0.7)]">
-              <!-- Emoji Api -->
-              <span class="mr-1 animate-pulse">🔥</span>
-              {{ article.hits ?? 0 }} hits
-            </span>
+            <!-- Hits & Likes -->
+            <div class="flex items-center gap-2">
+              <!-- Hits -->
+              <span
+                class="inline-flex items-center px-2.5 py-1 rounded-md text-white font-semibold
+                       bg-gradient-to-r from-blue-500 via-teal-400 to-green-400
+                       hover:scale-105 transform transition duration-300
+                       shadow-md hover:shadow-[0_0_15px_rgba(0,255,255,0.7)]"
+              >
+                <span class="mr-1 animate-pulse">🔥</span>
+                {{ article.hits ?? 0 }}
+              </span>
+
+              <!-- Likes -->
+              <span
+                class="inline-flex items-center px-2.5 py-1 rounded-md text-white font-semibold
+                       bg-gradient-to-r from-pink-500 via-red-400 to-orange-400
+                       hover:scale-105 transform transition duration-300
+                       shadow-md hover:shadow-[0_0_15px_rgba(255,0,100,0.7)]"
+              >
+                <span class="mr-1">❤️</span>
+                {{ article.likes ?? 0 }}
+              </span>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
 </div>
+
 
 
    <h3
@@ -351,13 +369,14 @@ html {
 <div class="flex flex-col md:flex-row md:items-center gap-4 mb-6">
   <!-- Input Search -->
   <div class="relative w-full md:w-1/2">
-    <input
-      v-model="search"
-      type="text"
-      placeholder="Cari artikel..."
-      class="w-full pl-10 pr-4 py-2 border rounded-md shadow-sm
-             focus:outline-none focus:ring-2 focus:ring-blue-300"
-    />
+  <input
+    v-model="search"
+    type="text"
+    placeholder="Cari artikel..."
+    class="w-full pl-10 pr-4 py-2 border rounded-md shadow-sm
+           bg-white text-gray-800
+           focus:outline-none focus:ring-2 focus:ring-blue-300"
+  />
     <!-- Icon Search -->
     <svg xmlns="http://www.w3.org/2000/svg"
          class="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-500"
@@ -373,14 +392,22 @@ html {
     class="w-full px-4 py-2 border rounded-md shadow-sm bg-white text-left
            flex justify-between items-center focus:outline-none focus:ring-2 focus:ring-blue-300"
   >
-    <span class="bg-gradient-to-r from-blue-600 via-sky-500 to-cyan-400 bg-clip-text text-transparent font-medium flex items-center gap-2">
+    <span class="text-gray-800 font-medium flex items-center gap-2">
       <!-- Icon Category -->
-      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <svg xmlns="http://www.w3.org/2000/svg"
+           class="w-4 h-4 text-gray-600"
+           fill="none"
+           viewBox="0 0 24 24"
+           stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
       </svg>
       {{ category || 'Semua Kategori' }}
     </span>
-    <svg class="w-4 h-4 ml-2 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+
+    <!-- Panah -->
+    <svg class="w-4 h-4 ml-2 text-gray-500"
+         fill="none" stroke="currentColor" stroke-width="2"
+         viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
     </svg>
   </button>
@@ -394,11 +421,12 @@ html {
       <!-- Semua kategori -->
       <li
         @click.stop="selectCategory('')"
-        class="px-4 py-2 flex items-center gap-2 cursor-pointer
+        class="px-4 py-2 flex items-center gap-2 cursor-pointer text-gray-800
                hover:bg-gradient-to-r hover:from-blue-50 hover:via-sky-50 hover:to-cyan-50
                hover:font-semibold transition-all duration-200"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-500"
+             fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16" />
         </svg>
         Semua Kategori
@@ -409,11 +437,12 @@ html {
         v-for="cat in uniqueCategories"
         :key="cat"
         @click.stop="selectCategory(cat)"
-        class="px-4 py-2 flex items-center gap-2 cursor-pointer
+        class="px-4 py-2 flex items-center gap-2 cursor-pointer text-gray-800
                hover:bg-gradient-to-r hover:from-blue-50 hover:via-sky-50 hover:to-cyan-50
                hover:font-semibold transition-all duration-200"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-blue-500"
+             fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
         </svg>
         {{ cat }}
@@ -421,6 +450,7 @@ html {
     </ul>
   </transition>
 </div>
+
 
 
 
@@ -442,7 +472,7 @@ html {
 </div>
 
 
-     <!-- Grid Artikel -->
+    <!-- Grid Artikel -->
 <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
   <div
     v-for="article in props.articles.data"
@@ -486,21 +516,46 @@ html {
           v-html="article.summary || 'Tidak ada ringkasan'"
         ></div>
 
-        <!-- Penulis & waktu -->
-        <div class="text-xs text-gray-400 dark:text-gray-500 mt-4">
-          {{ article.author?.name ?? 'Anonim' }} •
-          {{
-            article.updated_at
-              ? dayjs(article.updated_at).from(now.value)
-              : article.created_at
-              ? dayjs(article.created_at).from(now.value)
-              : 'Waktu tidak diketahui'
-          }}
-        </div>
+
+<!-- Penulis, waktu, hits & likes -->
+<div class="flex items-center justify-between text-xs mt-4">
+  <!-- Penulis & waktu -->
+  <div class="text-gray-400 dark:text-gray-500">
+    {{ article.author?.name ?? 'Anonim' }} •
+    {{
+      article.updated_at
+        ? dayjs(article.updated_at).from(now.value)
+        : article.created_at
+        ? dayjs(article.created_at).from(now.value)
+        : 'Waktu tidak diketahui'
+    }}
+  </div>
+
+  <!-- Badge hits & likes -->
+  <div class="flex items-center gap-2">
+    <span
+      class="inline-flex items-center bg-yellow-100 dark:bg-yellow-900
+             text-yellow-700 dark:text-yellow-200 text-xs font-semibold
+             px-2 py-0.5 rounded-full"
+    >
+      🔄 {{ article.hits ?? 0 }}
+    </span>
+    <span
+      class="inline-flex items-center bg-red-100 dark:bg-red-900
+             text-red-700 dark:text-red-200 text-xs font-semibold
+             px-2 py-0.5 rounded-full"
+    >
+      ❤️ {{ article.likes ?? 0 }}
+    </span>
+  </div>
+</div>
+
+
       </div>
     </div>
   </div>
 </div>
+
 
 
      <!-- Pagination -->
