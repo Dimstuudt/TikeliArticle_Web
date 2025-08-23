@@ -4,9 +4,9 @@ import { usePage, Link } from "@inertiajs/vue3"
 import Dropdown from "@/Components/Dropdown.vue"
 import DropdownLink from "@/Components/DropdownLink.vue"
 
+// User
 const page = usePage()
 const user = computed(() => page.props.auth?.user || null)
-
 const getDashboardRoute = () => {
   if (!user.value) return "/"
   return user.value.role === "admin"
@@ -14,15 +14,13 @@ const getDashboardRoute = () => {
     : route("operator.dashboard")
 }
 
-// dark mode state
+// Dark Mode
 const isDark = ref(localStorage.getItem("theme") === "dark")
 
-// apply saat mounted
-if (isDark.value) {
-  document.documentElement.classList.add("dark")
-}
+// Apply dark mode saat mounted
+if (isDark.value) document.documentElement.classList.add("dark")
 
-// toggle theme
+// Watch untuk toggle
 watch(isDark, (val) => {
   if (val) {
     document.documentElement.classList.add("dark")
@@ -35,26 +33,43 @@ watch(isDark, (val) => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col transition-colors">
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col transition-colors duration-300">
+
     <!-- Navbar -->
-    <header
-      class="bg-blue-600 dark:bg-gray-800 text-white shadow px-6 py-3 flex justify-between items-center"
-    >
+    <header class="bg-blue-600 dark:bg-gray-800 text-white shadow px-6 py-3 flex justify-between items-center">
       <!-- Logo -->
       <Link href="/welcome" class="text-2xl font-bold">Tikeli</Link>
 
       <!-- Right side -->
       <div class="flex items-center space-x-4">
-        <!-- Dark Mode Switch -->
-        <button
-          @click="isDark = !isDark"
-          class="relative inline-flex items-center h-6 rounded-full w-11 bg-gray-300 dark:bg-gray-600 transition"
-        >
-          <span
-            class="absolute left-0.5 top-0.5 inline-block h-5 w-5 transform rounded-full bg-white dark:bg-yellow-400 transition"
-            :class="isDark ? 'translate-x-5' : ''"
-          />
-        </button>
+
+       <!-- Dark Mode Switch -->
+<button
+  @click="isDark = !isDark"
+  class="relative h-6 w-14 rounded-full bg-gray-300 dark:bg-gray-600 p-1 flex items-center transition-colors duration-300 focus:outline-none hover:ring-2 hover:ring-blue-400 dark:hover:ring-yellow-400"
+>
+  <!-- Background dots for sun & moon -->
+  <span
+    class="absolute left-1 h-2.5 w-2.5 bg-yellow-400 rounded-full transition-opacity duration-300"
+    :class="isDark ? 'opacity-0' : 'opacity-100'"
+  ></span>
+  <span
+    class="absolute right-1 h-2.5 w-2.5 bg-gray-800 rounded-full transition-opacity duration-300"
+    :class="isDark ? 'opacity-100' : 'opacity-0'"
+  ></span>
+
+  <!-- Toggle knob -->
+  <span
+    class="inline-block h-5 w-5 rounded-full shadow-md transform transition-all duration-300 ease-in-out cursor-pointer"
+    :class="[
+      isDark
+        ? 'translate-x-8 bg-gray-800 shadow-lg'
+        : 'translate-x-0 bg-yellow-400 shadow-lg',
+      'hover:scale-110 active:scale-95'
+    ]"
+  ></span>
+</button>
+
 
         <!-- Auth -->
         <template v-if="user">
@@ -69,11 +84,7 @@ watch(isDark, (val) => {
                   alt="User"
                 />
                 <span class="ml-2">{{ user.name }}</span>
-                <svg
-                  class="ml-2 h-4 w-4"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
+                <svg class="ml-2 h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                   <path
                     fill-rule="evenodd"
                     d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 010-1.414z"
@@ -85,12 +96,7 @@ watch(isDark, (val) => {
 
             <template #content>
               <DropdownLink :href="getDashboardRoute()">Dashboard</DropdownLink>
-              <DropdownLink
-                method="post"
-                :href="route('logout')"
-                as="button"
-                >Keluar</DropdownLink
-              >
+              <DropdownLink method="post" :href="route('logout')" as="button">Keluar</DropdownLink>
             </template>
           </Dropdown>
         </template>
@@ -103,17 +109,19 @@ watch(isDark, (val) => {
             Login / Register
           </Link>
         </template>
+
       </div>
     </header>
 
     <!-- Main -->
-    <main class="flex-grow text-gray-900 dark:text-gray-100 transition-colors">
+    <main class="flex-grow text-gray-900 dark:text-gray-100 transition-colors duration-300">
       <slot />
     </main>
 
     <!-- Footer -->
-    <footer class="bg-blue-700 dark:bg-gray-800 text-white text-center py-4 text-sm">
+    <footer class="bg-blue-700 dark:bg-gray-800 text-white text-center py-4 text-sm transition-colors duration-300">
       &copy; 2025 Tikeli. All rights reserved.
     </footer>
+
   </div>
 </template>

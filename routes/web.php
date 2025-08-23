@@ -79,7 +79,7 @@ Route::middleware([
     EnsureProfileComplete::class,
     RoleMiddleware::class . ':admin',
 ])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/', [DashboardController::class, 'adminIndex'])->name('dashboard');
 
 
     // User Management
@@ -111,7 +111,7 @@ Route::get('/articles/approved', [\App\Http\Controllers\Admin\ApprovedArticleCon
 
 });
 
-// === OPERATOR Routes ===
+
 Route::middleware([
     'auth',
     'verified',
@@ -120,8 +120,8 @@ Route::middleware([
     RoleMiddleware::class . ':operator',
 ])->prefix('operator')->name('operator.')->group(function () {
 
-    // Dashboard operator
-    Route::get('/', fn () => Inertia::render('Operator/Dashboard'))->name('dashboard');
+    // Dashboard operator (pakai controller)
+    Route::get('/', [DashboardController::class, 'operatorIndex'])->name('dashboard');
 
     // Artikel operator
     Route::get('/articles/create', [ArticleController::class, 'create'])->name('articles.create'); // URL lowercase

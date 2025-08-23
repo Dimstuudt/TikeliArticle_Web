@@ -255,9 +255,16 @@ html {
 <!-- Top 3 Artikel Terhits -->
 <!-- Top 3 Artikel Terhits -->
 <div class="mb-8">
-  <h3 id="top-articles" class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">
-    Artikel Terhits
-  </h3>
+  <h3
+  id="top-articles"
+  class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6 flex items-center gap-2"
+>
+  Artikel Terhits
+  <span
+    class="flex-1 h-[2px] bg-gradient-to-r from-pink-500 via-purple-500 to-transparent rounded-full"
+  ></span>
+</h3>
+
 
   <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
     <div
@@ -329,12 +336,16 @@ html {
 </div>
 
 
-      <<h3
-  class="text-2xl font-bold text-blue-700 dark:text-blue-400 mb-6 flex items-center gap-2"
+   <h3
+  id="top-articles"
+  class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6 flex items-center gap-2"
 >
   Artikel Terbaru
-  <span class="flex-1 h-[2px] bg-gradient-to-r from-blue-500 to-transparent rounded-full"></span>
+  <span
+    class="flex-1 h-[2px] bg-gradient-to-r from-pink-500 via-purple-500 to-transparent rounded-full"
+  ></span>
 </h3>
+
 
       <!-- Filter & Search Stylish -->
 <div class="flex flex-col md:flex-row md:items-center gap-4 mb-6">
