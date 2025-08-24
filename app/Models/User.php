@@ -79,5 +79,10 @@ public function articles()
 }
 
 
+// Likes lewat artikel
+public function articleLikes()
+{
+    return $this->hasManyThrough(ArticleLike::class, Article::class);
+}
 }
 

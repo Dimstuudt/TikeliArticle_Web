@@ -34,4 +34,11 @@ public function likedBy(User $user)
     return $this->likes()->where('user_id', $user->id)->exists();
 }
 
+// User.php
+public function articleLikes()
+{
+    return $this->hasManyThrough(ArticleLike::class, Article::class);
+}
+
+
 }

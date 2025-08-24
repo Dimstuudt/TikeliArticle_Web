@@ -311,10 +311,12 @@ class ArticleController extends Controller
             ],
         ]);
 
-    // Ambil 3 user terbaru
-    $latestUsers = User::latest()
-        ->take(3)
-        ->get(['id', 'name', 'role', 'profile_photo_path']);
+  $latestUsers = User::query()
+    ->withCount(['articleLikes as total_likes']) // total like dari semua artikel user
+    ->withSum('articles as total_hits', 'hits') // jumlah view dari semua artikel user
+    ->latest()
+    ->take(4)
+    ->get(['id', 'name', 'role', 'profile_photo_path']);
 
     // Ambil 3 artikel terhits berdasarkan kolom hits
     $topArticles = Article::where('status', 'approved')

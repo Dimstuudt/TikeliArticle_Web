@@ -15,6 +15,7 @@ use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\ArticleLikeController;
+use App\Http\Controllers\Guest\UserProfileController;
 
 
 // Middleware
@@ -171,25 +172,14 @@ Route::get('/verified', fn () => Inertia::render('Auth/EmailVerified'))
 Route::get('/welcome', [ArticleController::class, 'landing'])->name('guest.welcome');
 
 //guest see
-Route::get('/articles/{id}', [ArticleController::class, 'guestShow'])->name('guest.articles.show');
-Route::get('/users/{user}', function (User $user) {
-    $approvedArticles = Article::where('status', 'approved')
-        ->where('user_id', $user->id)
-        ->latest()
-        ->get(['id', 'title', 'cover', 'category', 'created_at']);
 
-    return Inertia::render('guest/UserProfile', [
-        'user' => [
-            'id' => $user->id,
-            'name' => $user->name,
-            'role' => $user->role,
-            'profile_photo_path' => $user->profile_photo_path,
-            'background_photo_path' => $user->background_photo_path,
-            'bio' => $user->bio,
-        ],
-        'articles' => $approvedArticles,
-    ]);
-})->name('guest.profile');
+
+Route::get('/articles/{id}', [ArticleController::class, 'guestShow'])
+    ->name('guest.articles.show');
+
+Route::get('/users/{user}', [UserProfileController::class, 'show'])
+    ->name('guest.profile');
+
 
 //like
 

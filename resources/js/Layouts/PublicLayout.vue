@@ -1,12 +1,13 @@
 <script setup>
-import { ref, watch, computed } from "vue"
+import { ref, watch, computed, onMounted, onUnmounted } from "vue"
 import { usePage, Link } from "@inertiajs/vue3"
 import Dropdown from "@/Components/Dropdown.vue"
 import DropdownLink from "@/Components/DropdownLink.vue"
 
-// User
+// ===== User =====
 const page = usePage()
 const user = computed(() => page.props.auth?.user || null)
+
 const getDashboardRoute = () => {
   if (!user.value) return "/"
   return user.value.role === "admin"
@@ -14,13 +15,11 @@ const getDashboardRoute = () => {
     : route("operator.dashboard")
 }
 
-// Dark Mode
+// ===== Dark Mode =====
 const isDark = ref(localStorage.getItem("theme") === "dark")
 
-// Apply dark mode saat mounted
 if (isDark.value) document.documentElement.classList.add("dark")
 
-// Watch untuk toggle
 watch(isDark, (val) => {
   if (val) {
     document.documentElement.classList.add("dark")
@@ -29,6 +28,25 @@ watch(isDark, (val) => {
     document.documentElement.classList.remove("dark")
     localStorage.setItem("theme", "light")
   }
+})
+
+// ===== Scroll To Top Button =====
+const showScrollTop = ref(false)
+
+const handleScroll = () => {
+  showScrollTop.value = window.scrollY > 200
+}
+
+const scrollToTop = () => {
+  window.scrollTo({ top: 0, behavior: "smooth" })
+}
+
+onMounted(() => {
+  window.addEventListener("scroll", handleScroll)
+})
+
+onUnmounted(() => {
+  window.removeEventListener("scroll", handleScroll)
 })
 </script>
 
@@ -43,33 +61,24 @@ watch(isDark, (val) => {
       <!-- Right side -->
       <div class="flex items-center space-x-4">
 
-       <!-- Dark Mode Switch -->
-<button
-  @click="isDark = !isDark"
-  class="relative h-6 w-14 rounded-full bg-gray-300 dark:bg-gray-600 p-1 flex items-center transition-colors duration-300 focus:outline-none hover:ring-2 hover:ring-blue-400 dark:hover:ring-yellow-400"
->
-  <!-- Background dots for sun & moon -->
-  <span
-    class="absolute left-1 h-2.5 w-2.5 bg-yellow-400 rounded-full transition-opacity duration-300"
-    :class="isDark ? 'opacity-0' : 'opacity-100'"
-  ></span>
-  <span
-    class="absolute right-1 h-2.5 w-2.5 bg-gray-800 rounded-full transition-opacity duration-300"
-    :class="isDark ? 'opacity-100' : 'opacity-0'"
-  ></span>
-
-  <!-- Toggle knob -->
-  <span
-    class="inline-block h-5 w-5 rounded-full shadow-md transform transition-all duration-300 ease-in-out cursor-pointer"
-    :class="[
-      isDark
-        ? 'translate-x-8 bg-gray-800 shadow-lg'
-        : 'translate-x-0 bg-yellow-400 shadow-lg',
-      'hover:scale-110 active:scale-95'
-    ]"
-  ></span>
-</button>
-
+        <!-- Dark Mode Switch -->
+        <button
+          @click="isDark = !isDark"
+          class="relative h-6 w-14 rounded-full bg-gray-300 dark:bg-gray-600 p-1 flex items-center transition-colors duration-300 focus:outline-none hover:ring-2 hover:ring-blue-400 dark:hover:ring-yellow-400"
+        >
+          <span
+            class="absolute left-1 h-2.5 w-2.5 bg-yellow-400 rounded-full transition-opacity duration-300"
+            :class="isDark ? 'opacity-0' : 'opacity-100'"
+          ></span>
+          <span
+            class="absolute right-1 h-2.5 w-2.5 bg-gray-800 rounded-full transition-opacity duration-300"
+            :class="isDark ? 'opacity-100' : 'opacity-0'"
+          ></span>
+          <span
+            class="inline-block h-5 w-5 rounded-full shadow-md transform transition-all duration-300 ease-in-out cursor-pointer"
+            :class="[isDark ? 'translate-x-8 bg-gray-800' : 'translate-x-0 bg-yellow-400','shadow-lg hover:scale-110 active:scale-95']"
+          ></span>
+        </button>
 
         <!-- Auth -->
         <template v-if="user">
@@ -109,7 +118,6 @@ watch(isDark, (val) => {
             Login / Register
           </Link>
         </template>
-
       </div>
     </header>
 
@@ -123,5 +131,29 @@ watch(isDark, (val) => {
       &copy; 2025 Tikeli. All rights reserved.
     </footer>
 
+    <!-- Floating Scroll to Top Button -->
+    <transition name="fade">
+      <button
+        v-if="showScrollTop"
+        @click="scrollToTop"
+        class="fixed bottom-6 right-6 flex items-center justify-center w-12 h-12 rounded-full
+               bg-blue-600 text-white shadow-lg hover:bg-blue-700 dark:bg-gray-700 dark:hover:bg-gray-600
+               transition-all duration-300 focus:outline-none hover:scale-110 active:scale-95"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+             viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
+        </svg>
+      </button>
+    </transition>
   </div>
 </template>
+
+<style scoped>
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+}
+</style>

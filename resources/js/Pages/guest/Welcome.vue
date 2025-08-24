@@ -201,53 +201,100 @@ html {
 </section>
 
 
-<!-- Pengguna Berdasarkan Role -->
+<!-- Pengguna Terbaru -->
 <section class="mb-8">
-  <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-4">
-    <h3 class="text-lg font-bold text-blue-700 dark:text-cyan-400 text-center mb-4">
+  <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-md p-6">
+    <h3 class="text-lg font-bold text-blue-700 dark:text-cyan-400 text-center mb-6 border-b pb-2">
       Pengguna Terbaru
     </h3>
-    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+
+    <div class="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
       <Link
         v-for="user in props.latestUsers"
         :key="user.id"
         :href="route('guest.profile', user.id)"
-        class="block bg-gradient-to-br from-white to-blue-50 dark:from-gray-800 dark:to-gray-700
-               border border-blue-100 dark:border-gray-600
-               rounded-lg p-4 shadow hover:shadow-md transition-all text-center hover:scale-[1.01]"
+        class="group block rounded-2xl p-[2px] transition transform hover:-translate-y-1
+               hover:shadow-xl"
+        :class="user.role === 'admin'
+          ? 'bg-gradient-to-r from-purple-500 via-pink-500 to-red-500'
+          : 'bg-gradient-to-r from-blue-400 via-cyan-400 to-teal-500'"
       >
-        <!-- Foto Profil -->
-        <div class="w-16 h-16 mx-auto mb-2 relative">
-          <div class="w-16 h-16 rounded-full border-2 border-blue-300 dark:border-cyan-500 shadow-inner overflow-hidden">
-            <img
-              :src="user.profile_photo_path
-                ? `/storage/${user.profile_photo_path}`
-                : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`"
-              alt="Foto Profil"
-              class="w-full h-full object-cover"
-            />
+        <div class="rounded-2xl bg-white dark:bg-gray-800 p-5 h-full shadow-md">
+          <!-- Foto Profil -->
+          <div class="w-16 h-16 mx-auto mb-3 relative">
+            <div
+              class="w-16 h-16 rounded-full ring-2 ring-offset-2 shadow overflow-hidden"
+              :class="user.role === 'admin'
+                ? 'ring-purple-400 dark:ring-pink-500'
+                : 'ring-blue-300 dark:ring-cyan-400'"
+            >
+              <img
+                :src="user.profile_photo_path
+                  ? `/storage/${user.profile_photo_path}`
+                  : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`"
+                alt="Foto Profil"
+                class="w-full h-full object-cover"
+              />
+            </div>
+          </div>
+
+          <!-- Nama -->
+          <p class="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate
+                    group-hover:text-blue-600 dark:group-hover:text-cyan-300 transition text-center">
+            {{ user.name }}
+          </p>
+
+          <!-- Badges -->
+          <div class="flex justify-center gap-2 mt-2 flex-wrap">
+            <!-- Role -->
+            <span
+              class="inline-block px-2 py-0.5 text-[11px] font-medium rounded-lg"
+              :class="{
+                'bg-green-100 text-green-800 border border-green-300 dark:bg-green-900 dark:text-green-300 dark:border-green-700': user.role === 'admin',
+                'bg-blue-100 text-blue-700 border border-blue-300 dark:bg-blue-900 dark:text-blue-300 dark:border-blue-700': user.role === 'operator',
+              }"
+            >
+              {{ user.role }}
+            </span>
+
+            <!-- Kalau operator => tampil likes & views -->
+            <template v-if="user.role === 'operator'">
+              <span class="inline-flex items-center px-2 py-0.5 text-[11px] font-medium rounded-lg
+                           bg-pink-100 text-pink-700 border border-pink-300
+                           dark:bg-pink-900 dark:text-pink-300 dark:border-pink-700">
+                ❤️ {{ user.total_likes || 0 }}
+              </span>
+
+              <span class="inline-flex items-center px-2 py-0.5 text-[11px] font-medium rounded-lg
+                           bg-yellow-100 text-yellow-700 border border-yellow-300
+                           dark:bg-yellow-900 dark:text-yellow-300 dark:border-yellow-700">
+                🔥 {{ user.total_hits || 0 }}
+              </span>
+            </template>
+
+          <!-- Kalau admin → ganti dengan info lain -->
+<template v-else-if="user.role === 'admin'">
+  <span
+  class="inline-flex items-center px-2 py-0.5 text-[11px] font-semibold rounded-lg
+         bg-gradient-to-r from-yellow-200 via-yellow-400 to-yellow-500 text-yellow-900
+         border border-yellow-300
+         dark:bg-gradient-to-r dark:from-yellow-600 dark:via-yellow-700 dark:to-yellow-800
+         dark:text-yellow-100 dark:border-yellow-700 shadow-md"
+>
+  🔑 Full Access
+</span>
+
+</template>
           </div>
         </div>
-
-        <!-- Nama -->
-        <p class="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">
-          {{ user.name }}
-        </p>
-
-        <!-- Badge Role Kotak -->
-        <span
-          class="inline-block mt-1 px-2 py-1 text-[11px] font-semibold rounded-md"
-          :class="{
-            'bg-green-100 text-green-800 border border-green-300 dark:bg-green-900 dark:text-green-300 dark:border-green-700': user.role === 'admin',
-            'bg-green-50 text-green-600 border border-green-200 dark:bg-green-800 dark:text-green-200 dark:border-green-700': user.role === 'operator',
-          }"
-        >
-          {{ user.role }}
-        </span>
       </Link>
     </div>
   </div>
 </section>
+
+
+
+
 
 
 
@@ -256,15 +303,16 @@ html {
 
 <!-- Top 3 Artikel Terhits -->
 <div class="mb-8">
-  <h3
-    id="top-articles"
-    class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6 flex items-center gap-2"
-  >
-    Artikel Terhits
-    <span
-      class="flex-1 h-[2px] bg-gradient-to-r from-pink-500 via-purple-500 to-transparent rounded-full"
-    ></span>
-  </h3>
+<h3
+  id="top-articles"
+  class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6 flex items-center gap-2"
+>
+  <span>Artikel Terhits</span>
+  <span
+    class="flex-1 h-[2px] bg-gradient-to-r from-pink-500 via-purple-500 to-transparent rounded-full"
+  ></span>
+</h3>
+
 
   <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
     <div
