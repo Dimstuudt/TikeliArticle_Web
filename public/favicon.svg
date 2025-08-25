@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Latar biru -->
+  <rect width="64" height="64" rx="12" fill="#2563EB"/>
+
+  <!-- Teks Tikeli -->
+  <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
+        font-size="18" font-family="Arial, sans-serif" fill="white" font-weight="bold">
+    Tikeli
+  </text>
+</svg>

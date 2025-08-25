@@ -432,9 +432,23 @@ const toggleLike = () => {
         </button>
       </form>
     </div>
-    <p v-else class="text-sm text-gray-500 dark:text-gray-400 mt-2 italic">
+
+
+   <div class="max-w-md mx-auto mt-6 text-center">
+  <!-- Jika user belum login -->
+  <template v-if="!$page.props.auth.user">
+    <p class="text-gray-700 dark:text-gray-200 text-base">
       Login terlebih dahulu untuk ikut berkomentar.
     </p>
+    <p class="text-gray-700 dark:text-gray-200 text-base mt-2">
+      Belum punya akun?
+      <a href="/register" class="text-blue-600 hover:text-blue-700 font-semibold underline">
+        Daftar Sekarang
+      </a>
+    </p>
+  </template>
+</div>
+
   </div>
 </div>
 
