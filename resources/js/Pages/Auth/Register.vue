@@ -18,6 +18,7 @@ const form = useForm({
     'g-recaptcha-response': ''
 })
 
+// Validasi realtime
 const usernameHasSpace = computed(() => /\s/.test(form.username))
 const isPasswordLongEnough = computed(() => form.password.length >= 8)
 const isPasswordStrong = computed(() =>
@@ -30,6 +31,7 @@ const isPasswordStrong = computed(() =>
 const showPassword = ref(false)
 const showConfirm = ref(false)
 
+// Submit ke backend
 const submit = () => {
     form['g-recaptcha-response'] = grecaptcha.getResponse()
     form.post(route('register'), {
@@ -40,6 +42,7 @@ const submit = () => {
     })
 }
 
+// Load script reCAPTCHA
 onMounted(() => {
     const script = document.createElement('script')
     script.src = 'https://www.google.com/recaptcha/api.js'
@@ -100,8 +103,9 @@ onMounted(() => {
                     <ul>
                         <li v-if="!isPasswordLongEnough" class="text-red-600">Minimal 8 karakter</li>
                         <li v-else-if="!isPasswordStrong" class="text-yellow-700">Gunakan huruf besar, kecil, angka, dan simbol</li>
-                        <li v-else-if="form.password !== form.password_confirmation" class="text-green-700">Konfirmasi
-                            password belum sama</li>
+                        <li v-else-if="form.password !== form.password_confirmation" class="text-green-700">
+                            Konfirmasi password belum sama
+                        </li>
                         <li v-else class="text-green-700 font-medium">✓ Password valid dan cocok!</li>
                     </ul>
                 </div>
@@ -123,15 +127,14 @@ onMounted(() => {
             </div>
 
             <!-- Google reCAPTCHA -->
-<div class="mt-6">
-    <label class="block text-sm font-medium text-gray-700 mb-2">Verifikasi Keamanan</label>
-    <div
-        class="w-full rounded-md border border-gray-300 bg-white px-4 py-3 shadow-sm flex items-center justify-center">
-        <div class="g-recaptcha" :data-sitekey="siteKey"></div>
-    </div>
-    <InputError class="mt-2" :message="form.errors['g-recaptcha-response']" />
-</div>
-
+            <div class="mt-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Verifikasi Keamanan</label>
+                <div
+                    class="w-full rounded-md border border-gray-300 bg-white px-4 py-3 shadow-sm flex items-center justify-center">
+                    <div class="g-recaptcha" :data-sitekey="siteKey"></div>
+                </div>
+                <InputError class="mt-2" :message="form.errors['g-recaptcha-response']" />
+            </div>
 
             <!-- Submit -->
             <div class="mt-4 flex items-center justify-end">

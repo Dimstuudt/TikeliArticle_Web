@@ -55,31 +55,31 @@ class RegisteredUserController extends Controller
             'g-recaptcha-response.required' => 'Verifikasi captcha wajib diisi.',
         ]);
 
-        // Verifikasi ke Google reCAPTCHA
+        // ✅ Verifikasi ke Google reCAPTCHA
         $response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
-            'secret' => config('services.recaptcha.secret'),
+            'secret'   => env('VITE_RECAPTCHA_SECRET_KEY'),
             'response' => $request->input('g-recaptcha-response'),
             'remoteip' => $request->ip(),
-        ]);
+        ])->json();
 
-        if (!($response->json('success'))) {
+        if (!($response['success'] ?? false)) {
             return back()->withErrors([
                 'g-recaptcha-response' => 'Verifikasi captcha gagal. Silakan coba lagi.',
             ])->withInput();
         }
 
-        // Simpan user jika captcha sukses
+        // ✅ Simpan user jika captcha sukses
         $user = User::create([
-            'name' => $request->name,
+            'name'     => $request->name,
             'username' => $request->username,
-            'email' => $request->email,
+            'email'    => $request->email,
             'password' => Hash::make($request->password),
-            'role' => 'operator', // otomatis
+            'role'     => 'operator', // otomatis
         ]);
 
         event(new Registered($user));
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        return redirect()->route('dashboard');
     }
 }
