@@ -142,14 +142,16 @@ html {
 >
   <!-- Decorative background shapes -->
   <div
-    class="absolute top-0 left-0 w-80 h-80 bg-cyan-200
+    class="absolute top-[-4rem] left-[-4rem] w-96 h-96 bg-cyan-200
            dark:bg-cyan-900
-           rounded-full mix-blend-multiply filter blur-3xl opacity-25"
+           rounded-full mix-blend-multiply filter blur-3xl opacity-30
+           animate-float-slow"
   ></div>
   <div
-    class="absolute bottom-0 right-0 w-96 h-96 bg-blue-300
+    class="absolute bottom-[-6rem] right-[-6rem] w-[28rem] h-[28rem] bg-blue-300
            dark:bg-blue-900
-           rounded-full mix-blend-multiply filter blur-3xl opacity-25"
+           rounded-full mix-blend-multiply filter blur-3xl opacity-25
+           animate-float-slower"
   ></div>
 
   <!-- Content -->
@@ -160,12 +162,12 @@ html {
     >
       <span
         class="block text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-blue-800
-               dark:from-cyan-400 dark:to-blue-500"
+               dark:from-cyan-400 dark:to-blue-500 bg-[length:200%_200%] animate-gradient-flow"
       >
         Selamat Datang di Platform Artikel Modern
       </span>
       <span
-        class="block text-cyan-500 dark:text-cyan-400 drop-shadow-md"
+        class="block text-cyan-600 dark:text-cyan-400 drop-shadow-md"
       >
         Tikeli
       </span>
@@ -173,7 +175,7 @@ html {
 
     <!-- Subtitle -->
     <p
-      class="text-blue-700 dark:text-gray-300 text-lg md:text-xl leading-relaxed mb-8"
+      class="text-blue-700 dark:text-gray-300 text-lg md:text-xl leading-relaxed mb-10"
     >
       Ruang inspirasi, pengetahuan, dan informasi terpercaya dari para penulis terbaik kami.
     </p>
@@ -182,8 +184,9 @@ html {
     <div class="flex justify-center gap-4">
       <a
         href="#top-articles"
-        class="inline-block bg-cyan-600 text-white font-semibold px-8 py-3 rounded-xl shadow-md
-               hover:bg-cyan-500 dark:bg-cyan-500 dark:hover:bg-cyan-400 transition-all duration-300"
+        class="inline-block bg-cyan-600 text-white font-semibold px-8 py-3 rounded-xl shadow-lg
+               hover:bg-cyan-500 dark:bg-cyan-500 dark:hover:bg-cyan-400
+               hover:shadow-[0_0_20px_rgba(34,211,238,0.6)] transition-all duration-300 hover:scale-[1.05]"
       >
         Jelajahi Artikel
       </a>
@@ -192,7 +195,7 @@ html {
         class="inline-block border border-cyan-600 text-cyan-700 font-semibold px-8 py-3 rounded-xl
                hover:bg-cyan-50
                dark:border-cyan-400 dark:text-cyan-300 dark:hover:bg-gray-800
-               transition-all duration-300"
+               transition-all duration-300 hover:scale-[1.03]"
       >
         Tentang Kami
       </a>
@@ -606,50 +609,82 @@ html {
 
 
 
-     <!-- Pagination -->
+<!-- Pagination + CTA -->
 <div
-  class="flex justify-between items-center mt-10"
+  class="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mt-10"
   v-if="props.articles.total > props.articles.per_page"
 >
-  <!-- Tombol Sebelumnya -->
-  <button
-    @click="goToPage(props.articles.prev_page_url)"
-    :disabled="!props.articles.prev_page_url"
-    class="flex items-center gap-2 px-5 py-2.5 rounded-md text-white font-medium
-           shadow-md transition-all duration-200
-           bg-gradient-to-r from-blue-600 via-sky-500 to-cyan-400
-           hover:from-blue-700 hover:via-sky-600 hover:to-cyan-500
-           active:scale-[0.97] hover:shadow-lg
-           disabled:opacity-40 disabled:cursor-not-allowed"
-  >
-    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-    </svg>
-    Sebelumnya
-  </button>
+  <div class="flex flex-col md:flex-row justify-between items-center gap-6 mt-6 w-full">
 
-  <!-- Info Halaman -->
-  <span class="text-gray-600 font-medium">
-    Halaman {{ props.articles.current_page }} dari {{ props.articles.last_page }}
-  </span>
+  <!-- Bagian Pagination -->
+  <div class="flex items-center gap-4 flex-1">
+    <!-- Tombol Sebelumnya -->
+    <button
+      @click="goToPage(props.articles.prev_page_url)"
+      :disabled="!props.articles.prev_page_url"
+      class="flex-1 flex items-center justify-center gap-2 px-5 py-2.5 rounded-md text-white font-medium
+             shadow-md transition-all duration-200
+             bg-gradient-to-r from-blue-600 via-sky-500 to-cyan-400
+             hover:from-blue-700 hover:via-sky-600 hover:to-cyan-500
+             active:scale-[0.97] hover:shadow-lg
+             disabled:opacity-40 disabled:cursor-not-allowed"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+      </svg>
+      Sebelumnya
+    </button>
 
-  <!-- Tombol Selanjutnya -->
-  <button
-    @click="goToPage(props.articles.next_page_url)"
-    :disabled="!props.articles.next_page_url"
-    class="flex items-center gap-2 px-5 py-2.5 rounded-md text-white font-medium
-           shadow-md transition-all duration-200
-           bg-gradient-to-r from-blue-600 via-sky-500 to-cyan-400
-           hover:from-blue-700 hover:via-sky-600 hover:to-cyan-500
-           active:scale-[0.97] hover:shadow-lg
-           disabled:opacity-40 disabled:cursor-not-allowed"
-  >
-    Selanjutnya
-    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-    </svg>
-  </button>
+    <!-- Info Halaman -->
+    <span class="flex-1 text-center text-gray-600 font-medium whitespace-nowrap">
+      Halaman {{ props.articles.current_page }} dari {{ props.articles.last_page }}
+    </span>
+
+    <!-- Tombol Selanjutnya -->
+    <button
+      @click="goToPage(props.articles.next_page_url)"
+      :disabled="!props.articles.next_page_url"
+      class="flex-1 flex items-center justify-center gap-2 px-5 py-2.5 rounded-md text-white font-medium
+             shadow-md transition-all duration-200
+             bg-gradient-to-r from-blue-600 via-sky-500 to-cyan-400
+             hover:from-blue-700 hover:via-sky-600 hover:to-cyan-500
+             active:scale-[0.97] hover:shadow-lg
+             disabled:opacity-40 disabled:cursor-not-allowed"
+    >
+      Selanjutnya
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+      </svg>
+    </button>
+  </div>
+
+<!-- CTA -->
+<div class="relative overflow-hidden bg-gradient-to-r from-blue-600 via-indigo-700 to-blue-800
+            text-white px-6 py-3 rounded-xl shadow-md text-center md:text-left md:ml-6">
+
+  <!-- Pattern titik-titik halus -->
+  <div class="absolute inset-0 opacity-15
+              bg-[radial-gradient(circle_at_center,white_1px,transparent_1px)]
+              [background-size:20px_20px]"></div>
+
+  <!-- Overlay gelap tipis -->
+  <div class="absolute inset-0 bg-black/10"></div>
+
+  <div class="relative z-10">
+    <h3 class="text-lg font-semibold mb-1">Gabung dengan Tikeli</h3>
+    <p class="text-sm text-gray-100 mb-2">Bagikan ide hebatmu bersama komunitas.</p>
+    <a href="/register"
+       class="inline-block bg-yellow-400 hover:bg-yellow-500 text-gray-900 px-4 py-2
+              rounded-lg font-semibold shadow-md transition transform hover:scale-[1.03] text-sm">
+      Mulai Menulis
+    </a>
+  </div>
 </div>
+
+</div>
+</div>
+
+
 
     </main>
   </PublicLayout>
@@ -671,5 +706,37 @@ html {
 .fade-leave-to {
   opacity: 0;
   transform: translateY(-5px);
+}
+
+@keyframes gradient-x {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+.animate-gradient-x {
+  background-size: 200% 200%;
+  animation: gradient-x 5s ease infinite;
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-25px) scale(1.05); }
+}
+@keyframes float-slower {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(25px) scale(1.08); }
+}
+@keyframes gradient-flow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.animate-float-slow {
+  animation: float-slow 12s ease-in-out infinite;
+}
+.animate-float-slower {
+  animation: float-slower 16s ease-in-out infinite;
+}
+.animate-gradient-flow {
+  animation: gradient-flow 6s linear infinite;
 }
 </style>

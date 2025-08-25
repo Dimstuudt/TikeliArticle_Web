@@ -206,7 +206,39 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/my-profile/background', [ProfileController::class, 'updateBackgroundPhoto'])->name('my.profile.background');
 });
 
+// search user
+Route::get('/api/search-users', function(Request $request) {
+    $q = $request->input('q');
+    if (!$q) return [];
 
+    return User::query()
+        ->where('name', 'like', "%{$q}%")
+        ->orWhere('role', 'like', "%{$q}%")
+        ->limit(5)
+        ->get(['id', 'name', 'role', 'bio', 'profile_photo_path', 'created_at']) // ambil created_at juga
+        ->map(function($user) {
+            return [
+                'id' => $user->id,
+                'name' => $user->name,
+                'role' => $user->role,
+                'bio' => $user->bio,
+                'profile_photo_url' => $user->profile_photo_path
+                    ? asset('storage/' . $user->profile_photo_path)
+                    : null,
+                'created_at' => $user->created_at?->toDateString(), // contoh: 2025-08-24
+            ];
+        });
+});
+
+
+//footer link about contact
+Route::get('/about', function () {
+    return Inertia::render('About');
+})->name('about');
+
+Route::get('/contact', function () {
+    return Inertia::render('Contact');
+})->name('contact');
 
 // === Auth routes dari Laravel Breeze ===
 require __DIR__.'/auth.php';

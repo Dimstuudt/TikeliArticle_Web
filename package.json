@@ -21,6 +21,7 @@
         "vue": "^3.4.0"
     },
     "dependencies": {
+        "@fortawesome/fontawesome-free": "^7.0.0",
         "@heroicons/vue": "^2.2.0",
         "@tiptap/extension-bold": "^3.0.9",
         "@tiptap/extension-italic": "^3.0.9",
