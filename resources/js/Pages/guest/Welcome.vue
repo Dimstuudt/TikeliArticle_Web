@@ -16,6 +16,7 @@ const props = defineProps({
   filters: Object, // biar nilai search/category tetap setelah reload
   hits: Number, // total hits semua artikel
   likes: Number, // total likes semua artikel
+    comments: Number, // total komentar semua artikel
 })
 
 const now = ref(dayjs())
@@ -372,30 +373,42 @@ html {
               </span>
             </div>
 
-            <!-- Hits & Likes -->
-            <div class="flex items-center gap-2">
-              <!-- Hits -->
-              <span
-                class="inline-flex items-center px-2.5 py-1 rounded-md text-white font-semibold
-                       bg-gradient-to-r from-blue-500 via-teal-400 to-green-400
-                       hover:scale-105 transform transition duration-300
-                       shadow-md hover:shadow-[0_0_15px_rgba(0,255,255,0.7)]"
-              >
-                <span class="mr-1 animate-pulse">🔥</span>
-                {{ article.hits ?? 0 }}
-              </span>
+        <!-- Hits, Likes & Comments -->
+<div class="flex items-center gap-2">
+  <!-- Hits -->
+  <span
+    class="inline-flex items-center px-2.5 py-1 rounded-md text-white font-semibold
+           bg-gradient-to-r from-blue-500 via-teal-400 to-green-400
+           hover:scale-105 transform transition duration-300
+           shadow-md hover:shadow-[0_0_15px_rgba(0,255,255,0.7)]"
+  >
+    <span class="mr-1 animate-pulse">🔥</span>
+    {{ article.hits ?? 0 }}
+  </span>
 
-              <!-- Likes -->
-              <span
-                class="inline-flex items-center px-2.5 py-1 rounded-md text-white font-semibold
-                       bg-gradient-to-r from-pink-500 via-red-400 to-orange-400
-                       hover:scale-105 transform transition duration-300
-                       shadow-md hover:shadow-[0_0_15px_rgba(255,0,100,0.7)]"
-              >
-                <span class="mr-1">❤️</span>
-                {{ article.likes ?? 0 }}
-              </span>
-            </div>
+  <!-- Likes -->
+  <span
+    class="inline-flex items-center px-2.5 py-1 rounded-md text-white font-semibold
+           bg-gradient-to-r from-pink-500 via-red-400 to-orange-400
+           hover:scale-105 transform transition duration-300
+           shadow-md hover:shadow-[0_0_15px_rgba(255,0,100,0.7)]"
+  >
+    <span class="mr-1 animate-pulse">❤️</span>
+    {{ article.likes ?? 0 }}
+  </span>
+
+  <!-- Comments -->
+  <span
+    class="inline-flex items-center px-2.5 py-1 rounded-md text-white font-semibold
+           bg-gradient-to-r from-indigo-500 via-purple-500 to-fuchsia-500
+           hover:scale-105 transform transition duration-300
+           shadow-md hover:shadow-[0_0_15px_rgba(180,0,255,0.7)]"
+  >
+    <span class="mr-1 animate-pulse">💬</span>
+    {{ article.comments_count ?? 0 }}
+  </span>
+</div>
+
           </div>
         </div>
       </div>
@@ -582,23 +595,31 @@ html {
     }}
   </div>
 
-  <!-- Badge hits & likes -->
-  <div class="flex items-center gap-2">
-    <span
-      class="inline-flex items-center bg-yellow-100 dark:bg-yellow-900
-             text-yellow-700 dark:text-yellow-200 text-xs font-semibold
-             px-2 py-0.5 rounded-full"
-    >
-      🔄 {{ article.hits ?? 0 }}
-    </span>
-    <span
-      class="inline-flex items-center bg-red-100 dark:bg-red-900
-             text-red-700 dark:text-red-200 text-xs font-semibold
-             px-2 py-0.5 rounded-full"
-    >
-      ❤️ {{ article.likes ?? 0 }}
-    </span>
-  </div>
+  <!-- Badge hits, likes & komentar -->
+<div class="flex items-center gap-2">
+  <span
+    class="inline-flex items-center bg-yellow-100 dark:bg-yellow-900
+           text-yellow-700 dark:text-yellow-200 text-xs font-semibold
+           px-2 py-0.5 rounded-full"
+  >
+    🔄 {{ article.hits ?? 0 }}
+  </span>
+  <span
+    class="inline-flex items-center bg-red-100 dark:bg-red-900
+           text-red-700 dark:text-red-200 text-xs font-semibold
+           px-2 py-0.5 rounded-full"
+  >
+    ❤️ {{ article.likes ?? 0 }}
+  </span>
+  <span
+    class="inline-flex items-center bg-blue-100 dark:bg-blue-900
+           text-blue-700 dark:text-blue-200 text-xs font-semibold
+           px-2 py-0.5 rounded-full"
+  >
+    💬 {{ article.comments_count ?? 0 }}
+  </span>
+</div>
+
 </div>
 
 

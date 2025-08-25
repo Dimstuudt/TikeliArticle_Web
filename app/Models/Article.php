@@ -40,5 +40,11 @@ public function articleLikes()
     return $this->hasManyThrough(ArticleLike::class, Article::class);
 }
 
+//comment
+public function comments()
+{
+    return $this->hasMany(Comment::class);
+
+}
 
 }

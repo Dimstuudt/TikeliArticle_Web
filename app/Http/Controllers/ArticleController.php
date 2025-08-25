@@ -300,6 +300,7 @@ class ArticleController extends Controller
              'hits'  => $article->hits,
         'views' => DB::table('article_views')->where('article_id', $article->id)->count(),
           'likes' => $article->likes()->count(), // 🔥 jumlah like
+           'comments_count' => $article->comments()->count(), // 🔥 jumlah komentar
             'cover' => $article->cover ? asset('storage/' . $article->cover) : null,
             'updated_at' => $article->updated_at->toISOString(),
             'created_at' => $article->created_at->diffForHumans(),
@@ -329,6 +330,7 @@ class ArticleController extends Controller
         'title' => $article->title,
         'summary' => $article->summary,
           'likes' => $article->likes()->count(), // 🔥 jumlah like
+           'comments_count' => $article->comments()->count(), // 🔥 jumlah komentar
         'cover' => $article->cover ? asset('storage/' . $article->cover) : null,
         'hits' => $article->hits,
         'created_at' => $article->created_at->toISOString(),
@@ -416,6 +418,26 @@ public function guestShow($id)
     $likeCount = $article->likes()->count();
     $isLiked   = auth()->check() ? $article->likedBy(auth()->user()) : false;
 
+    /** 🔹 6.5. Ambil komentar artikel (dengan user & foto profil) */
+    $comments = $article->comments()
+        ->with('user')
+        ->latest()
+        ->get()
+        ->map(function ($comment) {
+            return [
+                'id'         => $comment->id,
+                'body'       => $comment->body,
+               'created_at' => $comment->created_at->timezone('Asia/Jakarta')->toDateTimeString(),
+                'user'       => [
+                    'id'                 => $comment->user->id,
+                    'name'               => $comment->user->name,
+                      'profile_photo_path' => $comment->user->profile_photo_path
+                    ? asset('storage/' . $comment->user->profile_photo_path)
+                    : null,
+                ],
+            ];
+        });
+
     /** 🔹 7. Kirim ke Inertia */
     return Inertia::render('guest/Articles/Show', [
         'article' => [
@@ -441,8 +463,13 @@ public function guestShow($id)
         'isLiked'         => $isLiked,
         'from'            => request('from'),
         'recommendations' => $recommendations,
+
+        // 🔹 Tambahan komentar
+        'comments'   => $comments,
+        'canComment' => auth()->check(),
     ]);
 }
+
 
     private function authorizeEdit(Article $article)
     {

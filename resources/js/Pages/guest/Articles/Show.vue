@@ -1,5 +1,5 @@
 <script setup>
-import { Head, router } from '@inertiajs/vue3'
+import { Head, router, useForm } from '@inertiajs/vue3'
 import { defineProps, ref } from 'vue'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
 import dayjs from 'dayjs'
@@ -14,12 +14,30 @@ const props = defineProps({
   recommendations: Array,
   likeCount: Number,
   isLiked: Boolean,
+  comments: Array,     // 🔹 tambahin props komentar
+  canComment: Boolean, // 🔹 tambahin props cek login
 })
 
-// bikin state reaktif biar bisa berubah setelah klik
+// state like
 const likes = ref(props.likeCount)
 const liked = ref(props.isLiked)
 
+// form komentar
+const form = useForm({
+  body: ''
+})
+
+// kirim komentar
+const submitComment = () => {
+  form.post(route('comments.store', props.article.id), {
+    preserveScroll: true,
+    onSuccess: () => {
+      form.reset()
+    }
+  })
+}
+
+// navigasi back
 const goBack = () => {
   if (props.from) {
     window.location.href = props.from
@@ -30,8 +48,14 @@ const goBack = () => {
   }
 }
 
+// format tanggal artikel
 const formatDate = (date) => {
   return dayjs(date).format('DD MMMM YYYY')
+}
+
+// format tanggal komentar
+const formatCommentDate = (date) => {
+  return dayjs(date).format('DD MMMM YYYY HH:mm')
 }
 
 // like
@@ -39,7 +63,6 @@ const toggleLike = () => {
   router.post(route('articles.like', props.article.id), {}, {
     preserveScroll: true,
     onSuccess: () => {
-      // update frontend tanpa reload
       liked.value = !liked.value
       likes.value = liked.value ? likes.value + 1 : likes.value - 1
     }
@@ -295,19 +318,126 @@ const toggleLike = () => {
     </div>
   </div>
 
-  <!-- Komentar Section -->
-  <div
-    class="bg-white dark:bg-gray-900 rounded-xl shadow p-4
-           border border-gray-200 dark:border-gray-700"
+<!-- Komentar Section -->
+<div
+  class="bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-6
+         border border-gray-200 dark:border-gray-700 mt-10"
+>
+  <!-- Judul -->
+  <h3
+    class="flex items-center text-lg font-bold text-purple-700 dark:text-purple-400
+           border-b border-gray-200 dark:border-gray-700 pb-3"
   >
-    <h3
-      class="text-lg font-bold text-purple-700 dark:text-purple-400
-             border-b border-gray-200 dark:border-gray-700 pb-2"
-    >
-      Komentar 💬
-    </h3>
-    <p class="text-sm text-gray-500 dark:text-gray-400">Coming soon...</p>
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v6a2 2 0 01-2 2h-3l-4 4z" />
+    </svg>
+    Komentar 💬
+  </h3>
+
+  <!-- Jika belum ada komentar -->
+  <div v-if="!comments || comments.length === 0" class="text-center py-6">
+    <div class="text-4xl mb-2">💭</div>
+    <p class="text-sm text-gray-500 dark:text-gray-400">
+      Belum ada yang berkomentar.<br/>
+      <span class="text-purple-600 dark:text-purple-400 font-medium">Jadilah yang pertama!</span>
+    </p>
   </div>
+
+<!-- Daftar komentar -->
+<div
+  v-else
+  class="mt-4 space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar"
+>
+  <div
+    v-for="comment in comments"
+    :key="comment.id"
+    class="flex items-start gap-3"
+  >
+    <!-- Foto profil -->
+    <img
+      v-if="comment.user.profile_photo_path"
+      :src="comment.user.profile_photo_path"
+      alt="User"
+      class="w-11 h-11 rounded-full object-cover border border-purple-300 shadow"
+    />
+    <div
+      v-else
+      class="w-11 h-11 rounded-full bg-purple-500 flex items-center justify-center text-white font-bold shadow"
+    >
+      {{ comment.user.name.charAt(0).toUpperCase() }}
+    </div>
+
+    <!-- Kotak komentar -->
+    <div
+      class="flex-1 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700
+             rounded-xl p-3 shadow-sm hover:shadow-md transition flex flex-col"
+    >
+      <!-- Nama -->
+      <div class="flex items-center justify-between">
+        <a
+          :href="`/users/${comment.user.id}`"
+          class="font-semibold text-sm text-purple-600 dark:text-purple-400 hover:underline"
+        >
+          {{ comment.user.name }}
+        </a>
+      </div>
+
+    <!-- Isi komentar -->
+<div
+  class="mt-2 inline-block max-w-full bg-gray-100 dark:bg-gray-800
+         px-4 py-2 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700"
+>
+  <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+    {{ comment.body }}
+  </p>
+</div>
+
+
+      <!-- Tanggal -->
+      <div class="text-right mt-3">
+        <span class="text-xs text-gray-400 italic">
+          {{ formatCommentDate(comment.created_at) }}
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+  <!-- Form komentar -->
+  <div class="mt-6">
+    <div v-if="props.canComment">
+      <form @submit.prevent="submitComment" class="flex flex-col gap-3">
+        <textarea
+          v-model="form.body"
+          class="w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800
+                 focus:ring-2 focus:ring-purple-400 focus:border-purple-400
+                 transition px-4 py-3 resize-none shadow-sm"
+          rows="3"
+          placeholder="Tulis komentar kamu..."
+        />
+        <!-- error pesan -->
+        <div v-if="form.errors.body" class="text-sm text-red-500">
+          {{ form.errors.body }}
+        </div>
+
+        <button
+          type="submit"
+          class="self-end px-5 py-2 bg-purple-600 text-white rounded-xl
+                 font-medium shadow hover:bg-purple-700 active:scale-95
+                 transition disabled:opacity-50"
+          :disabled="form.processing || !form.body"
+        >
+          Kirim 🚀
+        </button>
+      </form>
+    </div>
+    <p v-else class="text-sm text-gray-500 dark:text-gray-400 mt-2 italic">
+      Login terlebih dahulu untuk ikut berkomentar.
+    </p>
+  </div>
+</div>
+
 </aside>
 
 

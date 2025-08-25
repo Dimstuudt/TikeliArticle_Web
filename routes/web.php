@@ -16,7 +16,7 @@ use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\ArticleLikeController;
 use App\Http\Controllers\Guest\UserProfileController;
-
+use App\Http\Controllers\CommentController;
 
 // Middleware
 use App\Http\Middleware\PreventBackHistory;
@@ -229,6 +229,12 @@ Route::get('/api/search-users', function(Request $request) {
             ];
         });
 });
+
+//komen
+
+Route::post('/articles/{article}/comments', [CommentController::class, 'store'])
+    ->middleware('auth')
+    ->name('comments.store');
 
 
 //footer link about contact
