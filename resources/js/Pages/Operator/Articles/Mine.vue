@@ -123,7 +123,7 @@ const totalByStatus = computed(() => {
             Belum ada artikel yang ditemukan.
           </div>
 
-       <!-- Daftar artikel -->
+ <!-- Daftar artikel -->
 <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
   <div
     v-for="article in articles"
@@ -168,12 +168,12 @@ const totalByStatus = computed(() => {
       </span>
     </div>
 
-    <!-- Wrapper Summary + Alasan -->
+    <!-- Wrapper Summary + Status/Alasan -->
     <div class="flex flex-col flex-grow mt-2 mb-2">
       <!-- Ringkasan -->
       <div
         class="text-sm text-gray-700 overflow-auto p-2 border border-gray-100 rounded flex-grow"
-        :style="{ minHeight: '60px', maxHeight: '120px' }"
+        style="min-height: 60px; max-height: 120px;"
       >
         {{ stripHtml(article.summary) }}
       </div>
@@ -181,9 +181,20 @@ const totalByStatus = computed(() => {
       <!-- Alasan ditolak -->
       <div
         v-if="article.status === 'rejected' && article.rejection_reason"
-        class="bg-red-50 text-red-700 text-xs p-3 rounded-md border border-red-200 mt-2"
+        class="text-xs p-2 rounded-md border border-red-200 bg-red-50 mt-2 overflow-auto"
+        style="min-height: 40px; max-height: 60px;"
       >
-        <strong>Alasan Ditolak:</strong> {{ article.rejection_reason }}
+        <strong class="text-red-700">Alasan Ditolak:</strong>
+        <span class="text-red-700">{{ article.rejection_reason }}</span>
+      </div>
+
+      <!-- Approved -->
+      <div
+        v-if="article.status === 'approved'"
+        class="text-xs p-2 rounded-md border border-green-200 bg-green-50 mt-2 overflow-auto"
+        style="min-height: 40px; max-height: 60px;"
+      >
+        <strong class="text-green-700">Approved</strong>
       </div>
     </div>
 
@@ -207,6 +218,7 @@ const totalByStatus = computed(() => {
     </div>
   </div>
 </div>
+
 
 
 

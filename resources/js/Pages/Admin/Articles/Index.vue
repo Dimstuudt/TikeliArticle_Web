@@ -7,10 +7,12 @@ const props = defineProps({
   articles: Array,
 })
 
+// Approve artikel
 const approve = (id) => {
   router.put(`/admin/articles/${id}/approve`, {}, { preserveScroll: true })
 }
 
+// Reject modal
 const showRejectModal = ref(false)
 const rejectReason = ref('')
 const rejectingArticleId = ref(null)
@@ -40,18 +42,21 @@ const reject = () => {
   )
 }
 
+// Strip HTML dari ringkasan
 const stripHtml = (html) => {
   const div = document.createElement('div')
   div.innerHTML = html
   return div.textContent || div.innerText || ''
 }
 
+// Filter artikel pending & rejected
 const filteredArticles = computed(() =>
   props.articles.filter(article =>
     ['pending', 'rejected'].includes(article.status)
   )
 )
 
+// Modal detail artikel
 const showModal = ref(false)
 const selectedArticle = ref(null)
 
@@ -77,19 +82,24 @@ const closeModal = () => {
     <div class="py-8">
       <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <div class="bg-white shadow-sm sm:rounded-lg p-6">
+
+          <!-- Pesan jika tidak ada artikel -->
           <div v-if="filteredArticles.length === 0" class="text-gray-500 text-center">
             Tidak ada artikel yang perlu ditinjau.
           </div>
 
+          <!-- Grid Artikel -->
           <div v-else class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div
               v-for="article in filteredArticles"
               :key="article.id"
-              class="border border-gray-200 rounded-lg shadow p-4 bg-white space-y-4"
+              class="border border-gray-200 rounded-lg shadow p-4 bg-white flex flex-col justify-between"
             >
+              <!-- Informasi Artikel -->
               <fieldset class="space-y-2">
                 <legend class="text-sm font-bold text-gray-700 mb-2">Informasi Artikel</legend>
 
+                <!-- Cover Artikel -->
                 <div>
                   <label class="block text-xs text-gray-600">Cover:</label>
                   <img
@@ -101,18 +111,26 @@ const closeModal = () => {
                   <div v-else class="text-sm text-gray-400 italic">Tidak ada cover</div>
                 </div>
 
+                <!-- Judul Artikel -->
                 <div>
                   <label class="block text-xs text-gray-600">Judul:</label>
                   <p class="text-base font-medium text-gray-800">{{ article.title }}</p>
                 </div>
               </fieldset>
 
-              <fieldset class="border border-gray-200 rounded p-2">
+              <!-- Ringkasan Artikel dengan scroll jika panjang -->
+              <fieldset class="border border-gray-200 rounded p-2 mt-2 flex-1 overflow-hidden">
                 <legend class="text-xs font-semibold text-gray-500 px-1">Ringkasan</legend>
-                <p class="text-sm text-gray-700 line-clamp-3">{{ stripHtml(article.summary) }}</p>
+                <div
+                  class="text-sm text-gray-700 overflow-y-auto"
+                  style="min-height: 3rem; max-height: 6rem;"
+                >
+                  {{ stripHtml(article.summary) }}
+                </div>
               </fieldset>
 
-              <div>
+              <!-- Status & Kategori -->
+              <div class="mt-2">
                 <label class="block text-xs text-gray-600">Status & Kategori:</label>
                 <div class="flex flex-wrap gap-2 mt-1">
                   <span
@@ -132,10 +150,15 @@ const closeModal = () => {
                 </div>
               </div>
 
-              <div class="flex flex-wrap justify-between items-center gap-2 pt-2 border-t border-gray-200">
-                <button @click="openModal(article)" class="bg-blue-500 text-white text-xs px-4 py-1 rounded hover:bg-blue-600 transition">
+              <!-- Tombol Aksi: Lihat, Setujui, Tolak -->
+              <div class="flex flex-wrap justify-between items-center gap-2 pt-2 border-t border-gray-200 mt-2">
+                <button
+                  @click="openModal(article)"
+                  class="bg-blue-500 text-white text-xs px-4 py-1 rounded hover:bg-blue-600 transition"
+                >
                   Lihat Detail
                 </button>
+
                 <div v-if="article.status === 'pending'" class="flex gap-2">
                   <button
                     @click="approve(article.id)"
@@ -225,10 +248,12 @@ const closeModal = () => {
         </div>
       </div>
     </div>
+
   </AuthenticatedLayout>
 </template>
 
 <style scoped>
+/* Membatasi ringkasan agar scroll internal muncul */
 .line-clamp-3 {
   display: -webkit-box;
   -webkit-line-clamp: 3;
