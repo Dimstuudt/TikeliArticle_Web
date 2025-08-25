@@ -87,28 +87,44 @@ const now = ref(new Date())
         </div>
       </div>
 
-      <!-- Kanan: Statistik mini -->
-   <!-- Kanan: Statistik mini -->
-<div class="grid grid-cols-3 gap-2 text-center text-xs min-w-[160px]">
+<!-- Kanan: Statistik mini -->
+<div class="grid grid-cols-5 gap-2 text-center text-xs min-w-[220px]">
   <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-2 shadow-sm">
     <p class="font-bold text-gray-900 dark:text-gray-100">
       {{ stats?.hits ?? 'Tidak diketahui' }}
     </p>
     <p class="text-[10px] text-gray-500">Hits</p>
   </div>
+
   <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-2 shadow-sm">
     <p class="font-bold text-gray-900 dark:text-gray-100">
       {{ stats?.views ?? 'Tidak diketahui' }}
     </p>
     <p class="text-[10px] text-gray-500">Views</p>
   </div>
+
   <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-2 shadow-sm">
     <p class="font-bold text-gray-900 dark:text-gray-100">
       {{ stats?.likes ?? 'Tidak diketahui' }}
     </p>
     <p class="text-[10px] text-gray-500">Likes</p>
   </div>
+
+  <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-2 shadow-sm">
+    <p class="font-bold text-gray-900 dark:text-gray-100">
+      {{ stats?.comments ?? '0' }}
+    </p>
+    <p class="text-[10px] text-gray-500">Comments</p>
+  </div>
+
+  <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-2 shadow-sm">
+    <p class="font-bold text-gray-900 dark:text-gray-100">
+      {{ stats?.approved_articles ?? '0' }}
+    </p>
+    <p class="text-[10px] text-gray-500">Artikel</p>
+  </div>
 </div>
+
 
 </div>
 </div>

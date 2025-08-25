@@ -36,7 +36,12 @@ const user = usePage().props.auth.user
                 <NavLink :href="route('admin.articles.index')" :active="route().current('admin.articles.index')">
                   Manajemen Artikel
                 </NavLink>
-                <NavLink :href="route('admin.approved-articles.index')" :active="route().current('admin.approved- articles.index')">Approved</NavLink>
+                <NavLink
+                  :href="route('admin.approved-articles.index')"
+                  :active="route().current('admin.approved-articles.index')"
+                >
+                  Approved
+                </NavLink>
               </template>
 
               <template v-if="role === 'operator'">
@@ -54,7 +59,9 @@ const user = usePage().props.auth.user
           <div class="hidden sm:flex sm:items-center">
             <Dropdown align="right" width="48">
               <template #trigger>
-                <button class="flex items-center text-sm font-medium text-gray-700 hover:text-blue-700 focus:outline-none">
+                <button
+                  class="flex items-center text-sm font-medium text-gray-700 hover:text-blue-700 focus:outline-none"
+                >
                   <img
                     :src="user.profile_photo_url"
                     class="h-9 w-9 rounded-full object-cover border-2 border-blue-500"
@@ -64,7 +71,7 @@ const user = usePage().props.auth.user
                   <svg class="ml-2 h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                     <path
                       fill-rule="evenodd"
-                      d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                      d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0-1.414z"
                       clip-rule="evenodd"
                     />
                   </svg>
@@ -107,7 +114,13 @@ const user = usePage().props.auth.user
       </div>
 
       <!-- Mobile Menu -->
-      <div :class="{ block: showingNavigationDropdown, hidden: !showingNavigationDropdown }" class="sm:hidden bg-blue-50">
+      <div
+        :class="[
+          showingNavigationDropdown ? 'block' : 'hidden',
+          role === 'admin' ? 'bg-blue-900 text-gray-200' : 'bg-blue-50 text-gray-800',
+          'sm:hidden'
+        ]"
+      >
         <div class="pt-2 pb-3 space-y-1">
           <ResponsiveNavLink :href="route('dashboard')" :active="route().current('dashboard')">
             Dashboard
@@ -138,16 +151,35 @@ const user = usePage().props.auth.user
       </div>
     </nav>
 
-    <!-- Header -->
-    <header v-if="$slots.header" class="bg-white shadow-sm">
-      <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        <slot name="header" />
-      </div>
-    </header>
+  <!-- Header -->
+<header v-if="$slots.header" class="bg-gradient-to-r from-blue-500 to-blue-700 shadow-md text-white">
+  <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+    <slot name="header" />
+  </div>
+</header>
+
 
     <!-- Main Content -->
-    <main>
-      <slot />
-    </main>
+<!-- Main Content -->
+<main class="flex-1 min-h-screen bg-gradient-to-br from-blue-100 via-blue-200 to-blue-300">
+  <div class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
+    <!-- Isi konten -->
+    <slot />
+  </div>
+</main>
+
+<!-- Footer -->
+<footer class="bg-blue-600 text-white py-6 mt-auto shadow-inner">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+    <p class="text-sm">&copy; {{ new Date().getFullYear() }} Tikeli. All rights reserved.</p>
+    <nav class="flex gap-4 text-sm">
+      <a href="/about" class="hover:underline">Tentang</a>
+      <a href="#" class="hover:underline">Kebijakan</a>
+      <a href="/contact" class="hover:underline">Kontak</a>
+    </nav>
+  </div>
+</footer>
+
+
   </div>
 </template>
