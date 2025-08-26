@@ -180,6 +180,8 @@ onUnmounted(() => {
         <li><Link href="/welcome" class="hover:text-yellow-300 transition">Home</Link></li>
         <li><Link href="/about" class="hover:text-yellow-300 transition">Tentang</Link></li>
         <li><Link href="/contact" class="hover:text-yellow-300 transition">Kontak</Link></li>
+        <li><Link href="/privacy" class="hover:text-yellow-300 transition">Kebijakan Privasi</Link></li>
+        <li><Link href="/terms" class="hover:text-yellow-300 transition">Syarat dan Ketentuan</Link></li>
       </ul>
     </div>
 

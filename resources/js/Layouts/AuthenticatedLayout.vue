@@ -174,8 +174,9 @@ const user = usePage().props.auth.user
     <p class="text-sm">&copy; {{ new Date().getFullYear() }} Tikeli. All rights reserved.</p>
     <nav class="flex gap-4 text-sm">
       <a href="/about" class="hover:underline">Tentang</a>
-      <a href="#" class="hover:underline">Kebijakan</a>
+      <a href="/terms" class="hover:underline">Kebijakan</a>
       <a href="/contact" class="hover:underline">Kontak</a>
+      <a href="/privacy" class="hover:underline">Privasi</a>
     </nav>
   </div>
 </footer>

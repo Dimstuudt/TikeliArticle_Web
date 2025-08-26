@@ -1,8 +1,13 @@
 <script setup>
 import { useForm, usePage, router } from '@inertiajs/vue3'
+import { ref } from 'vue'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 
 const user = usePage().props.auth.user
+
+// Preview refs
+const previewPhoto = ref(user.profile_photo_url)
+const previewBg = ref(user.background_photo_path ? `/storage/${user.background_photo_path}` : '')
 
 // Form data publik
 const profileForm = useForm({
@@ -20,32 +25,43 @@ const bgForm = useForm({
   background: null,
 })
 
-// Handle submit dengan auto-refresh user data
+// Handle submit
 const submitProfile = () => {
   profileForm.patch(route('my.profile.update'), {
     preserveScroll: true,
-    onSuccess: () => {
-      router.reload({ only: ['auth'] })
-    }
+    onSuccess: () => router.reload({ only: ['auth'] })
   })
 }
 
 const submitPhoto = () => {
   photoForm.post(route('my.profile.photo'), {
     preserveScroll: true,
-    onSuccess: () => {
-      router.reload({ only: ['auth'] })
-    }
+    onSuccess: () => router.reload({ only: ['auth'] })
   })
 }
 
 const submitBackground = () => {
   bgForm.post(route('my.profile.background'), {
     preserveScroll: true,
-    onSuccess: () => {
-      router.reload({ only: ['auth'] })
-    }
+    onSuccess: () => router.reload({ only: ['auth'] })
   })
+}
+
+// Preview saat pilih file
+const onPhotoChange = (e) => {
+  const file = e.target.files[0]
+  if (file) {
+    photoForm.photo = file
+    previewPhoto.value = URL.createObjectURL(file)
+  }
+}
+
+const onBackgroundChange = (e) => {
+  const file = e.target.files[0]
+  if (file) {
+    bgForm.background = file
+    previewBg.value = URL.createObjectURL(file)
+  }
 }
 </script>
 
@@ -60,15 +76,15 @@ const submitBackground = () => {
         <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
           <div class="max-w-4xl mx-auto">
 
-            <!-- Background -->
+            <!-- Background dengan preview -->
             <div
               class="h-48 w-full mb-6 bg-blue-100 bg-cover bg-center rounded-lg border border-blue-200"
-              :style="user.background_photo_path ? `background-image: url('/storage/${user.background_photo_path}')` : ''"
+              :style="previewBg ? `background-image: url('${previewBg}')` : ''"
             >
               <form @submit.prevent="submitBackground" class="mt-2 ml-2" enctype="multipart/form-data">
                 <input
                   type="file"
-                  @change="e => bgForm.background = e.target.files[0]"
+                  @change="onBackgroundChange"
                   class="bg-white bg-opacity-70 p-1 rounded text-sm"
                 />
                 <button
@@ -81,10 +97,10 @@ const submitBackground = () => {
               </form>
             </div>
 
-            <!-- Foto Profil -->
+            <!-- Foto Profil dengan preview -->
             <div class="flex items-center space-x-4 mb-4">
               <img
-                :src="user.profile_photo_url"
+                :src="previewPhoto"
                 alt="Foto Profil"
                 class="w-20 h-20 rounded-full object-cover border-2 border-blue-400"
               />
@@ -93,7 +109,7 @@ const submitBackground = () => {
                 <input
                   type="file"
                   class="mt-1 text-sm"
-                  @change="e => photoForm.photo = e.target.files[0]"
+                  @change="onPhotoChange"
                 />
                 <button
                   type="submit"

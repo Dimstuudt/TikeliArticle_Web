@@ -252,6 +252,13 @@ Route::get('/contact', function () {
     return Inertia::render('Contact');
 })->name('contact');
 
+Route::get('/privacy', function () {
+    return Inertia::render('Privacy');
+})->name('privacy');
+
+Route::get('/terms', function () {
+    return Inertia::render('Terms');
+})->name('terms');
 
 // === Auth routes dari Laravel Breeze ===
 require __DIR__.'/auth.php';

@@ -4,7 +4,7 @@ import { defineProps, ref } from 'vue'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
 import dayjs from 'dayjs'
 import 'dayjs/locale/id'
-
+import { CheckCircle } from 'lucide-vue-next'
 dayjs.locale('id')
 
 const props = defineProps({
@@ -310,9 +310,18 @@ const toggleLike = () => {
           </div>
 
           <!-- Author + Date -->
-          <p class="text-[11px] text-gray-400 dark:text-gray-500 mt-1 truncate">
-            {{ rec.author.name }} • {{ formatDate(rec.created_at) }}
-          </p>
+         <p class="text-[11px] text-gray-400 dark:text-gray-500 mt-1 truncate flex items-center gap-1">
+  {{ rec.author.name }}
+
+  <!-- Badge Trusted Writer -->
+  <CheckCircle
+    v-if="rec.author.trusted_writer"
+    class="w-3 h-3 text-green-500"
+    :title="'Trusted Writer'"
+  />
+
+  • {{ formatDate(rec.created_at) }}
+</p>
         </div>
       </div>
     </div>
@@ -374,12 +383,17 @@ const toggleLike = () => {
     >
       <!-- Nama -->
       <div class="flex items-center justify-between">
-        <a
-          :href="`/users/${comment.user.id}`"
-          class="font-semibold text-sm text-purple-600 dark:text-purple-400 hover:underline"
-        >
-          {{ comment.user.name }}
-        </a>
+      <a
+  :href="`/users/${comment.user.id}`"
+  class="font-semibold text-sm text-purple-600 dark:text-purple-400 hover:underline flex items-center gap-1"
+>
+  {{ comment.user.name }}
+  <CheckCircle
+    v-if="comment.user.trusted_writer"
+    class="w-3 h-3 text-green-500"
+    :title="'Trusted Writer'"
+  />
+</a>
       </div>
 
     <!-- Isi komentar -->

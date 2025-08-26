@@ -315,7 +315,7 @@ class ArticleController extends Controller
                     : null,
             ],
         ]);
-        
+
    // 🔹 Ambil 4 user terbaru + statistiknya
 $latestUsers = User::query()
     ->withCount(['articleLikes as total_likes']) // total like dari semua artikel user
@@ -388,11 +388,10 @@ public function guestShow($id)
 
         if (! $exists) {
             DB::table('article_views')->insert([
-                'article_id'     => $article->id,
-                'user_id'        => auth()->id(),
-                'created_at'     => now(),
-                'updated_at'     => now(),
-                'trusted_writer' => $article->user->trusted_writer, // ✅ simpan trusted_writer juga
+                'article_id' => $article->id,
+                'user_id'    => auth()->id(),
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
         }
     }
@@ -422,7 +421,7 @@ public function guestShow($id)
                 'author'     => [
                     'id'             => $rec->user->id,
                     'name'           => $rec->user->name,
-                    'trusted_writer' => $rec->user->trusted_writer, // ✅ tambahin
+                    'trusted_writer' => $rec->user->trusted_writer,
                 ],
             ];
         });
@@ -447,7 +446,7 @@ public function guestShow($id)
                     'profile_photo_path' => $comment->user->profile_photo_path
                                             ? asset('storage/' . $comment->user->profile_photo_path)
                                             : null,
-                    'trusted_writer' => $comment->user->trusted_writer, // ✅ tambahin
+                    'trusted_writer' => $comment->user->trusted_writer,
                 ],
             ];
         });
@@ -470,7 +469,7 @@ public function guestShow($id)
                 'bio'            => $article->user->bio,
                 'role'           => $article->user->role,
                 'profile_photo_path' => $article->user->profile_photo_path,
-                'trusted_writer' => $article->user->trusted_writer, // ✅ tambahin
+                'trusted_writer' => $article->user->trusted_writer,
             ],
         ],
         'views'           => $viewsCount,
@@ -478,10 +477,8 @@ public function guestShow($id)
         'isLiked'         => $isLiked,
         'from'            => request('from'),
         'recommendations' => $recommendations,
-
-        // 🔹 Tambahan komentar
-        'comments'   => $comments,
-        'canComment' => auth()->check(),
+        'comments'        => $comments,
+        'canComment'      => auth()->check(),
     ]);
 }
 
