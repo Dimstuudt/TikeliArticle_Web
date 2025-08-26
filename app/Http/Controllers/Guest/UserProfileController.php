@@ -17,6 +17,7 @@ class UserProfileController extends Controller
         $approvedArticles = Article::where('status', 'approved')
             ->where('user_id', $user->id)
             ->latest()
+            ->with('user') // ✅ ambil data author termasuk trusted_writer
             ->withCount('likes') // pastikan relasi likes() ada di model Article
             ->get([
                 'id',
@@ -27,6 +28,7 @@ class UserProfileController extends Controller
                 'created_at',
                 'updated_at',
                 'hits',
+
             ]);
 
         $articleIds = $approvedArticles->pluck('id');
@@ -48,6 +50,7 @@ class UserProfileController extends Controller
                 'profile_photo_path' => $user->profile_photo_path,
                 'background_photo_path' => $user->background_photo_path,
                 'bio' => $user->bio,
+                 'trusted_writer' => $user->trusted_writer, // ✅ tambahin ini
                 'created_at' => $user->created_at
                     ? $user->created_at->timezone('Asia/Jakarta')->toDateString()
                     : null,

@@ -292,69 +292,80 @@ class ArticleController extends Controller
     $articles = $query->paginate(6)
         ->withQueryString()
         ->through(fn($article) => [
-            'id' => $article->id,
-            'title' => $article->title,
-            'summary' => $article->summary,
-            'content' => $article->content,
-            'category' => $article->category,
-             'hits'  => $article->hits,
-        'views' => DB::table('article_views')->where('article_id', $article->id)->count(),
-          'likes' => $article->likes()->count(), // 🔥 jumlah like
-           'comments_count' => $article->comments()->count(), // 🔥 jumlah komentar
-            'cover' => $article->cover ? asset('storage/' . $article->cover) : null,
-            'updated_at' => $article->updated_at->toISOString(),
-            'created_at' => $article->created_at->diffForHumans(),
-            'author' => [
-                'id' => $article->user->id,
-                'name' => $article->user->name,
-                'role' => $article->user->role,
-                'profile_photo_path' => $article->user->profile_photo_path,
+            'id'              => $article->id,
+            'title'           => $article->title,
+            'summary'         => $article->summary,
+            'content'         => $article->content,
+            'category'        => $article->category,
+            'hits'            => $article->hits,
+            'views'           => DB::table('article_views')->where('article_id', $article->id)->count(),
+            'likes'           => $article->likes()->count(), // 🔥 jumlah like
+            'comments_count'  => $article->comments()->count(), // 🔥 jumlah komentar
+            'cover'           => $article->cover ? asset('storage/' . $article->cover) : null,
+            'updated_at'      => $article->updated_at->toISOString(),
+            'created_at'      => $article->created_at->diffForHumans(),
+            'trusted_writer'  => $article->user->trusted_writer,
+            'author'          => [
+                'id'                 => $article->user->id,
+                'name'               => $article->user->name,
+                'role'               => $article->user->role,
+                'bio'                => $article->user->bio, // 🔥 tambahan bio author
+                'profile_photo_path' => $article->user->profile_photo_path
+                    ? asset('storage/' . $article->user->profile_photo_path)
+                    : null,
             ],
         ]);
-
-  $latestUsers = User::query()
+        
+   // 🔹 Ambil 4 user terbaru + statistiknya
+$latestUsers = User::query()
     ->withCount(['articleLikes as total_likes']) // total like dari semua artikel user
     ->withSum('articles as total_hits', 'hits') // jumlah view dari semua artikel user
     ->latest()
     ->take(4)
-    ->get(['id', 'name', 'role', 'profile_photo_path']);
+    ->get(['id', 'name', 'role', 'bio', 'profile_photo_path', 'trusted_writer']); // ✅ tambahin trusted_writer
 
-    // Ambil 3 artikel terhits berdasarkan kolom hits
+
+    // 🔹 Ambil 3 artikel terhits berdasarkan kolom hits
     $topArticles = Article::where('status', 'approved')
-    ->with('user')
-    ->orderByDesc('hits')
-    ->take(3)
-    ->get()
-    ->map(fn($article) => [
-        'id' => $article->id,
-        'title' => $article->title,
-        'summary' => $article->summary,
-          'likes' => $article->likes()->count(), // 🔥 jumlah like
-           'comments_count' => $article->comments()->count(), // 🔥 jumlah komentar
-        'cover' => $article->cover ? asset('storage/' . $article->cover) : null,
-        'hits' => $article->hits,
-        'created_at' => $article->created_at->toISOString(),
-        'updated_at' => $article->updated_at->toISOString(),
-        'author' => [
-            'id' => $article->user->id,
-            'name' => $article->user->name,
-            'role' => $article->user->role,
-            'profile_photo_path' => $article->user->profile_photo_path,
-        ],
-    ]);
+        ->with('user')
+        ->orderByDesc('hits')
+        ->take(3)
+        ->get()
+        ->map(fn($article) => [
+            'id'             => $article->id,
+            'title'          => $article->title,
+            'summary'        => $article->summary,
+            'likes'          => $article->likes()->count(), // 🔥 jumlah like
+            'comments_count' => $article->comments()->count(), // 🔥 jumlah komentar
+            'cover'          => $article->cover ? asset('storage/' . $article->cover) : null,
+            'trusted_writer' => $article->user->trusted_writer,
+            'hits'           => $article->hits,
+            'created_at'     => $article->created_at->toISOString(),
+            'updated_at'     => $article->updated_at->toISOString(),
+            'author'         => [
+                'id'                 => $article->user->id,
+                'name'               => $article->user->name,
+                'role'               => $article->user->role,
+                'bio'                => $article->user->bio, // 🔥 bio ditambah
+                'profile_photo_path' => $article->user->profile_photo_path
+                    ? asset('storage/' . $article->user->profile_photo_path)
+                    : null,
+            ],
+        ]);
 
     return Inertia::render('guest/Welcome', [
-        'articles' => $articles,
+        'articles'    => $articles,
         'latestUsers' => $latestUsers,
         'topArticles' => $topArticles,
-        'filters' => [
-            'search' => $request->search,
+        'filters'     => [
+            'search'   => $request->search,
             'category' => $request->category,
         ],
     ]);
 }
 
-   // Guest - Lihat Artikel
+
+  // Guest - Lihat Artikel
 public function guestShow($id)
 {
     $article = Article::with('user')
@@ -377,10 +388,11 @@ public function guestShow($id)
 
         if (! $exists) {
             DB::table('article_views')->insert([
-                'article_id' => $article->id,
-                'user_id'    => auth()->id(),
-                'created_at' => now(),
-                'updated_at' => now(),
+                'article_id'     => $article->id,
+                'user_id'        => auth()->id(),
+                'created_at'     => now(),
+                'updated_at'     => now(),
+                'trusted_writer' => $article->user->trusted_writer, // ✅ simpan trusted_writer juga
             ]);
         }
     }
@@ -408,8 +420,9 @@ public function guestShow($id)
                                     ->where('article_id', $rec->id)
                                     ->count(),
                 'author'     => [
-                    'id'   => $rec->user->id,
-                    'name' => $rec->user->name,
+                    'id'             => $rec->user->id,
+                    'name'           => $rec->user->name,
+                    'trusted_writer' => $rec->user->trusted_writer, // ✅ tambahin
                 ],
             ];
         });
@@ -427,13 +440,14 @@ public function guestShow($id)
             return [
                 'id'         => $comment->id,
                 'body'       => $comment->body,
-               'created_at' => $comment->created_at->timezone('Asia/Jakarta')->toDateTimeString(),
+                'created_at' => $comment->created_at->timezone('Asia/Jakarta')->toDateTimeString(),
                 'user'       => [
-                    'id'                 => $comment->user->id,
-                    'name'               => $comment->user->name,
-                      'profile_photo_path' => $comment->user->profile_photo_path
-                    ? asset('storage/' . $comment->user->profile_photo_path)
-                    : null,
+                    'id'             => $comment->user->id,
+                    'name'           => $comment->user->name,
+                    'profile_photo_path' => $comment->user->profile_photo_path
+                                            ? asset('storage/' . $comment->user->profile_photo_path)
+                                            : null,
+                    'trusted_writer' => $comment->user->trusted_writer, // ✅ tambahin
                 ],
             ];
         });
@@ -451,11 +465,12 @@ public function guestShow($id)
             'updated_at' => $article->updated_at,
             'hits'       => $article->hits,
             'author'     => [
-                'id'                 => $article->user->id,
-                'name'               => $article->user->name,
-                'bio'                => $article->user->bio,
-                'role'               => $article->user->role,
+                'id'             => $article->user->id,
+                'name'           => $article->user->name,
+                'bio'            => $article->user->bio,
+                'role'           => $article->user->role,
                 'profile_photo_path' => $article->user->profile_photo_path,
+                'trusted_writer' => $article->user->trusted_writer, // ✅ tambahin
             ],
         ],
         'views'           => $viewsCount,
@@ -469,7 +484,6 @@ public function guestShow($id)
         'canComment' => auth()->check(),
     ]);
 }
-
 
     private function authorizeEdit(Article $article)
     {

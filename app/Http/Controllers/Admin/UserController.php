@@ -43,36 +43,37 @@ class UserController extends Controller
     }
 
     public function update(Request $request, User $user)
-    {
-        $validated = $request->validate([
-            'name'       => 'required|string|max:255',
-            'email'      => 'required|email|unique:users,email,' . $user->id,
-            'username'   => 'required|string|max:255|unique:users,username,' . $user->id,
-            'role'       => 'required|in:admin,operator',
-            'is_active'  => 'required|boolean',
-            'password'   => ['sometimes', 'nullable', 'string', 'min:8'], // ✅ fix: agar password tidak divalidasi saat kosong
-        ]);
+{
+    $validated = $request->validate([
+        'name'       => 'required|string|max:255',
+        'email'      => 'required|email|unique:users,email,' . $user->id,
+        'username'   => 'required|string|max:255|unique:users,username,' . $user->id,
+        'role'       => 'required|in:admin,operator',
+        'is_active'  => 'required|boolean',
+        'trusted_writer' => 'required|boolean', // ✅ tambahin validasi
+        'password'   => ['sometimes', 'nullable', 'string', 'min:8'],
+    ]);
 
-        // Update data
-        $data = [
-            'name'      => $validated['name'],
-            'email'     => $validated['email'],
-            'username'  => $validated['username'],
-            'role'      => $validated['role'],
-            'is_active' => $validated['is_active'],
-        ];
+    // Update data
+    $data = [
+        'name'           => $validated['name'],
+        'email'          => $validated['email'],
+        'username'       => $validated['username'],
+        'role'           => $validated['role'],
+        'is_active'      => $validated['is_active'],
+        'trusted_writer' => $validated['trusted_writer'], // ✅ tambahin
+    ];
 
-        if (!empty($validated['password'])) {
-            $data['password'] = Hash::make($validated['password']);
-        }
-
-        $user->update($data);
-
-        return redirect()
-            ->route('admin.users')
-            ->with('success', 'User berhasil diperbarui.');
+    if (!empty($validated['password'])) {
+        $data['password'] = Hash::make($validated['password']);
     }
 
+    $user->update($data);
+
+    return redirect()
+        ->route('admin.users')
+        ->with('success', 'User berhasil diperbarui.');
+}
     public function destroy(User $user)
     {
         $user->delete();
@@ -89,4 +90,14 @@ class UserController extends Controller
 
         return back()->with('success', 'Status user berhasil diperbarui.');
     }
+
+    //trusteed
+    public function toggleTrusted(User $user)
+{
+    $user->trusted_writer = !$user->trusted_writer; // flip 0 ↔ 1
+    $user->save();
+
+    return back()->with('success', 'Status Trusted Writer berhasil diperbarui.');
+}
+
 }

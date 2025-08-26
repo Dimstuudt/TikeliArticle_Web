@@ -28,6 +28,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'is_active', // ✅ benar, hanya string
         'bio', // ✅ tambahkan bio
         'background_photo_path', // ✅ tambahkan background_photo_path
+        'trusted_writer',
     ];
 
     /**

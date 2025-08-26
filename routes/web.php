@@ -90,8 +90,13 @@ Route::middleware([
     Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
     Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
 
-    // Toggle aktif/nonaktif user
-    Route::patch('/users/{user}/toggle-active', [UserController::class, 'toggleActive'])->name('users.toggleActive');
+// Toggle aktif/nonaktif user
+Route::patch('/admin/users/{user}/toggle-active', [UserController::class, 'toggleActive'])
+    ->name('admin.users.toggleActive');
+
+// Toggle trusted writer
+Route::patch('/admin/users/{user}/toggle-trusted', [UserController::class, 'toggleTrusted'])
+    ->name('admin.users.toggleTrusted');
 
     // Artikel admin
     Route::get('/articles', [ArticleController::class, 'index'])->name('articles.index');
@@ -222,6 +227,7 @@ Route::get('/api/search-users', function(Request $request) {
                 'name' => $user->name,
                 'role' => $user->role,
                 'bio' => $user->bio,
+                'trusted_writer' => $user->trusted_writer,
                 'profile_photo_url' => $user->profile_photo_path
                     ? asset('storage/' . $user->profile_photo_path)
                     : null,

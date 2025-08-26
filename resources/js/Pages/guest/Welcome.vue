@@ -5,6 +5,8 @@ import 'dayjs/locale/id'
 import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
 import { router, Link } from '@inertiajs/vue3'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
+import { CheckCircleIcon } from '@heroicons/vue/24/solid'
+import { CheckCircle } from 'lucide-vue-next'
 
 dayjs.locale('id')
 dayjs.extend(relativeTime)
@@ -242,11 +244,23 @@ html {
             </div>
           </div>
 
-          <!-- Nama -->
-          <p class="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate
-                    group-hover:text-blue-600 dark:group-hover:text-cyan-300 transition text-center">
-            {{ user.name }}
-          </p>
+       <!-- Nama + Verified Badge -->
+<p
+  class="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate
+         group-hover:text-blue-600 dark:group-hover:text-cyan-300 transition
+         text-center flex items-center justify-center gap-1"
+>
+  {{ user.name }}
+
+  <!-- ✅ Bulat hijau kecil dengan Lucide, sedikit lebih kecil -->
+  <CheckCircle
+    v-if="user.trusted_writer"
+    class="w-3.5 h-3.5 text-white bg-green-500 rounded-full p-[1px]"
+    :stroke-width="2"
+  />
+</p>
+
+
 
           <!-- Badges -->
           <div class="flex justify-center gap-2 mt-2 flex-wrap">
@@ -357,21 +371,38 @@ html {
             v-html="article.summary ?? 'Tidak ada ringkasan'"
           ></div>
 
-          <!-- Penulis, hits & likes -->
-          <div class="text-xs text-gray-400 dark:text-gray-500 mt-4 flex justify-between items-center">
-            <!-- Penulis & waktu -->
-            <div>
-              <span>{{ article.author?.name ?? 'Anonim' }}</span> •
-              <span>
-                {{
-                  article.updated_at
-                    ? dayjs(article.updated_at).from(now.value)
-                    : article.created_at
-                    ? dayjs(article.created_at).from(now.value)
-                    : 'Waktu tidak diketahui'
-                }}
-              </span>
-            </div>
+    <!-- Penulis, hits & likes -->
+<div class="text-xs text-gray-400 dark:text-gray-500 mt-4 flex justify-between items-center">
+  <!-- Penulis & waktu -->
+  <div class="flex items-center gap-1">
+    <!-- Nama & badge -->
+    <span class="flex items-center gap-1">
+      {{ article.author?.name ?? 'Anonim' }}
+
+      <!-- ✅ Trusted badge pakai Lucide, lebih kecil -->
+      <CheckCircle
+        v-if="article.trusted_writer"
+        class="w-3 h-3 text-white bg-green-500 rounded-full p-[1px]"
+        :stroke-width="2"
+      />
+    </span>
+
+    <!-- Separator -->
+    <span>•</span>
+
+    <!-- Waktu -->
+    <span>
+      {{
+        article.updated_at
+          ? dayjs(article.updated_at).from(now.value)
+          : article.created_at
+          ? dayjs(article.created_at).from(now.value)
+          : 'Waktu tidak diketahui'
+      }}
+    </span>
+  </div>
+
+
 
         <!-- Hits, Likes & Comments -->
 <div class="flex items-center gap-2">
@@ -581,19 +612,37 @@ html {
         ></div>
 
 
-<!-- Penulis, waktu, hits & likes -->
-<div class="flex items-center justify-between text-xs mt-4">
+<!-- Penulis, hits & likes -->
+<div class="text-xs text-gray-400 dark:text-gray-500 mt-4 flex justify-between items-center">
   <!-- Penulis & waktu -->
-  <div class="text-gray-400 dark:text-gray-500">
-    {{ article.author?.name ?? 'Anonim' }} •
-    {{
-      article.updated_at
-        ? dayjs(article.updated_at).from(now.value)
-        : article.created_at
-        ? dayjs(article.created_at).from(now.value)
-        : 'Waktu tidak diketahui'
-    }}
+  <div class="flex items-center gap-1">
+    <!-- Nama & badge -->
+    <span class="flex items-center gap-1">
+      {{ article.author?.name ?? 'Anonim' }}
+
+      <!-- ✅ Trusted badge pakai Lucide, lebih kecil -->
+      <CheckCircle
+        v-if="article.trusted_writer"
+        class="w-3 h-3 text-white bg-green-500 rounded-full p-[1px]"
+        :stroke-width="2"
+      />
+    </span>
+
+    <!-- Separator -->
+    <span>•</span>
+
+    <!-- Waktu -->
+    <span>
+      {{
+        article.updated_at
+          ? dayjs(article.updated_at).from(now.value)
+          : article.created_at
+          ? dayjs(article.created_at).from(now.value)
+          : 'Waktu tidak diketahui'
+      }}
+    </span>
   </div>
+
 
   <!-- Badge hits, likes & komentar -->
 <div class="flex items-center gap-2">

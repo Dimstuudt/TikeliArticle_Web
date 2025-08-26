@@ -6,6 +6,7 @@ import PublicLayout from '@/Layouts/PublicLayout.vue'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import 'dayjs/locale/id'
+import { CheckCircle } from 'lucide-vue-next'
 
 dayjs.locale('id')
 dayjs.extend(relativeTime)
@@ -61,11 +62,14 @@ const now = ref(new Date())
           <p class="text-sm text-gray-500 dark:text-gray-400">
             👋 Hi! saya <span class="font-semibold">{{ user.name }}</span>
           </p>
+<h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1 flex items-center gap-2">
+  {{ user.name }}
 
-          <!-- Nama -->
-          <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">
-            {{ user.name }}
-          </h2>
+  <!-- ✅ Trusted badge pakai Lucide -->
+  <span v-if="user.trusted_writer" class="flex items-center justify-center w-4 h-4 bg-green-500 rounded-full p-[1px]">
+    <CheckCircle class="w-3 h-3 text-white" :stroke-width="2" />
+  </span>
+</h2>
 
           <!-- Role -->
           <span
@@ -132,9 +136,24 @@ const now = ref(new Date())
 
     <!-- Artikel User -->
     <div class="max-w-6xl mx-auto mt-12 px-4">
-      <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-6">
-        Artikel oleh {{ user.name }}
-      </h3>
+
+<h3 class="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-6 flex items-center gap-3">
+  Artikel oleh
+  <!-- Kotak username + badge -->
+  <span
+    class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-semibold rounded-md"
+    :class="user.trusted_writer
+      ? 'bg-green-500 text-white'
+      : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'"
+  >
+    {{ user.name }}
+    <CheckCircle
+      v-if="user.trusted_writer"
+      class="w-4 h-4 text-white"
+      :stroke-width="2"
+    />
+  </span>
+</h3>
 
       <div v-if="articles.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <div
@@ -179,15 +198,36 @@ const now = ref(new Date())
               ></div>
 
             <!-- Penulis, waktu, hits & likes -->
+
 <div class="flex items-center justify-between text-xs mt-4">
-  <div class="text-gray-400 dark:text-gray-500">
-    {{ user.name }} •
-    {{
-      article.updated_at
-        ? dayjs(article.updated_at).from(now)
-        : dayjs(article.created_at).from(now)
-    }}
+  <!-- Nama user + badge + waktu -->
+  <div class="flex items-center gap-1 text-gray-400 dark:text-gray-500">
+    <!-- Nama + badge -->
+    <span class="flex items-center gap-1">
+      {{ user.name }}
+      <span
+        v-if="user.trusted_writer"
+        class="flex items-center justify-center w-3 h-3 bg-green-500 rounded-full p-[1px]"
+        title="Trusted Writer"
+      >
+        <CheckCircle class="w-2.5 h-2.5 text-white" :stroke-width="2" />
+      </span>
+    </span>
+
+    <!-- Separator -->
+    <span>•</span>
+
+    <!-- Waktu -->
+    <span>
+      {{
+        article.updated_at
+          ? dayjs(article.updated_at).from(now)
+          : dayjs(article.created_at).from(now)
+      }}
+    </span>
   </div>
+
+  <!-- Hits & Likes -->
   <div class="flex items-center gap-2">
     <span
       class="inline-flex items-center bg-yellow-100 dark:bg-yellow-900
