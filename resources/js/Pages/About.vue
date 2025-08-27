@@ -21,8 +21,8 @@ const team = ref([
   { id: 1, name: 'Dimas Sandy', role: 'Founder & CEO', avatar: 'https://i.pravatar.cc/150?img=12', bio: 'Memimpin visi produk dan strategi pertumbuhan.' },
   { id: 2, name: 'Andi Wijaya', role: 'CTO', avatar: 'https://i.pravatar.cc/150?img=32', bio: 'Bertanggung jawab atas arsitektur teknis dan platform engineering.' },
   { id: 3, name: 'Sarah Putri', role: 'Marketing Lead', avatar: 'https://i.pravatar.cc/150?img=47', bio: 'Menjalankan strategi pemasaran dan pengembangan komunitas.' },
-  { id: 4, name: 'Rina Oktaviani', role: 'Head of Content', avatar: 'https://i.pravatar.cc/150?img=8', bio: 'Mengelola kualitas editorial dan kurasi penulis.' },
-  { id: 5, name: 'Fajar Nugroho', role: 'Product Designer', avatar: 'https://i.pravatar.cc/150?img=20', bio: 'Mendesain pengalaman pengguna yang sederhana dan inklusif.' },
+  { id: 4, name: 'Rina Oktaviani', role: 'Head of Content', avatar: 'https://i.pravatar.cc/150?img=9', bio: 'Mengelola kualitas editorial dan kurasi penulis.' },
+  { id: 5, name: 'Fajar Nugroho', role: 'Product Designer', avatar: 'https://i.pravatar.cc/150?img=3', bio: 'Mendesain pengalaman pengguna yang sederhana dan inklusif.' },
 ])
 
 const filters = ref(['All', 'Leadership', 'Engineering', 'Marketing', 'Editorial', 'Design'])
@@ -94,6 +94,12 @@ const scrollTo = (id) => {
   const el = document.getElementById(id)
   if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
+
+const props = defineProps({
+  // props jika ada
+
+  stats: Array
+})
 </script>
 
 <template>
@@ -173,22 +179,31 @@ const scrollTo = (id) => {
       </div>
     </section>
 
-    <!-- STATISTICS -->
-    <section class="max-w-3xl mx-auto px-6 py-16 text-center" data-reveal-id="stats">
-      <h2 class="text-3xl font-bold mb-12 animate-fade-up">Sekilas Angka</h2>
+ <!-- STATISTICS -->
+  <section class="max-w-3xl mx-auto px-6 py-16 text-center" data-reveal-id="stats">
+    <h2 class="text-3xl font-bold mb-12 animate-fade-up">Sekilas Angka</h2>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        <div v-for="s in stats" :key="s.id" class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md flex flex-col items-center animate-fade-up">
-          <div class="mb-3">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21H5a2 2 0 01-2-2V7a2 2 0 012-2h5l2-2h7a2 2 0 012 2v14a2 2 0 01-2 2z" />
-            </svg>
-          </div>
-          <p class="text-3xl font-bold text-blue-600">{{ s.display.toLocaleString() }}{{ s.id === 'readers' ? '+' : '' }}</p>
-          <p class="text-gray-600 dark:text-gray-300">{{ s.label }}</p>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <div
+        v-for="s in props.stats"
+        :key="s.id"
+        class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md flex flex-col items-center animate-fade-up"
+      >
+        <div class="mb-3">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21H5a2 2 0 01-2-2V7a2 2 0 012-2h5l2-2h7a2 2 0 012 2v14a2 2 0 01-2 2z" />
+          </svg>
         </div>
+
+        <!-- Angka dinamis -->
+        <p class="text-3xl font-bold text-blue-600">
+          {{ s.display.toLocaleString() }}{{ s.id === 'readers' ? '+' : '' }}
+        </p>
+
+        <p class="text-gray-600 dark:text-gray-300">{{ s.label }}</p>
       </div>
-    </section>
+    </div>
+  </section>
 
    <!-- TEAM -->
 <section class="bg-gray-50 dark:bg-gray-900 py-20 px-6" data-reveal-id="team">
