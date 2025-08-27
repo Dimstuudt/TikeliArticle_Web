@@ -12,6 +12,8 @@ const props = defineProps({
   views: Number,
   from: String,
   recommendations: Array,
+  relatedCategory: Array, // 🔹 tambahin props relatedCategory
+  relatedArticles: Array, // 🔹 tambahin props relatedArticles
   likeCount: Number,
   isLiked: Boolean,
   comments: Array,     // 🔹 tambahin props komentar
@@ -218,6 +220,71 @@ const toggleLike = () => {
   </div>
 </div>
 
+<!-- Related Artikel (masih di dalam artikel utama, kiri) -->
+<div class="mt-10">
+<h3 class="text-lg font-bold text-gray-800 dark:text-gray-100 mb-5 flex items-center gap-2">
+  <!-- Garis biru di kiri -->
+  <span class="w-1 h-5 bg-blue-500 rounded"></span>
+  Artikel Lain oleh
+  <!-- Badge username + trusted -->
+  <span
+    class="inline-flex items-center gap-1 px-2 py-1 text-sm font-semibold rounded-md"
+    :class="article.author.trusted_writer
+      ? 'bg-green-500 text-white'
+      : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'"
+  >
+    {{ article.author.name }}
+    <CheckCircle
+      v-if="article.author.trusted_writer"
+      class="w-4 h-4 text-white"
+      :stroke-width="2"
+    />
+  </span>
+</h3>
+
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+    <div
+      v-for="related in relatedArticles"
+      :key="related.id"
+      class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden
+             hover:shadow-xl hover:scale-[1.02] transition duration-300"
+    >
+      <a :href="`/articles/${related.id}`" class="block">
+        <div class="relative">
+          <img
+            v-if="related.cover"
+            :src="related.cover"
+            alt="cover"
+            class="w-full h-36 object-cover"
+          />
+          <span
+            v-if="related.category"
+            class="absolute top-2 right-2 bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600
+                   text-white text-xs font-semibold px-2.5 py-1 rounded-full shadow-md"
+          >
+            {{ related.category }}
+          </span>
+        </div>
+
+        <div class="p-4 space-y-2">
+          <h4
+            class="text-sm font-semibold text-gray-800 dark:text-gray-100 line-clamp-2 hover:text-blue-600 transition"
+          >
+            {{ related.title }}
+          </h4>
+
+          <div class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+            <span class="truncate">
+              {{ formatDate(related.created_at) }}
+            </span>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+</div>
+
 
 
             <!-- Tombol Kembali -->
@@ -326,6 +393,95 @@ const toggleLike = () => {
       </div>
     </div>
   </div>
+
+  <!-- Card Artikel Terkait -->
+<div
+  class="bg-white dark:bg-gray-900 rounded-2xl shadow-md p-5 space-y-5
+         border border-gray-200 dark:border-gray-700"
+>
+  <!-- Judul Section -->
+  <h3
+    class="text-lg font-bold text-purple-700 dark:text-purple-400
+           border-b border-gray-200 dark:border-gray-700 pb-2"
+  >
+    Artikel Terkait 🏷️
+  </h3>
+
+  <!-- List Artikel -->
+  <div class="space-y-4">
+    <div
+      v-for="rel in relatedCategory"
+      :key="rel.id"
+      class="flex gap-4 p-4 border border-gray-200 dark:border-gray-700
+             rounded-xl hover:shadow-lg transition cursor-pointer
+             bg-white dark:bg-gray-800"
+    >
+      <!-- Thumbnail -->
+      <a
+        :href="`/articles/${rel.id}`"
+        class="flex-shrink-0 w-28 h-20 rounded-lg overflow-hidden"
+      >
+        <img
+          v-if="rel.cover"
+          :src="rel.cover"
+          alt="Cover"
+          class="w-full h-full object-cover"
+        />
+        <div
+          v-else
+          class="w-full h-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center
+                 text-gray-400 dark:text-gray-500 text-sm"
+        >
+          No Img
+        </div>
+      </a>
+
+      <!-- Info -->
+      <div class="flex-1 min-w-0 flex flex-col justify-between">
+        <a :href="`/articles/${rel.id}`" class="block">
+          <h4
+            class="font-semibold text-gray-800 dark:text-gray-100 text-sm
+                   line-clamp-2 hover:text-purple-600 dark:hover:text-purple-400 transition"
+          >
+            {{ rel.title }}
+          </h4>
+        </a>
+
+        <!-- Views + Category -->
+        <div
+          class="flex items-center gap-3 mt-2 text-[12px]
+                 text-gray-500 dark:text-gray-400"
+        >
+          <span class="flex items-center gap-1">
+            👁️ {{ rel.views ?? 0 }}
+          </span>
+          <span
+            class="bg-gradient-to-r from-pink-400 to-rose-400
+                   text-white text-[11px] font-semibold px-2 py-0.5
+                   rounded-full shadow-sm"
+          >
+            {{ rel.category ?? 'Umum' }}
+          </span>
+        </div>
+
+        <!-- Author + Date -->
+        <p class="text-[11px] text-gray-400 dark:text-gray-500 mt-1 truncate flex items-center gap-1">
+          {{ rel.author.name }}
+
+          <!-- Badge Trusted Writer -->
+          <CheckCircle
+            v-if="rel.author.trusted_writer"
+            class="w-3 h-3 text-green-500"
+            :title="'Trusted Writer'"
+          />
+
+          • {{ formatDate(rel.created_at) }}
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
 
 <!-- Komentar Section -->
 <div

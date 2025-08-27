@@ -351,6 +351,8 @@ $latestUsers = User::query()
                     ? asset('storage/' . $article->user->profile_photo_path)
                     : null,
             ],
+             // 🔥 langsung ambil dari kolom category
+        'category' => $article->category ?? 'UNKNOWN',
         ]);
 
     return Inertia::render('guest/Welcome', [
@@ -406,7 +408,7 @@ public function guestShow($id)
         ->where('status', 'approved')
         ->where('id', '!=', $article->id)
         ->inRandomOrder()
-        ->take(4)
+        ->take(3)
         ->get()
         ->map(function ($rec) {
             return [
@@ -425,6 +427,48 @@ public function guestShow($id)
                 ],
             ];
         });
+
+    /** 🔹 5.5. Ambil artikel terkait kategori yang sama */
+    $relatedCategory = Article::with('user')
+        ->where('status', 'approved')
+        ->where('category', $article->category)
+        ->where('id', '!=', $article->id)
+        ->inRandomOrder()
+        ->take(3)
+        ->get()
+        ->map(function ($rel) {
+            return [
+                'id'         => $rel->id,
+                'title'      => $rel->title,
+                'category'   => $rel->category,
+                'cover'      => $rel->cover ? asset('storage/' . $rel->cover) : null,
+                'created_at' => $rel->created_at,
+                'views'      => DB::table('article_views')
+                                    ->where('article_id', $rel->id)
+                                    ->count(),
+                'author'     => [
+                    'id'             => $rel->user->id,
+                    'name'           => $rel->user->name,
+                    'trusted_writer' => $rel->user->trusted_writer,
+                ],
+            ];
+        });
+
+ // 🔹 Related berdasarkan USER
+$relatedArticlesUser = Article::where('status', 'approved')
+    ->where('user_id', $article->user_id)
+    ->where('id', '!=', $article->id)
+    ->orderByDesc('created_at')
+    ->take(3)
+    ->get()
+    ->map(fn($a) => [
+        'id'         => $a->id,
+        'title'      => $a->title,
+        'category'   => $a->category, // 🔥 tambahin kategori
+        'cover'      => $a->cover ? asset('storage/' . $a->cover) : null,
+        'created_at' => $a->created_at->toISOString(),
+    ]);
+
 
     /** 🔹 6. Likes (total + apakah user sudah like) */
     $likeCount = $article->likes()->count();
@@ -450,6 +494,7 @@ public function guestShow($id)
                 ],
             ];
         });
+
 
     /** 🔹 7. Kirim ke Inertia */
     return Inertia::render('guest/Articles/Show', [
@@ -477,6 +522,8 @@ public function guestShow($id)
         'isLiked'         => $isLiked,
         'from'            => request('from'),
         'recommendations' => $recommendations,
+        'relatedCategory'=> $relatedCategory,
+        'relatedArticles'  => $relatedArticlesUser,
         'comments'        => $comments,
         'canComment'      => auth()->check(),
     ]);

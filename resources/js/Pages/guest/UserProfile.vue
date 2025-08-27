@@ -138,6 +138,8 @@ const now = ref(new Date())
     <div class="max-w-6xl mx-auto mt-12 px-4">
 
 <h3 class="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-6 flex items-center gap-3">
+  <!-- Garis biru di kiri judul -->
+  <span class="w-1 h-6 bg-blue-500 rounded"></span>
   Artikel oleh
   <!-- Kotak username + badge -->
   <span
@@ -154,6 +156,7 @@ const now = ref(new Date())
     />
   </span>
 </h3>
+
 
       <div v-if="articles.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <div

@@ -343,21 +343,26 @@ html {
     >
       <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg flex flex-col overflow-hidden h-full">
 
-        <!-- Gambar cover -->
-        <div class="relative w-full h-48">
-          <img
-            :src="article.cover ?? 'https://via.placeholder.com/600x300?text=No+Cover'"
-            alt="cover"
-            class="w-full h-full object-cover"
-          />
-          <div
-            v-if="article.category"
-            class="absolute top-2 right-2 bg-gradient-to-r from-emerald-600 to-blue-600 text-white
-                   text-[10px] px-2 py-1 rounded-md shadow-sm uppercase font-semibold"
-          >
-            {{ article.category }}
-          </div>
-        </div>
+<!-- Gambar cover -->
+<div class="relative w-full h-48">
+  <img
+    :src="article.cover ?? 'https://via.placeholder.com/600x300?text=No+Cover'"
+    alt="cover"
+    class="w-full h-full object-cover"
+  />
+
+  <!-- Badge kategori -->
+  <div
+    class="absolute top-2 right-2 text-white text-[10px] px-2 py-1 rounded-md shadow-sm uppercase font-semibold"
+    :class="article.category
+              ? 'bg-gradient-to-r from-emerald-600 to-blue-600'
+              : 'bg-gradient-to-r from-purple-700 via-pink-500 to-yellow-400'"
+  >
+    {{ article.category ?? 'UNKNOWN' }}
+  </div>
+</div>
+
+
 
         <!-- Konten -->
         <div class="p-5 flex flex-col flex-grow">
