@@ -132,10 +132,23 @@ const toggleLike = () => {
 </div>
 
 
-      <p class="text-sm text-gray-500 dark:text-gray-400">
-        Oleh <span class="font-medium">{{ article.author.name }}</span> •
-        {{ formatDate(article.created_at) }}
-      </p>
+   <p class="text-sm text-gray-500 dark:text-gray-400">
+  Oleh
+  <span class="font-medium">
+    <template v-if="article.author">
+      <a
+        :href="route('guest.profile', article.author.id)"
+        class="hover:underline"
+      >
+        {{ article.author.name }}
+      </a>
+    </template>
+    <template v-else>
+      Anonim
+    </template>
+  </span> • {{ formatDate(article.created_at) }}
+</p>
+
     </div>
 
     <hr class="border-t border-gray-200 dark:border-gray-700" />

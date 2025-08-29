@@ -42,7 +42,8 @@ class AppServiceProvider extends ServiceProvider
                         'name',
                         'email',
                         'username',
-                        'profile_photo_path'
+                        'profile_photo_path',
+                        'trusted_writer'
                     ]),
                     ['profile_photo_url' => Auth::user()->profile_photo_url]
                 ) : null,

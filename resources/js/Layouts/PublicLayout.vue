@@ -72,6 +72,7 @@ onUnmounted(() => {
     <!-- Menu Links -->
     <nav class="hidden md:flex space-x-6 ml-6">
       <Link href="/welcome" class="hover:text-yellow-300">Articles</Link>
+        <Link href="/forum" class="hover:text-yellow-300">Forum</Link>
       <Link href="/about" class="hover:text-yellow-300">About</Link>
     </nav>
 
