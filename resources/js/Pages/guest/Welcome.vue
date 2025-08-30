@@ -210,105 +210,149 @@ html {
 <!-- Pengguna Terbaru -->
 <section class="mb-8">
   <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-md p-6">
-    <h3 class="text-lg font-bold text-blue-700 dark:text-cyan-400 text-center mb-6 border-b pb-2">
-      Pengguna Terbaru
-    </h3>
+    <!-- Judul -->
+    <div class="flex items-center justify-center mb-8">
+      <span class="h-0.5 w-10 bg-gradient-to-r from-transparent via-blue-400 to-transparent"></span>
+      <span class="mx-3 text-lg font-bold text-blue-700 dark:text-cyan-400">
+        Pengguna Terbaru
+      </span>
+      <span class="h-0.5 w-10 bg-gradient-to-r from-transparent via-blue-400 to-transparent"></span>
+    </div>
 
+    <!-- Grid Users -->
     <div class="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
       <Link
         v-for="user in props.latestUsers"
         :key="user.id"
         :href="route('guest.profile', user.id)"
-        class="group block rounded-2xl p-[2px] transition transform hover:-translate-y-1
-               hover:shadow-xl"
+        class="group block rounded-2xl p-[2px] transition hover:-translate-y-1 hover:shadow-xl"
         :class="user.role === 'admin'
           ? 'bg-gradient-to-r from-purple-500 via-pink-500 to-red-500'
           : 'bg-gradient-to-r from-blue-400 via-cyan-400 to-teal-500'"
       >
-        <div class="rounded-2xl bg-white dark:bg-gray-800 p-5 h-full shadow-md">
-          <!-- Foto Profil -->
-          <div class="w-16 h-16 mx-auto mb-3 relative">
-            <div
-              class="w-16 h-16 rounded-full ring-2 ring-offset-2 shadow overflow-hidden"
-              :class="user.role === 'admin'
-                ? 'ring-purple-400 dark:ring-pink-500'
-                : 'ring-blue-300 dark:ring-cyan-400'"
-            >
-              <img
-                :src="user.profile_photo_path
-                  ? `/storage/${user.profile_photo_path}`
-                  : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`"
-                alt="Foto Profil"
-                class="w-full h-full object-cover"
-              />
-            </div>
+        <!-- Inner Card -->
+        <div
+          class="rounded-2xl bg-white dark:bg-gray-800 p-5 h-full shadow-md flex flex-col"
+        >
+          <!-- Header: Foto + Nama + Bio -->
+          <div class="flex items-start gap-4">
+            
+       <!-- Foto Profil -->
+<div
+  class="w-16 h-16 flex-shrink-0 rounded-full ring-2 ring-offset-2 shadow overflow-hidden mt-1"
+  :class="user.role === 'admin'
+    ? 'ring-purple-400 dark:ring-pink-500'
+    : 'ring-blue-300 dark:ring-cyan-400'"
+>
+  <img
+    :src="user.profile_photo_path
+      ? `/storage/${user.profile_photo_path}`
+      : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`"
+    alt="Foto Profil"
+    class="w-full h-full object-cover"
+  />
+</div>
+
+
+     <!-- Nama & Bio -->
+<div class="flex-1 min-w-0">
+  <!-- Nama + Verified -->
+  <h4
+    class="flex items-center gap-1 text-sm font-semibold text-gray-800 dark:text-gray-200 truncate"
+  >
+    {{ user.name.split(' ').slice(0, 2).join(' ') }}
+    <CheckCircle
+      v-if="user.trusted_writer"
+      class="w-4 h-4 text-white bg-green-500 rounded-full p-[1px] flex-shrink-0"
+      :stroke-width="2"
+    />
+  </h4>
+
+<!-- Bio mirip form -->
+<!-- Bio -->
+<div class="mt-2">
+  <label
+    class="block text-[10px] font-medium text-gray-500 dark:text-gray-400 mb-1"
+  >
+    Bio:
+  </label>
+  <div
+    class="w-full h-14 text-[11px] leading-snug rounded-md
+           border border-gray-200 dark:border-gray-700
+           bg-gray-50 dark:bg-gray-800/60
+           px-2 py-1.5 text-gray-700 dark:text-gray-300
+           overflow-y-auto"
+  >
+    {{ user.bio || 'Belum ada bio' }}
+  </div>
+</div>
+
+</div>
+
           </div>
 
-       <!-- Nama + Verified Badge -->
-<p
-  class="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate
-         group-hover:text-blue-600 dark:group-hover:text-cyan-300 transition
-         text-center flex items-center justify-center gap-1"
->
-  {{ user.name }}
+          <!-- Footer: Badges + Tanggal -->
+          <div class="mt-4 flex flex-col flex-1 justify-end">
+            <!-- Badges -->
+            <div class="flex flex-wrap gap-2 mb-2">
+              <!-- Role -->
+              <span
+                class="inline-block px-2 py-0.5 text-[11px] font-medium rounded-lg"
+                :class="{
+                  'bg-green-100 text-green-800 border border-green-300 dark:bg-green-900 dark:text-green-300 dark:border-green-700': user.role === 'admin',
+                  'bg-blue-100 text-blue-700 border border-blue-300 dark:bg-blue-900 dark:text-blue-300 dark:border-blue-700': user.role === 'operator',
+                }"
+              >
+                {{ user.role }}
+              </span>
 
-  <!-- ✅ Bulat hijau kecil dengan Lucide, sedikit lebih kecil -->
-  <CheckCircle
-    v-if="user.trusted_writer"
-    class="w-3.5 h-3.5 text-white bg-green-500 rounded-full p-[1px]"
-    :stroke-width="2"
-  />
-</p>
+              <!-- Operator stats -->
+              <template v-if="user.role === 'operator'">
+                <span
+                  class="inline-flex items-center px-2 py-0.5 text-[11px] font-medium rounded-lg
+                             bg-pink-100 text-pink-700 border border-pink-300
+                             dark:bg-pink-900 dark:text-pink-300 dark:border-pink-700"
+                >
+                  ❤️ {{ user.total_likes || 0 }}
+                </span>
+                <span
+                  class="inline-flex items-center px-2 py-0.5 text-[11px] font-medium rounded-lg
+                             bg-yellow-100 text-yellow-700 border border-yellow-300
+                             dark:bg-yellow-900 dark:text-yellow-300 dark:border-yellow-700"
+                >
+                  🔥 {{ user.total_hits || 0 }}
+                </span>
+              </template>
 
+              <!-- Admin badge -->
+              <template v-else-if="user.role === 'admin'">
+                <span
+                  class="inline-flex items-center px-2 py-0.5 text-[11px] font-semibold rounded-lg
+                         bg-gradient-to-r from-yellow-200 via-yellow-400 to-yellow-500 text-yellow-900
+                         border border-yellow-300
+                         dark:bg-gradient-to-r dark:from-yellow-600 dark:via-yellow-700 dark:to-yellow-800
+                         dark:text-yellow-100 dark:border-yellow-700 shadow-md"
+                >
+                  🔑 Full Access
+                </span>
+              </template>
+            </div>
 
-
-          <!-- Badges -->
-          <div class="flex justify-center gap-2 mt-2 flex-wrap">
-            <!-- Role -->
-            <span
-              class="inline-block px-2 py-0.5 text-[11px] font-medium rounded-lg"
-              :class="{
-                'bg-green-100 text-green-800 border border-green-300 dark:bg-green-900 dark:text-green-300 dark:border-green-700': user.role === 'admin',
-                'bg-blue-100 text-blue-700 border border-blue-300 dark:bg-blue-900 dark:text-blue-300 dark:border-blue-700': user.role === 'operator',
-              }"
+            <!-- Tanggal Bergabung -->
+            <p
+              class="text-[11px] text-gray-400 dark:text-gray-500"
             >
-              {{ user.role }}
-            </span>
-
-            <!-- Kalau operator => tampil likes & views -->
-            <template v-if="user.role === 'operator'">
-              <span class="inline-flex items-center px-2 py-0.5 text-[11px] font-medium rounded-lg
-                           bg-pink-100 text-pink-700 border border-pink-300
-                           dark:bg-pink-900 dark:text-pink-300 dark:border-pink-700">
-                ❤️ {{ user.total_likes || 0 }}
-              </span>
-
-              <span class="inline-flex items-center px-2 py-0.5 text-[11px] font-medium rounded-lg
-                           bg-yellow-100 text-yellow-700 border border-yellow-300
-                           dark:bg-yellow-900 dark:text-yellow-300 dark:border-yellow-700">
-                🔥 {{ user.total_hits || 0 }}
-              </span>
-            </template>
-
-          <!-- Kalau admin → ganti dengan info lain -->
-<template v-else-if="user.role === 'admin'">
-  <span
-  class="inline-flex items-center px-2 py-0.5 text-[11px] font-semibold rounded-lg
-         bg-gradient-to-r from-yellow-200 via-yellow-400 to-yellow-500 text-yellow-900
-         border border-yellow-300
-         dark:bg-gradient-to-r dark:from-yellow-600 dark:via-yellow-700 dark:to-yellow-800
-         dark:text-yellow-100 dark:border-yellow-700 shadow-md"
->
-  🔑 Full Access
-</span>
-
-</template>
+              Bergabung {{ dayjs(user.created_at).fromNow() }}
+            </p>
           </div>
         </div>
       </Link>
     </div>
   </div>
 </section>
+
+
+
 
 
 
