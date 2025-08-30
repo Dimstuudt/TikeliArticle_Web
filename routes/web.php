@@ -14,9 +14,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\ArticleLikeController;
-use App\Http\Controllers\Guest\UserProfileController;
-use App\Http\Controllers\CommentController;
+
 
 // Middleware
 use App\Http\Middleware\PreventBackHistory;
@@ -115,7 +113,6 @@ Route::get('/articles/approved', [\App\Http\Controllers\Admin\ApprovedArticleCon
     ->name('approved-articles.destroy');
 
 
-
 });
 
 
@@ -139,8 +136,6 @@ Route::middleware([
     Route::post('/articles/{article}/edit-save', [ArticleController::class, 'saveEdit'])->name('articles.saveEdit');
     Route::delete('/articles/{article}', [ArticleController::class, 'destroy'])->name('articles.destroy');
 });
-
-
 
 
 
@@ -172,26 +167,6 @@ Route::get('/email/verify/{id}/{hash}', VerifyEmailController::class)
 Route::get('/verified', fn () => Inertia::render('Auth/EmailVerified'))
     ->middleware('auth');
 
-// === Guest Routes ===
-
-Route::get('/welcome', [ArticleController::class, 'landing'])->name('guest.welcome');
-
-//guest see
-
-
-Route::get('/articles/{id}', [ArticleController::class, 'guestShow'])
-    ->name('guest.articles.show');
-
-Route::get('/users/{user}', [UserProfileController::class, 'show'])
-    ->name('guest.profile');
-
-
-//like
-
-
-Route::post('/articles/{article}/like', [ArticleLikeController::class, 'toggle'])
-    ->middleware('auth')
-    ->name('articles.like');
 
 
 // MyProfile - edit profil publik (nama, bio, foto profil, background)
@@ -211,62 +186,12 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/my-profile/background', [ProfileController::class, 'updateBackgroundPhoto'])->name('my.profile.background');
 });
 
-// search user
-Route::get('/api/search-users', function(Request $request) {
-    $q = $request->input('q');
-    if (!$q) return [];
 
-    return User::query()
-        ->where('name', 'like', "%{$q}%")
-        ->orWhere('role', 'like', "%{$q}%")
-        ->limit(5)
-        ->get(['id', 'name', 'role', 'bio', 'profile_photo_path', 'created_at']) // ambil created_at juga
-        ->map(function($user) {
-            return [
-                'id' => $user->id,
-                'name' => $user->name,
-                'role' => $user->role,
-                'bio' => $user->bio,
-                'trusted_writer' => $user->trusted_writer,
-                'profile_photo_url' => $user->profile_photo_path
-                    ? asset('storage/' . $user->profile_photo_path)
-                    : null,
-                'created_at' => $user->created_at?->toDateString(), // contoh: 2025-08-24
-            ];
-        });
-});
-
-//komen
-
-Route::post('/articles/{article}/comments', [CommentController::class, 'store'])
-    ->middleware('auth')
-    ->name('comments.store');
-
-
-//footer link about contact
-Route::get('/about', function () {
-    return Inertia::render('About');
-})->name('about');
-
-Route::get('/contact', function () {
-    return Inertia::render('Contact');
-})->name('contact');
-
-Route::get('/privacy', function () {
-    return Inertia::render('Privacy');
-})->name('privacy');
-
-Route::get('/terms', function () {
-    return Inertia::render('Terms');
-})->name('terms');
-
-use App\Http\Controllers\ForumController;
-
-Route::get('/forum', [ForumController::class, 'index'])->name('forum.index');
-Route::get('/forum/{thread}', [ForumController::class, 'show'])->name('forum.show');
-Route::post('/forum', [ForumController::class, 'store'])->middleware('auth')->name('forum.store');
-Route::post('/forum/{thread}/reply', [ForumController::class, 'reply'])->middleware('auth')->name('forum.reply');
 
 
 // === Auth routes dari Laravel Breeze ===
 require __DIR__.'/auth.php';
+require __DIR__.'/forum.php';
+require __DIR__.'/guest.php';
+require __DIR__.'/search.php';
+require __DIR__.'/static.php';
