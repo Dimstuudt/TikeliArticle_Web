@@ -12,12 +12,12 @@ const props = defineProps({
   views: Number,
   from: String,
   recommendations: Array,
-  relatedCategory: Array, // 🔹 tambahin props relatedCategory
-  relatedArticles: Array, // 🔹 tambahin props relatedArticles
+  relatedCategory: Array,
+  relatedArticles: Array,
   likeCount: Number,
   isLiked: Boolean,
-  comments: Array,     // 🔹 tambahin props komentar
-  canComment: Boolean, // 🔹 tambahin props cek login
+  comments: Array,
+  canComment: Boolean,
 })
 
 // state like
@@ -29,12 +29,23 @@ const form = useForm({
   body: ''
 })
 
+// 🔹 state untuk pesan sukses
+const successMessage = ref("")
+
 // kirim komentar
 const submitComment = () => {
   form.post(route('comments.store', props.article.id), {
     preserveScroll: true,
     onSuccess: () => {
       form.reset()
+
+      // set pesan sukses
+      successMessage.value = "Komentar berhasil ditambahkan 🎉"
+
+      // hilang otomatis setelah 3 detik
+      setTimeout(() => {
+        successMessage.value = ""
+      }, 3000)
     }
   })
 }
@@ -71,6 +82,7 @@ const toggleLike = () => {
   })
 }
 </script>
+
 
 
 <template>
@@ -576,6 +588,7 @@ const toggleLike = () => {
 </div>
 
 
+
       <!-- Tanggal -->
       <div class="text-right mt-3">
         <span class="text-xs text-gray-400 italic">
@@ -586,6 +599,17 @@ const toggleLike = () => {
   </div>
 </div>
 
+<!-- Toast sukses -->
+<transition name="slide-down">
+  <div
+    v-if="successMessage"
+    class="fixed top-4 right-4 z-50 flex items-center gap-2 px-4 py-2
+           bg-green-600 text-white text-sm font-medium rounded-lg shadow-lg"
+  >
+    <CheckCircle class="w-4 h-4" />
+    {{ successMessage }}
+  </div>
+</transition>
 
   <!-- Form komentar -->
   <div class="mt-6">
@@ -617,6 +641,7 @@ const toggleLike = () => {
     </div>
 
 
+
    <div class="max-w-md mx-auto mt-6 text-center">
   <!-- Jika user belum login -->
   <template v-if="!$page.props.auth.user">
@@ -643,3 +668,16 @@ const toggleLike = () => {
     </main>
   </PublicLayout>
 </template>
+
+<style>
+
+.slide-down-enter-active,
+.slide-down-leave-active {
+  transition: all 0.3s ease;
+}
+.slide-down-enter-from,
+.slide-down-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+</style>

@@ -18,6 +18,7 @@ const form = useForm({
 })
 
 const showForm = ref(false)
+const showToast = ref(false) // ✅ state untuk notif
 
 const submit = () => {
   form.post(route('forum.store'), {
@@ -25,6 +26,12 @@ const submit = () => {
     onSuccess: () => {
       form.reset()
       showForm.value = false
+      showToast.value = true // ✅ munculin notif
+
+      // ✅ otomatis ilang setelah 3 detik
+      setTimeout(() => {
+        showToast.value = false
+      }, 3000)
     },
   })
 }
@@ -38,10 +45,10 @@ const submit = () => {
     <section class="max-w-6xl mx-auto px-6 py-12">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 class="text-4xl font-bold text-gray-900 dark:text-white tracking-tight">
+          <h1 class="text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">
             Forum Diskusi
           </h1>
-          <p class="mt-2 text-gray-600 dark:text-gray-400">
+          <p class="mt-2 text-gray-600 dark:text-gray-400 text-base">
             Tempat berbagi ide, berdiskusi, dan bertukar pengalaman bersama komunitas.
           </p>
         </div>
@@ -49,7 +56,7 @@ const submit = () => {
           <button
             v-if="$page.props.auth.user && $page.props.auth.user.trusted_writer"
             @click="showForm = true"
-            class="px-5 py-2.5 rounded-xl bg-blue-600 text-white font-medium shadow hover:bg-blue-700 transition"
+            class="px-5 py-2.5 rounded-xl bg-blue-600 text-white font-medium shadow hover:bg-blue-700 active:scale-95 transition"
           >
             + Buat Thread
           </button>
@@ -129,10 +136,10 @@ const submit = () => {
             :key="link.label"
             :href="link.url || ''"
             v-html="link.label"
-            class="px-3 py-1 rounded-lg border text-sm font-medium"
+            class="px-3 py-1.5 rounded-lg border text-sm font-medium transition"
             :class="{
-              'bg-blue-600 text-white border-blue-600': link.active,
-              'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800': !link.active,
+              'bg-blue-600 text-white border-blue-600 shadow': link.active,
+              'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 border-gray-300 dark:border-gray-700': !link.active,
             }"
           />
         </div>
@@ -145,12 +152,12 @@ const submit = () => {
       class="fixed inset-0 flex items-center justify-center bg-black/60 z-50 px-4"
     >
       <div
-        class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-6 w-full max-w-lg relative"
+        class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-6 w-full max-w-lg relative animate-fadeIn"
       >
         <!-- Close button -->
         <button
           @click="showForm = false"
-          class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+          class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition"
         >
           <X class="w-5 h-5" />
         </button>
@@ -194,7 +201,7 @@ const submit = () => {
             </button>
             <button
               type="submit"
-              class="px-5 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition"
+              class="px-5 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 active:scale-95 transition"
               :disabled="form.processing"
             >
               Simpan
@@ -203,6 +210,16 @@ const submit = () => {
         </form>
       </div>
     </div>
+
+    <!-- ✅ Toast Notification -->
+    <transition name="fade">
+      <div
+        v-if="showToast"
+        class="fixed bottom-6 right-6 bg-green-600 text-white px-4 py-3 rounded-lg shadow-lg z-50"
+      >
+        ✅ Thread berhasil dibuat!
+      </div>
+    </transition>
   </PublicLayout>
 </template>
 
@@ -218,5 +235,20 @@ const submit = () => {
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* ✅ animasi toast */
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.3s;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
 }
 </style>

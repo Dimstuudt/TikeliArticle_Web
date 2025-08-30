@@ -52,15 +52,17 @@ const submitReply = async () => {
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 grid grid-cols-1 lg:grid-cols-3 gap-8">
       <!-- Kiri: Thread + Komentar -->
       <div class="lg:col-span-2 space-y-6">
-        <!-- Thread Header -->
-        <div class="bg-white dark:bg-gray-900 rounded-xl shadow p-6">
+        <!-- Thread Card -->
+        <div
+          class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 transition hover:shadow-md"
+        >
           <div class="flex items-center gap-3 mb-4">
             <img
               :src="thread.user?.profile_photo_path
                 ? '/storage/' + thread.user.profile_photo_path
                 : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(thread.user?.name || 'User')"
               alt="avatar"
-              class="w-12 h-12 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-700"
+              class="w-12 h-12 rounded-full object-cover ring-2 ring-blue-500/30"
             />
             <div>
               <p class="flex items-center gap-1 text-base font-semibold text-gray-800 dark:text-gray-100">
@@ -73,9 +75,9 @@ const submitReply = async () => {
             </div>
           </div>
           <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-            {{ thread.title }}
+            📌 {{ thread.title }}
           </h1>
-          <p v-if="firstPost" class="text-gray-700 dark:text-gray-300 leading-relaxed">
+          <p v-if="firstPost" class="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line">
             {{ firstPost.body }}
           </p>
         </div>
@@ -87,11 +89,11 @@ const submitReply = async () => {
             Balasan ({{ replies.length }})
           </h2>
 
-          <template v-if="replies.length">
+          <transition-group name="fade-up" tag="div" class="space-y-4">
             <div
               v-for="post in replies"
               :key="post.id"
-              class="bg-white dark:bg-gray-900 rounded-xl shadow p-4 transition hover:shadow-md"
+              class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-5 hover:shadow-md transition"
             >
               <div class="flex items-start gap-3">
                 <img
@@ -99,59 +101,63 @@ const submitReply = async () => {
                     ? '/storage/' + post.user.profile_photo_path
                     : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(post.user?.name || 'User')"
                   alt="avatar"
-                  class="w-10 h-10 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-700"
+                  class="w-10 h-10 rounded-full object-cover ring-2 ring-blue-500/30"
                 />
                 <div class="flex-1">
-                  <div class="flex items-center justify-between mb-1">
+                  <div class="flex items-center justify-between mb-2">
                     <p class="flex items-center gap-1 text-sm font-semibold text-gray-800 dark:text-gray-100">
                       {{ post.user?.name }}
-                      <CheckCheck v-if="post.user?.trusted_writer" class="w-3 h-3 text-green-500" />
+                      <CheckCheck v-if="post.user?.trusted_writer" class="w-4 h-4 text-green-500" />
                     </p>
                     <p class="text-xs text-gray-400">
                       {{ dayjs(post.created_at).fromNow() }}
                     </p>
                   </div>
-                  <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                  <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line">
                     {{ post.body }}
                   </p>
                 </div>
               </div>
             </div>
-          </template>
+          </transition-group>
 
-          <p v-else class="text-gray-500 text-sm">Belum ada balasan.</p>
+          <p v-if="!replies.length" class="text-gray-500 text-sm">Belum ada balasan.</p>
         </div>
       </div>
 
       <!-- Kanan: Form / Login -->
       <aside class="space-y-4">
-        <div class="bg-white dark:bg-gray-900 rounded-xl shadow p-6 sticky top-20">
+        <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 sticky top-20">
           <h3 class="text-base font-semibold mb-4">Tulis Balasan</h3>
 
           <!-- Jika login -->
           <template v-if="$page.props.auth.user">
-            <!-- Notifikasi -->
-            <div
-              v-if="successMessage"
-              class="flex items-center gap-2 p-3 mb-3 text-sm rounded-lg bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-200"
-            >
-              <CheckCircle2 class="w-4 h-4" />
-              {{ successMessage }}
-            </div>
+            <!-- Notifikasi Toast -->
+            <transition name="slide-down">
+              <div
+                v-if="successMessage"
+                class="fixed top-4 right-4 z-50 px-4 py-2 bg-green-600 text-white text-sm rounded-lg shadow-lg"
+              >
+                <CheckCircle2 class="inline w-4 h-4 mr-1" />
+                {{ successMessage }}
+              </div>
+            </transition>
 
             <form @submit.prevent="submitReply" class="space-y-3">
               <textarea
                 v-model="form.body"
                 rows="4"
                 placeholder="Tulis komentar kamu..."
-                class="w-full border rounded-lg p-3 text-sm text-gray-800 dark:text-gray-200 dark:bg-gray-800 resize-none focus:ring-2 focus:ring-blue-500"
+                class="w-full border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-sm text-gray-800 dark:text-gray-200 dark:bg-gray-800 resize-none focus:ring-2 focus:ring-blue-500"
               />
+
               <button
                 type="submit"
-                class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition"
+                class="w-full flex justify-center items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition disabled:opacity-50"
                 :disabled="form.processing || !form.body.trim()"
               >
-                Kirim Balasan
+                <span v-if="!form.processing">🚀 Kirim Balasan</span>
+                <span v-else class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
               </button>
             </form>
           </template>
@@ -165,7 +171,7 @@ const submitReply = async () => {
               </p>
               <Link
                 href="/login"
-                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                class="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition"
               >
                 Login
               </Link>
@@ -176,3 +182,32 @@ const submitReply = async () => {
     </div>
   </PublicLayout>
 </template>
+
+<style>
+/* Animasi Balasan */
+.fade-up-enter-active, .fade-up-leave-active {
+  transition: all 0.3s ease;
+}
+.fade-up-enter-from {
+  opacity: 0;
+  transform: translateY(10px);
+}
+.fade-up-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+/* Toast */
+.slide-down-enter-active,
+.slide-down-leave-active {
+  transition: all 0.3s ease;
+}
+.slide-down-enter-from {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+.slide-down-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+</style>
