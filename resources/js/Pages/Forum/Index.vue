@@ -71,80 +71,87 @@ const submit = () => {
       </div>
     </section>
 
-    <!-- List Threads -->
-    <section class="max-w-6xl mx-auto px-6 pb-16">
-      <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <div
-          v-for="thread in threads.data"
-          :key="thread.id"
-          class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition flex flex-col overflow-hidden"
-        >
-          <!-- Header -->
-          <div class="flex items-center gap-3 p-4 border-b border-gray-100 dark:border-gray-800">
-            <img
-              :src="thread.user?.profile_photo_path
-                ? '/storage/' + thread.user.profile_photo_path
-                : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(thread.user?.name || 'User')"
-              class="w-11 h-11 rounded-full object-cover border border-gray-300 dark:border-gray-700"
-            />
-            <div>
-              <div class="flex items-center gap-1">
-                <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">
-                  {{ thread.user?.name }}
-                </p>
-                <CheckCircle
-                  v-if="thread.user?.trusted_writer"
-                  class="w-4 h-4 text-green-500"
-                />
-              </div>
-              <p class="text-xs text-gray-400 dark:text-gray-500">
-                {{ dayjs(thread.updated_at).fromNow() }}
-              </p>
-            </div>
-          </div>
-
-          <!-- Body -->
-          <div class="p-5 flex-1 flex flex-col">
-            <Link
-              :href="route('forum.show', thread.id)"
-              class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2 line-clamp-2 hover:text-blue-600 dark:hover:text-blue-400 transition"
-            >
-              {{ thread.title }}
-            </Link>
-            <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-3">
-              {{
-                thread.posts.length > 0
-                  ? thread.posts[0].body.slice(0, 120) + '...'
-                  : 'Belum ada isi'
-              }}
+<!-- List Threads -->
+<section class="max-w-6xl mx-auto px-6 pb-16">
+  <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+    <div
+      v-for="(thread, index) in threads.data"
+      :key="thread.id"
+      class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition flex flex-col overflow-hidden"
+    >
+      <!-- Header -->
+      <div class="flex items-center gap-3 p-4 border-b border-gray-100 dark:border-gray-800">
+        <img
+          :src="thread.user?.profile_photo_path
+            ? '/storage/' + thread.user.profile_photo_path
+            : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(thread.user?.name || 'User')"
+          class="w-11 h-11 rounded-full object-cover border border-gray-300 dark:border-gray-700"
+        />
+        <div>
+          <div class="flex items-center gap-1">
+            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">
+              {{ thread.user?.name }}
             </p>
+            <CheckCircle
+              v-if="thread.user?.trusted_writer"
+              class="w-4 h-4 text-green-500"
+            />
           </div>
-
-          <!-- Footer -->
-          <div class="flex items-center justify-between p-4 border-t border-gray-100 dark:border-gray-800 text-xs text-gray-500 dark:text-gray-400">
-            <span class="flex items-center gap-1">💬 {{ thread.posts_count ?? thread.posts.length }} komentar</span>
-            <span class="font-medium text-gray-400">#{{ thread.id }}</span>
-          </div>
+          <p class="text-xs text-gray-400 dark:text-gray-500">
+            {{ dayjs(thread.updated_at).fromNow() }}
+          </p>
         </div>
       </div>
 
-      <!-- Pagination -->
-      <div class="mt-12 flex justify-center">
-        <div class="flex gap-2">
-          <Link
-            v-for="link in threads.links"
-            :key="link.label"
-            :href="link.url || ''"
-            v-html="link.label"
-            class="px-3 py-1.5 rounded-lg border text-sm font-medium transition"
-            :class="{
-              'bg-blue-600 text-white border-blue-600 shadow': link.active,
-              'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 border-gray-300 dark:border-gray-700': !link.active,
-            }"
-          />
-        </div>
+      <!-- Body -->
+      <div class="p-5 flex-1 flex flex-col">
+        <Link
+          :href="route('forum.show', thread.id)"
+          class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2 line-clamp-2 hover:text-blue-600 dark:hover:text-blue-400 transition"
+        >
+          {{ thread.title }}
+        </Link>
+        <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-3">
+          {{
+            thread.posts.length > 0
+              ? thread.posts[0].body.slice(0, 120) + '...'
+              : 'Belum ada isi'
+          }}
+        </p>
       </div>
-    </section>
+
+      <!-- Footer -->
+      <div
+        class="flex items-center justify-between p-4 border-t border-gray-100 dark:border-gray-800 text-xs text-gray-500 dark:text-gray-400"
+      >
+        <span class="flex items-center gap-1">
+          💬 {{ thread.posts_count ?? thread.posts.length }} komentar
+        </span>
+        <span class="font-medium text-gray-400">
+          #{{ threads.total - ((threads.current_page - 1) * threads.per_page + index) }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div class="mt-12 flex justify-center">
+    <div class="flex gap-2">
+      <Link
+        v-for="link in threads.links"
+        :key="link.label"
+        :href="link.url || ''"
+        v-html="link.label"
+        class="px-3 py-1.5 rounded-lg border text-sm font-medium transition"
+        :class="{
+          'bg-blue-600 text-white border-blue-600 shadow': link.active,
+          'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 border-gray-300 dark:border-gray-700': !link.active,
+        }"
+      />
+    </div>
+  </div>
+</section>
+
 
     <!-- Modal Create Thread -->
     <div

@@ -10,16 +10,17 @@ use Inertia\Inertia;
 class ForumController extends Controller
 {
     // List semua thread
-    public function index()
-    {
-        $threads = Thread::with(['user', 'posts.user'])
-            ->latest()
-            ->paginate(6);
+ public function index()
+{
+    $threads = Thread::with(['user', 'posts.user'])
+        ->latest() // terbaru duluan
+        ->paginate(6);
 
-        return Inertia::render('Forum/Index', [
-            'threads' => $threads,
-        ]);
-    }
+    return Inertia::render('Forum/Index', [
+        'threads' => $threads,
+    ]);
+}
+
 
     // Show detail thread + semua posts
 public function show(Thread $thread)
