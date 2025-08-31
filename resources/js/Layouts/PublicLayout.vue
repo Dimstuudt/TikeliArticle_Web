@@ -5,7 +5,7 @@ import Dropdown from "@/Components/Dropdown.vue"
 import DropdownLink from "@/Components/DropdownLink.vue"
 import "@fortawesome/fontawesome-free/css/all.min.css"
 import SearchBar from "@/Components/SearchBar.vue"
-
+import LofiPlayer from "@/Components/LofiPlayer.vue"
 // ===== User =====
 const page = usePage()
 const user = computed(() => page.props.auth?.user || null)
@@ -51,25 +51,7 @@ onUnmounted(() => {
   window.removeEventListener("scroll", handleScroll)
 })
 
-// ===== Floating Lofi Player =====
-const isPlaying = ref(false)
-let audio = null
 
-onMounted(() => {
-  // file otomatis keambil dari /public
-  audio = new Audio("/springlofi.mp3")
-  audio.loop = true
-})
-
-const togglePlay = () => {
-  if (!audio) return
-  if (isPlaying.value) {
-    audio.pause()
-  } else {
-    audio.play()
-  }
-  isPlaying.value = !isPlaying.value
-}
 
 </script>
 
@@ -243,43 +225,11 @@ const togglePlay = () => {
       </button>
     </transition>
 
+    <LofiPlayer />
 
 
- <!-- Floating Lofi Player -->
-  <div
-    class="fixed bottom-6 left-6 flex items-center gap-2 px-4 py-2 rounded-full
-           bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700
-           text-gray-800 dark:text-gray-200 cursor-pointer
-           transition-all duration-300 hover:scale-105"
-  >
-    <button @click="togglePlay" class="flex items-center gap-2">
-      <!-- Play Icon -->
-      <svg
-        v-if="!isPlaying"
-        xmlns="http://www.w3.org/2000/svg"
-        class="w-6 h-6 text-blue-600 dark:text-blue-400"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        stroke-width="2"
-      >
-        <path stroke-linecap="round" stroke-linejoin="round"
-              d="M14.752 11.168l-5.197-3.027A1 1 0 008 9.027v5.946a1 1 0 001.555.832l5.197-3.027a1 1 0 000-1.664z" />
-      </svg>
 
-      <!-- Equalizer -->
-      <div v-else class="flex items-end gap-[3px] w-6 h-6">
-        <span class="w-[3px] h-3 bg-red-500 animate-eq1"></span>
-        <span class="w-[3px] h-4 bg-red-500 animate-eq2"></span>
-        <span class="w-[3px] h-2 bg-red-500 animate-eq3"></span>
-      </div>
-
-      <span class="text-sm font-medium">
-        {{ isPlaying ? "Pause Lofi" : "Play Lofi" }}
-      </span>
-    </button>
-  </div>
-  </div>
+ </div>
 
 </template>
 
