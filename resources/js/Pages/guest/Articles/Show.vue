@@ -6,6 +6,8 @@ import dayjs from 'dayjs'
 import 'dayjs/locale/id'
 import { CheckCircle } from 'lucide-vue-next'
 import NativeShareSimple from '@/Components/NativeShareSimple.vue' // import component
+import ExportDocxButton from '@/Components/ExportDocxButton.vue' // import component
+
 dayjs.locale('id')
 
 // Props dari backend
@@ -138,10 +140,14 @@ onMounted(() => {
       <span class="mr-1">{{ liked ? '❤️' : '🤍' }}</span>
       <span>{{ likes }}</span>
     </div>
+
+
+
   </div>
 
-  <!-- Kanan -->
-  <div class="ml-auto">
+  <!-- Tombol kanan -->
+  <div class="flex items-center gap-2 ml-auto">
+    <ExportDocxButton :article="article" />
     <NativeShareSimple
       :url="shareUrl"
       :title="article.title"
