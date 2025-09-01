@@ -4,8 +4,8 @@ import { ref } from "vue"
 // daftar lagu
 const playlist = [
   { title: "Spring Lofi", src: "/springlofi.mp3" },
-  { title: "Rainy Vibes", src: "/rainylofi.mp3" },
-  { title: "Night Chill", src: "/nightlofi.mp3" },
+  { title: "Rainy Vibes", src: "/rainlofi.mp3" },
+  { title: "Night Chill", src: "/lofichill.mp3" },
 ]
 
 // index lagu yang lagi diputar
@@ -20,6 +20,15 @@ const getAudio = () => {
   if (!audio && playlist.length > 0) {
     audio = new Audio(playlist[currentTrackIndex.value].src)
     audio.loop = true
+
+    // pasang listener 'ended' supaya otomatis next track
+    audio.addEventListener("ended", () => {
+      if (currentTrackIndex.value < playlist.length - 1) {
+        changeTrack(currentTrackIndex.value + 1)
+      } else {
+        isPlaying.value = false
+      }
+    })
   }
   return audio
 }
@@ -57,15 +66,14 @@ const changeTrack = (index) => {
   if (index < 0 || index >= playlist.length) return
   currentTrackIndex.value = index
 
-  if (audio) {
-    audio.pause()
-  }
+  const a = getAudio()
+  if (!a) return
 
-  audio = new Audio(playlist[index].src)
-  audio.loop = true
+  a.src = playlist[index].src
+  a.loop = true
 
   if (isPlaying.value) {
-    audio.play()
+    a.play()
   }
 }
 
