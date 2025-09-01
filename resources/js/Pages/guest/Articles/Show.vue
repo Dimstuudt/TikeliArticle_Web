@@ -1,5 +1,5 @@
 <script setup>
-import { Head, router, useForm } from '@inertiajs/vue3'
+import { Head, router, useForm, Link } from '@inertiajs/vue3'
 import { defineProps, ref, onMounted } from 'vue'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
 import dayjs from 'dayjs'
@@ -245,17 +245,18 @@ onMounted(() => {
     </div>
 
     <!-- Button Profil -->
-    <a
-      :href="`/users/${article.author.id}`"
-      class="shrink-0 flex items-center gap-1 text-xs px-3 py-1.5 rounded-full text-white font-medium transition
-             bg-gradient-to-r from-purple-600 via-pink-500 to-indigo-500 hover:scale-105 shadow-md"
-    >
-      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M5.121 17.804A9.969 9.969 0 0112 15c2.21 0 4.255.72 5.879 1.929M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-      </svg>
-      Profil
-    </a>
+  <Link
+  :href="route('guest.profile', article.author.id)"
+  class="shrink-0 flex items-center gap-1 text-xs px-3 py-1.5 rounded-full text-white font-medium transition
+         bg-gradient-to-r from-purple-600 via-pink-500 to-indigo-500 hover:scale-105 shadow-md"
+>
+  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+      d="M5.121 17.804A9.969 9.969 0 0112 15c2.21 0 4.255.72 5.879 1.929M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+  </svg>
+  Profil
+</Link>
+
   </div>
 </div>
 
