@@ -140,10 +140,18 @@ onUnmounted(() => {
           </button>
         </template>
 
-        <template #content>
-          <DropdownLink :href="getDashboardRoute()">Dashboard</DropdownLink>
-          <DropdownLink method="post" :href="route('logout')" as="button">Keluar</DropdownLink>
-        </template>
+   <template #content>
+  <DropdownLink :href="route('guest.profile', user.id)">
+    Profile Saya
+  </DropdownLink>
+  <DropdownLink :href="getDashboardRoute()">
+    Dashboard
+  </DropdownLink>
+  <DropdownLink method="post" :href="route('logout')" as="button">
+    Keluar
+  </DropdownLink>
+</template>
+
       </Dropdown>
     </template>
 

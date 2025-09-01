@@ -1,25 +1,79 @@
-// state audio + play/pause global
+// state audio + play/pause global + playlist
 import { ref } from "vue"
 
-const isPlaying = ref(false)
+// daftar lagu
+const playlist = [
+  { title: "Spring Lofi", src: "/springlofi.mp3" },
+  { title: "Rainy Vibes", src: "/rainylofi.mp3" },
+  { title: "Night Chill", src: "/nightlofi.mp3" },
+]
 
+// index lagu yang lagi diputar
+const currentTrackIndex = ref(0)
+
+// state
+const isPlaying = ref(false)
+let audio = null
+
+// ambil audio instance
 const getAudio = () => {
-  if (!window._lofiAudio) {
-    window._lofiAudio = new Audio("/springlofi.mp3")
-    window._lofiAudio.loop = true
+  if (!audio && playlist.length > 0) {
+    audio = new Audio(playlist[currentTrackIndex.value].src)
+    audio.loop = true
   }
-  return window._lofiAudio
+  return audio
 }
 
-const togglePlay = () => {
-  const audio = getAudio()
-  if (audio.paused) {
-    audio.play()
+// play
+const play = () => {
+  const a = getAudio()
+  if (a) {
+    a.play()
     isPlaying.value = true
-  } else {
+  }
+}
+
+// pause
+const pause = () => {
+  if (audio) {
     audio.pause()
     isPlaying.value = false
   }
 }
 
-export { getAudio, isPlaying, togglePlay }
+// toggle play/pause
+const togglePlay = () => {
+  const a = getAudio()
+  if (!a) return
+  if (a.paused) {
+    play()
+  } else {
+    pause()
+  }
+}
+
+// ganti lagu
+const changeTrack = (index) => {
+  if (index < 0 || index >= playlist.length) return
+  currentTrackIndex.value = index
+
+  if (audio) {
+    audio.pause()
+  }
+
+  audio = new Audio(playlist[index].src)
+  audio.loop = true
+
+  if (isPlaying.value) {
+    audio.play()
+  }
+}
+
+export {
+  playlist,
+  currentTrackIndex,
+  isPlaying,
+  getAudio,
+  togglePlay,
+  changeTrack,
+}

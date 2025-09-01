@@ -9,3 +9,6 @@ Route::get('/forum/{thread}', [ForumController::class, 'show'])->name('forum.sho
 Route::post('/forum', [ForumController::class, 'store'])->middleware('auth')->name('forum.store');
 Route::post('/forum/{thread}/reply', [ForumController::class, 'reply'])->middleware('auth')->name('forum.reply');
 
+Route::delete('/forum/{thread}', [ForumController::class, 'destroy'])
+    ->middleware(['auth']) // optional: bisa pakai middleware trusted_writer
+    ->name('forum.destroy');

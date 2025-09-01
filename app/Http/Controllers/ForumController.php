@@ -78,5 +78,17 @@ public function reply(Request $request, Thread $thread)
     return response()->json($post);
 }
 
+public function destroy(Thread $thread)
+{
+    // Pastikan user adalah trusted_writer dan pemilik thread
+    if (auth()->user()->id !== $thread->user_id || !auth()->user()->trusted_writer) {
+        abort(403, 'Akses ditolak.');
+    }
+
+    $thread->delete();
+
+    return back()->with('success', 'Thread berhasil dihapus!');
+}
+
 
 }

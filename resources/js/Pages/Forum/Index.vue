@@ -35,6 +35,25 @@ const submit = () => {
     },
   })
 }
+
+//delete thread
+const deleteThread = (id) => {
+  if (!confirm('Apakah kamu yakin ingin menghapus thread ini?')) return;
+
+  form.delete(route('forum.destroy', id), {
+    preserveScroll: true,
+    onSuccess: () => {
+      // optional toast notif
+      showToast.value = true
+      setTimeout(() => {
+        showToast.value = false
+      }, 3000)
+    },
+  });
+};
+
+
+
 </script>
 
 <template>
@@ -127,10 +146,29 @@ const submit = () => {
         <span class="flex items-center gap-1">
           💬 {{ thread.posts_count ?? thread.posts.length }} komentar
         </span>
-        <span class="font-medium text-gray-400">
-          #{{ threads.total - ((threads.current_page - 1) * threads.per_page + index) }}
-        </span>
-      </div>
+
+
+  <div class="flex items-center gap-2">
+
+  <!-- Tombol Hapus -->
+  <button
+  v-if="$page.props.auth.user && $page.props.auth.user.id === thread.user?.id && $page.props.auth.user.trusted_writer"
+  @click="deleteThread(thread.id)"
+  class="text-white bg-red-500 hover:bg-red-100 hover:text-red-700 transition-all duration-200
+         px-3 py-1 rounded-md shadow-sm text-sm font-medium"
+>
+  Hapus
+</button>
+
+<p> </p>
+    <span class="font-medium text-gray-400">
+      #{{ threads.total - ((threads.current_page - 1) * threads.per_page + index) }}
+    </span>
+
+
+  </div>
+</div>
+
     </div>
   </div>
 
@@ -224,7 +262,7 @@ const submit = () => {
         v-if="showToast"
         class="fixed bottom-6 right-6 bg-green-600 text-white px-4 py-3 rounded-lg shadow-lg z-50"
       >
-        ✅ Thread berhasil dibuat!
+        🛠️ Halaman Thread berhasil diupdate!
       </div>
     </transition>
   </PublicLayout>
