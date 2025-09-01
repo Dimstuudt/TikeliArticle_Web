@@ -1,12 +1,14 @@
 <script setup>
 import { Head, router, useForm } from '@inertiajs/vue3'
-import { defineProps, ref } from 'vue'
+import { defineProps, ref, onMounted } from 'vue'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
 import dayjs from 'dayjs'
 import 'dayjs/locale/id'
 import { CheckCircle } from 'lucide-vue-next'
+import NativeShareSimple from '@/Components/NativeShareSimple.vue' // import component
 dayjs.locale('id')
 
+// Props dari backend
 const props = defineProps({
   article: Object,
   views: Number,
@@ -38,14 +40,8 @@ const submitComment = () => {
     preserveScroll: true,
     onSuccess: () => {
       form.reset()
-
-      // set pesan sukses
       successMessage.value = "Komentar berhasil ditambahkan 🎉"
-
-      // hilang otomatis setelah 3 detik
-      setTimeout(() => {
-        successMessage.value = ""
-      }, 3000)
+      setTimeout(() => { successMessage.value = "" }, 3000)
     }
   })
 }
@@ -62,14 +58,10 @@ const goBack = () => {
 }
 
 // format tanggal artikel
-const formatDate = (date) => {
-  return dayjs(date).format('DD MMMM YYYY')
-}
+const formatDate = (date) => dayjs(date).format('DD MMMM YYYY')
 
 // format tanggal komentar
-const formatCommentDate = (date) => {
-  return dayjs(date).format('DD MMMM YYYY HH:mm')
-}
+const formatCommentDate = (date) => dayjs(date).format('DD MMMM YYYY HH:mm')
 
 // like
 const toggleLike = () => {
@@ -81,13 +73,28 @@ const toggleLike = () => {
     }
   })
 }
-</script>
 
+// 🔹 state untuk URL share
+const shareUrl = ref('')
+
+// 🔹 ambil URL publik kalau sudah di browser
+onMounted(() => {
+  // contoh: LOCAL_TUNNEL_URL = https://xxxx.loca.lt
+  shareUrl.value = import.meta.env.VITE_APP_URL + window.location.pathname
+})
+
+</script>
 
 
 <template>
   <PublicLayout>
-    <Head :title="article.title" />
+  <Head :title="article.title">
+    <meta property="og:title" :content="article.title" />
+    <meta property="og:description" :content="article.summary" />
+    <meta property="og:url" :content="shareUrl" />
+    <meta property="og:image" :content="article.cover || 'https://example.com/default-cover.jpg'" />
+  </Head>
+
 
     <main class="flex-grow max-w-7xl mx-auto px-4 py-12">
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -110,38 +117,39 @@ const toggleLike = () => {
         {{ article.title }}
       </h1>
 
-     <div class="flex flex-wrap items-center gap-2 mb-2">
-  <!-- Kategori -->
-  <div
-    v-if="article.category"
-    class="inline-block bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs font-semibold px-3 py-1 rounded-full"
-  >
-    {{ article.category }}
+ <div class="flex items-center gap-2 mb-2">
+  <!-- Kiri -->
+  <div class="flex flex-wrap items-center gap-2">
+    <div v-if="article.category"
+         class="inline-block bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs font-semibold px-3 py-1 rounded-full">
+      {{ article.category }}
+    </div>
+
+    <div class="inline-block bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-xs font-semibold px-3 py-1 rounded-full">
+      👁️ {{ views ?? 0 }} Views
+    </div>
+
+    <div class="inline-block bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 text-xs font-semibold px-3 py-1 rounded-full">
+      🔄 {{ article.hits ?? 0 }} Hits
+    </div>
+
+    <div class="inline-flex items-center bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 text-xs font-semibold px-3 py-1 rounded-full cursor-pointer transition hover:scale-105"
+         @click="toggleLike">
+      <span class="mr-1">{{ liked ? '❤️' : '🤍' }}</span>
+      <span>{{ likes }}</span>
+    </div>
   </div>
 
-  <!-- Views -->
-  <div
-    class="inline-block bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-xs font-semibold px-3 py-1 rounded-full"
-  >
-    👁️ {{ views ?? 0 }} Views
-  </div>
-
-  <!-- Hits -->
-  <div
-    class="inline-block bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 text-xs font-semibold px-3 py-1 rounded-full"
-  >
-    🔄 {{ article.hits ?? 0 }} Hits
-  </div>
-
-  <!-- Likes -->
-  <div
-    class="inline-flex items-center bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 text-xs font-semibold px-3 py-1 rounded-full cursor-pointer transition hover:scale-105"
-    @click="toggleLike"
-  >
-    <span class="mr-1">{{ liked ? '❤️' : '🤍' }}</span>
-    <span>{{ likes }}</span>
+  <!-- Kanan -->
+  <div class="ml-auto">
+    <NativeShareSimple
+      :url="shareUrl"
+      :title="article.title"
+      :text="article.summary"
+    />
   </div>
 </div>
+
 
 
    <p class="text-sm text-gray-500 dark:text-gray-400">
