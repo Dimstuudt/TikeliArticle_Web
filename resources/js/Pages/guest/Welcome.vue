@@ -209,14 +209,14 @@ html {
 
 <!-- Pengguna Terbaru -->
 <section class="mb-8">
-  <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-md p-6">
+  <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-6">
     <!-- Judul -->
-    <div class="flex items-center justify-center mb-8">
-      <span class="h-0.5 w-10 bg-gradient-to-r from-transparent via-blue-400 to-transparent"></span>
-      <span class="mx-3 text-lg font-bold text-blue-700 dark:text-cyan-400">
+    <div class="flex items-center justify-center mb-10">
+      <span class="h-0.5 w-12 bg-gradient-to-r from-transparent via-blue-400 to-transparent"></span>
+      <span class="mx-4 text-xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-cyan-400 to-teal-500">
         Pengguna Terbaru
       </span>
-      <span class="h-0.5 w-10 bg-gradient-to-r from-transparent via-blue-400 to-transparent"></span>
+      <span class="h-0.5 w-12 bg-gradient-to-r from-transparent via-blue-400 to-transparent"></span>
     </div>
 
     <!-- Grid Users -->
@@ -225,74 +225,57 @@ html {
         v-for="user in props.latestUsers"
         :key="user.id"
         :href="route('guest.profile', user.id)"
-        class="group block rounded-2xl p-[2px] transition hover:-translate-y-1 hover:shadow-xl"
+        class="group block rounded-2xl p-[2px] transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl"
         :class="user.role === 'admin'
           ? 'bg-gradient-to-r from-purple-500 via-pink-500 to-red-500'
           : 'bg-gradient-to-r from-blue-400 via-cyan-400 to-teal-500'"
       >
         <!-- Inner Card -->
         <div
-          class="rounded-2xl bg-white dark:bg-gray-800 p-5 h-full shadow-md flex flex-col"
+          class="rounded-2xl bg-white dark:bg-gray-800 p-5 h-full shadow-md flex flex-col transition-all duration-300 group-hover:bg-gradient-to-br group-hover:from-gray-50 dark:group-hover:from-gray-700"
         >
           <!-- Header: Foto + Nama + Bio -->
           <div class="flex items-start gap-4">
-            
-       <!-- Foto Profil -->
-<div
-  class="w-16 h-16 flex-shrink-0 rounded-full ring-2 ring-offset-2 shadow overflow-hidden mt-1"
-  :class="user.role === 'admin'
-    ? 'ring-purple-400 dark:ring-pink-500'
-    : 'ring-blue-300 dark:ring-cyan-400'"
->
-  <img
-    :src="user.profile_photo_path
-      ? `/storage/${user.profile_photo_path}`
-      : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`"
-    alt="Foto Profil"
-    class="w-full h-full object-cover"
-  />
-</div>
+            <!-- Foto Profil -->
+            <div
+              class="w-16 h-16 flex-shrink-0 rounded-full ring-2 ring-offset-2 overflow-hidden bg-gradient-to-tr from-blue-400 to-cyan-500 p-[2px]"
+            >
+              <img
+                :src="user.profile_photo_path
+                  ? `/storage/${user.profile_photo_path}`
+                  : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`"
+                alt="Foto Profil"
+                class="w-full h-full rounded-full object-cover"
+              />
+            </div>
 
+            <!-- Nama & Bio -->
+            <div class="flex-1 min-w-0">
+              <!-- Nama + Verified -->
+              <h4
+                class="flex items-center gap-1 text-sm font-semibold text-gray-800 dark:text-gray-200 truncate"
+              >
+                <span class="group-hover:text-blue-500 dark:group-hover:text-cyan-400 transition">
+                  {{ user.name.split(' ').slice(0, 2).join(' ') }}
+                </span>
+                <CheckCircle
+                  v-if="user.trusted_writer"
+                  class="w-4 h-4 text-white bg-green-500 rounded-full p-[1px] flex-shrink-0"
+                  :stroke-width="2"
+                />
+              </h4>
 
-     <!-- Nama & Bio -->
-<div class="flex-1 min-w-0">
-  <!-- Nama + Verified -->
-  <h4
-    class="flex items-center gap-1 text-sm font-semibold text-gray-800 dark:text-gray-200 truncate"
-  >
-    {{ user.name.split(' ').slice(0, 2).join(' ') }}
-    <CheckCircle
-      v-if="user.trusted_writer"
-      class="w-4 h-4 text-white bg-green-500 rounded-full p-[1px] flex-shrink-0"
-      :stroke-width="2"
-    />
-  </h4>
-
-<!-- Bio mirip form -->
-<!-- Bio -->
-<div class="mt-2">
-  <label
-    class="block text-[10px] font-medium text-gray-500 dark:text-gray-400 mb-1"
-  >
-    Bio:
-  </label>
-  <div
-    class="w-full h-14 text-[11px] leading-snug rounded-md
-           border border-gray-200 dark:border-gray-700
-           bg-gray-50 dark:bg-gray-800/60
-           px-2 py-1.5 text-gray-700 dark:text-gray-300
-           overflow-y-auto"
-  >
-    {{ user.bio || 'Belum ada bio' }}
-  </div>
-</div>
-
-</div>
-
+              <!-- Bio -->
+              <p
+                class="mt-1 text-[11px] text-gray-600 dark:text-gray-400 line-clamp-3 leading-snug italic"
+              >
+                {{ user.bio || 'Belum ada bio' }}
+              </p>
+            </div>
           </div>
 
           <!-- Footer: Badges + Tanggal -->
-          <div class="mt-4 flex flex-col flex-1 justify-end">
+          <div class="mt-5 flex flex-col flex-1 justify-end">
             <!-- Badges -->
             <div class="flex flex-wrap gap-2 mb-2">
               <!-- Role -->
@@ -340,7 +323,7 @@ html {
 
             <!-- Tanggal Bergabung -->
             <p
-              class="text-[11px] text-gray-400 dark:text-gray-500"
+              class="text-[11px] text-gray-400 dark:text-gray-500 italic"
             >
               Bergabung {{ dayjs(user.created_at).fromNow() }}
             </p>
@@ -352,149 +335,129 @@ html {
 </section>
 
 
-
-
-
-
-
-
-
-
     <!-- Artikel -->
     <main class="flex-grow max-w-7xl mx-auto px-4 py-10">
 
 <!-- Top 3 Artikel Terhits -->
-<div class="mb-8">
-<h3
-  id="top-articles"
-  class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6 flex items-center gap-2"
->
-  <span>Artikel Terhits</span>
-  <span
-    class="flex-1 h-[2px] bg-gradient-to-r from-pink-500 via-purple-500 to-transparent rounded-full"
-  ></span>
-</h3>
+<div class="mb-12">
+  <h3
+    id="top-articles"
+    class="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6 flex items-center gap-2"
+  >
+    <span
+      class="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-transparent bg-clip-text"
+    >
+      Artikel Terhits
+    </span>
+    <span
+      class="flex-1 h-[2px] bg-gradient-to-r from-pink-500 via-purple-500 to-transparent rounded-full"
+    ></span>
+  </h3>
 
-
-  <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+  <div class="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
     <div
       v-for="article in props.topArticles"
       :key="article.id"
-      class="rounded-xl p-[2px] bg-gradient-to-r from-emerald-500 via-teal-500 to-blue-500
-             hover:from-emerald-600 hover:via-teal-600 hover:to-blue-600
-             transition duration-300 cursor-pointer hover:scale-[1.01]"
       @click="router.visit(`/articles/${article.id}`)"
+      class="group cursor-pointer"
     >
-      <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg flex flex-col overflow-hidden h-full">
+      <!-- Bingkai gradasi -->
+      <div
+        class="p-[2px] rounded-2xl bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 shadow-lg hover:shadow-2xl transition transform hover:-translate-y-1"
+      >
+        <!-- Isi card -->
+        <div class="relative rounded-2xl overflow-hidden bg-white dark:bg-gray-900">
+          <!-- Cover -->
+          <div class="relative w-full h-56">
+            <img
+              :src="article.cover ?? 'https://via.placeholder.com/600x300?text=No+Cover'"
+              alt="cover"
+              class="w-full h-full object-cover"
+            />
 
-<!-- Gambar cover -->
-<div class="relative w-full h-48">
-  <img
-    :src="article.cover ?? 'https://via.placeholder.com/600x300?text=No+Cover'"
-    alt="cover"
-    class="w-full h-full object-cover"
-  />
+            <!-- Overlay gradient -->
+            <div
+              class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"
+            ></div>
 
-  <!-- Badge kategori -->
-  <div
-    class="absolute top-2 right-2 text-white text-[10px] px-2 py-1 rounded-md shadow-sm uppercase font-semibold"
-    :class="article.category
-              ? 'bg-gradient-to-r from-emerald-600 to-blue-600'
-              : 'bg-gradient-to-r from-purple-700 via-pink-500 to-yellow-400'"
-  >
-    {{ article.category ?? 'UNKNOWN' }}
-  </div>
-</div>
+            <!-- Badge kategori -->
+            <div
+              class="absolute top-3 left-3 text-white text-xs px-3 py-1 rounded-full font-semibold shadow-lg backdrop-blur-sm"
+              :class="article.category
+                        ? 'bg-gradient-to-r from-emerald-500 to-blue-500'
+                        : 'bg-gradient-to-r from-pink-600 to-purple-600'"
+            >
+              {{ article.category ?? 'UNKNOWN' }}
+            </div>
+          </div>
 
+          <!-- Konten -->
+          <div class="absolute bottom-0 left-0 right-0 p-5 z-10">
+            <!-- Judul nyala -->
+            <h4
+              class="text-xl font-extrabold mb-2 leading-snug
+                     text-white drop-shadow-lg group-hover:text-pink-300 line-clamp-2"
+            >
+              {{ article.title ?? 'Judul tidak tersedia' }}
+            </h4>
 
+            <!-- Ringkasan -->
+            <p
+              class="text-sm text-gray-200 line-clamp-2 mb-3"
+              v-html="article.summary ?? 'Tidak ada ringkasan'"
+            ></p>
 
-        <!-- Konten -->
-        <div class="p-5 flex flex-col flex-grow">
-          <span class="text-xs text-teal-500 uppercase font-semibold mb-1">Terhits</span>
-          <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2 line-clamp-2">
-            {{ article.title ?? 'Judul tidak tersedia' }}
-          </h4>
+            <!-- Info penulis & waktu -->
+            <div class="flex items-center text-xs text-gray-300 mb-3">
+              <span class="flex items-center gap-1">
+                {{ article.author?.name ?? 'Anonim' }}
+                <CheckCircle
+                  v-if="article.trusted_writer"
+                  class="w-3 h-3 text-white bg-green-500 rounded-full p-[1px]"
+                  :stroke-width="2"
+                />
+              </span>
+              <span class="mx-1">•</span>
+              <span>
+                {{
+                  article.updated_at
+                    ? dayjs(article.updated_at).from(now.value)
+                    : article.created_at
+                    ? dayjs(article.created_at).from(now.value)
+                    : 'Waktu tidak diketahui'
+                }}
+              </span>
+            </div>
 
-          <div
-            class="text-sm text-gray-600 dark:text-gray-400 line-clamp-3 min-h-[65px] flex-grow"
-            v-html="article.summary ?? 'Tidak ada ringkasan'"
-          ></div>
-
-    <!-- Penulis, hits & likes -->
-<div class="text-xs text-gray-400 dark:text-gray-500 mt-4 flex justify-between items-center">
-  <!-- Penulis & waktu -->
-  <div class="flex items-center gap-1">
-    <!-- Nama & badge -->
-    <span class="flex items-center gap-1">
-      {{ article.author?.name ?? 'Anonim' }}
-
-      <!-- ✅ Trusted badge pakai Lucide, lebih kecil -->
-      <CheckCircle
-        v-if="article.trusted_writer"
-        class="w-3 h-3 text-white bg-green-500 rounded-full p-[1px]"
-        :stroke-width="2"
-      />
-    </span>
-
-    <!-- Separator -->
-    <span>•</span>
-
-    <!-- Waktu -->
-    <span>
-      {{
-        article.updated_at
-          ? dayjs(article.updated_at).from(now.value)
-          : article.created_at
-          ? dayjs(article.created_at).from(now.value)
-          : 'Waktu tidak diketahui'
-      }}
-    </span>
-  </div>
-
-
-
-        <!-- Hits, Likes & Comments -->
-<div class="flex items-center gap-2">
-  <!-- Hits -->
-  <span
-    class="inline-flex items-center px-2.5 py-1 rounded-md text-white font-semibold
-           bg-gradient-to-r from-blue-500 via-teal-400 to-green-400
-           hover:scale-105 transform transition duration-300
-           shadow-md hover:shadow-[0_0_15px_rgba(0,255,255,0.7)]"
-  >
-    <span class="mr-1 animate-pulse">🔥</span>
-    {{ article.hits ?? 0 }}
-  </span>
-
-  <!-- Likes -->
-  <span
-    class="inline-flex items-center px-2.5 py-1 rounded-md text-white font-semibold
-           bg-gradient-to-r from-pink-500 via-red-400 to-orange-400
-           hover:scale-105 transform transition duration-300
-           shadow-md hover:shadow-[0_0_15px_rgba(255,0,100,0.7)]"
-  >
-    <span class="mr-1 animate-pulse">❤️</span>
-    {{ article.likes ?? 0 }}
-  </span>
-
-  <!-- Comments -->
-  <span
-    class="inline-flex items-center px-2.5 py-1 rounded-md text-white font-semibold
-           bg-gradient-to-r from-indigo-500 via-purple-500 to-fuchsia-500
-           hover:scale-105 transform transition duration-300
-           shadow-md hover:shadow-[0_0_15px_rgba(180,0,255,0.7)]"
-  >
-    <span class="mr-1 animate-pulse">💬</span>
-    {{ article.comments_count ?? 0 }}
-  </span>
-</div>
-
+            <!-- Stats -->
+            <div class="flex gap-2">
+              <span
+                class="inline-flex items-center px-2.5 py-1 rounded-full text-xs text-white font-semibold
+                       bg-gradient-to-r from-blue-500 to-teal-400 shadow-md"
+              >
+                🔥 {{ article.hits ?? 0 }}
+              </span>
+              <span
+                class="inline-flex items-center px-2.5 py-1 rounded-full text-xs text-white font-semibold
+                       bg-gradient-to-r from-pink-500 to-orange-400 shadow-md"
+              >
+                ❤️ {{ article.likes ?? 0 }}
+              </span>
+              <span
+                class="inline-flex items-center px-2.5 py-1 rounded-full text-xs text-white font-semibold
+                       bg-gradient-to-r from-purple-500 to-fuchsia-500 shadow-md"
+              >
+                💬 {{ article.comments_count ?? 0 }}
+              </span>
+            </div>
           </div>
         </div>
       </div>
+      <!-- End bingkai -->
     </div>
   </div>
 </div>
+
 
 
 
@@ -615,28 +578,26 @@ html {
   </button>
 </div>
 
-
-    <!-- Grid Artikel -->
+<!-- Grid Artikel -->
 <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
   <div
     v-for="article in props.articles.data"
     :key="article.id"
     class="rounded-xl p-[1px] bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500
            hover:from-blue-600 hover:via-indigo-600 hover:to-purple-600
-           transition duration-300 cursor-pointer"
+           transition duration-300 cursor-pointer group"
     @click="router.visit(`/articles/${article.id}`)"
   >
     <div
-      class="bg-white dark:bg-gray-900 rounded-xl shadow-sm hover:shadow-lg
+      class="bg-white dark:bg-gray-900 rounded-xl shadow-sm group-hover:shadow-lg
              transition duration-300 flex flex-col overflow-hidden h-full"
     >
-
       <!-- Gambar cover -->
       <div class="relative w-full h-48">
         <img
           :src="article.cover ?? 'https://via.placeholder.com/600x300?text=No+Cover'"
           alt="cover"
-          class="w-full h-full object-cover"
+          class="w-full h-full object-cover group-hover:scale-105 transition duration-500"
         />
         <div
           v-if="article.category"
@@ -650,81 +611,73 @@ html {
       <!-- Konten -->
       <div class="p-5 flex flex-col flex-grow">
         <span class="text-xs text-blue-500 uppercase font-semibold mb-1">Artikel</span>
-        <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">
+        <h4
+          class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2
+                 group-hover:text-indigo-600 dark:group-hover:text-indigo-400"
+        >
           {{ article.title }}
         </h4>
 
-        <!-- Fallback summary -->
+        <!-- Ringkasan -->
         <div
           class="text-sm text-gray-600 dark:text-gray-300 line-clamp-3 min-h-[60px] flex-grow"
           v-html="article.summary || 'Tidak ada ringkasan'"
         ></div>
 
+        <!-- Footer -->
+        <div class="text-xs text-gray-400 dark:text-gray-500 mt-4 flex justify-between items-center">
+          <!-- Penulis & waktu -->
+          <div class="flex items-center gap-1">
+            <span class="flex items-center gap-1">
+              {{ article.author?.name ?? 'Anonim' }}
+              <CheckCircle
+                v-if="article.trusted_writer"
+                class="w-3 h-3 text-white bg-green-500 rounded-full p-[1px]"
+                :stroke-width="2"
+              />
+            </span>
+            <span>•</span>
+            <span>
+              {{
+                article.updated_at
+                  ? dayjs(article.updated_at).from(now.value)
+                  : article.created_at
+                  ? dayjs(article.created_at).from(now.value)
+                  : 'Waktu tidak diketahui'
+              }}
+            </span>
+          </div>
 
-<!-- Penulis, hits & likes -->
-<div class="text-xs text-gray-400 dark:text-gray-500 mt-4 flex justify-between items-center">
-  <!-- Penulis & waktu -->
-  <div class="flex items-center gap-1">
-    <!-- Nama & badge -->
-    <span class="flex items-center gap-1">
-      {{ article.author?.name ?? 'Anonim' }}
-
-      <!-- ✅ Trusted badge pakai Lucide, lebih kecil -->
-      <CheckCircle
-        v-if="article.trusted_writer"
-        class="w-3 h-3 text-white bg-green-500 rounded-full p-[1px]"
-        :stroke-width="2"
-      />
-    </span>
-
-    <!-- Separator -->
-    <span>•</span>
-
-    <!-- Waktu -->
-    <span>
-      {{
-        article.updated_at
-          ? dayjs(article.updated_at).from(now.value)
-          : article.created_at
-          ? dayjs(article.created_at).from(now.value)
-          : 'Waktu tidak diketahui'
-      }}
-    </span>
-  </div>
-
-
-  <!-- Badge hits, likes & komentar -->
-<div class="flex items-center gap-2">
-  <span
-    class="inline-flex items-center bg-yellow-100 dark:bg-yellow-900
-           text-yellow-700 dark:text-yellow-200 text-xs font-semibold
-           px-2 py-0.5 rounded-full"
-  >
-    🔄 {{ article.hits ?? 0 }}
-  </span>
-  <span
-    class="inline-flex items-center bg-red-100 dark:bg-red-900
-           text-red-700 dark:text-red-200 text-xs font-semibold
-           px-2 py-0.5 rounded-full"
-  >
-    ❤️ {{ article.likes ?? 0 }}
-  </span>
-  <span
-    class="inline-flex items-center bg-blue-100 dark:bg-blue-900
-           text-blue-700 dark:text-blue-200 text-xs font-semibold
-           px-2 py-0.5 rounded-full"
-  >
-    💬 {{ article.comments_count ?? 0 }}
-  </span>
-</div>
-
-</div>
-
-
+          <!-- Statistik -->
+          <div class="flex items-center gap-2">
+            <span
+              class="inline-flex items-center bg-yellow-100 dark:bg-yellow-900
+                     text-yellow-700 dark:text-yellow-200 text-xs font-semibold
+                     px-2 py-0.5 rounded-full"
+            >
+              🔄 {{ article.hits ?? 0 }}
+            </span>
+            <span
+              class="inline-flex items-center bg-red-100 dark:bg-red-900
+                     text-red-700 dark:text-red-200 text-xs font-semibold
+                     px-2 py-0.5 rounded-full"
+            >
+              ❤️ {{ article.likes ?? 0 }}
+            </span>
+            <span
+              class="inline-flex items-center bg-blue-100 dark:bg-blue-900
+                     text-blue-700 dark:text-blue-200 text-xs font-semibold
+                     px-2 py-0.5 rounded-full"
+            >
+              💬 {{ article.comments_count ?? 0 }}
+            </span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </div>
+
 
 
 
