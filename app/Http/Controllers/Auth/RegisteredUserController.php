@@ -31,6 +31,7 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        // Validasi input + captcha wajib ada
         $request->validate([
             'name' => 'required|string|max:255',
             'username' => [
@@ -49,32 +50,35 @@ class RegisteredUserController extends Controller
                     ->numbers()
                     ->symbols(),
             ],
-            'g-recaptcha-response' => ['required'],
+            'g-recaptcha-response' => ['required', 'string'],
         ], [
             'username.regex' => 'Username tidak boleh mengandung spasi.',
             'g-recaptcha-response.required' => 'Verifikasi captcha wajib diisi.',
         ]);
 
-        // ✅ Verifikasi ke Google reCAPTCHA
-        $response = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
-            'secret'   => env('VITE_RECAPTCHA_SECRET_KEY'),
-            'response' => $request->input('g-recaptcha-response'),
-            'remoteip' => $request->ip(),
-        ])->json();
+        // 🔹 Verifikasi token ke Google reCAPTCHA
+        $captchaResponse = Http::asForm()->post(
+            'https://www.google.com/recaptcha/api/siteverify',
+            [
+                'secret'   => env('RECAPTCHA_SECRET_KEY'),
+                'response' => $request->input('g-recaptcha-response'),
+                'remoteip' => $request->ip(),
+            ]
+        )->json();
 
-        if (!($response['success'] ?? false)) {
-            return back()->withErrors([
-                'g-recaptcha-response' => 'Verifikasi captcha gagal. Silakan coba lagi.',
-            ])->withInput();
+        if (!($captchaResponse['success'] ?? false)) {
+            return back()
+                ->withErrors(['g-recaptcha-response' => 'Verifikasi captcha gagal, silakan coba lagi.'])
+                ->withInput();
         }
 
-        // ✅ Simpan user jika captcha sukses
+        // ✅ Simpan user kalau captcha lolos
         $user = User::create([
             'name'     => $request->name,
             'username' => $request->username,
             'email'    => $request->email,
             'password' => Hash::make($request->password),
-            'role'     => 'operator', // otomatis
+            'role'     => 'operator', // default role
         ]);
 
         event(new Registered($user));
