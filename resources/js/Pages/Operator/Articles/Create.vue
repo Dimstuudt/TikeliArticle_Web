@@ -74,17 +74,24 @@ const saveDraft = () => {
 
 
     <div class="py-8">
-      <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
-        <div class="bg-white shadow-md rounded-lg p-6">
-          <form @submit.prevent="sendArticle" class="space-y-6">
+  <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
+    <div class="bg-white shadow-md rounded-lg p-6">
+      <form @submit.prevent="sendArticle" class="space-y-8">
+
+        <!-- Grid Utama -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+          <!-- Kolom Kiri (Meta Info) -->
+          <div class="space-y-6 lg:col-span-1">
+            <h2 class="text-lg font-semibold text-gray-800 border-b pb-2">Info Artikel</h2>
 
             <!-- Judul -->
-            <div>
+            <div class="bg-gray-50 p-4 rounded-md shadow-sm">
               <label class="block text-sm font-medium text-gray-700 mb-1">Judul</label>
               <input
                 v-model="form.title"
                 type="text"
-                class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring focus:ring-blue-200 focus:outline-none"
+                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none"
               />
               <div v-if="form.errors.title" class="text-sm text-red-600 mt-1">
                 {{ form.errors.title }}
@@ -92,11 +99,11 @@ const saveDraft = () => {
             </div>
 
             <!-- Kategori -->
-            <div>
+            <div class="bg-gray-50 p-4 rounded-md shadow-sm">
               <label class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
               <select
                 v-model="form.category"
-                class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring focus:ring-blue-200 focus:outline-none"
+                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none"
               >
                 <option value="ulasan">Ulasan</option>
                 <option value="teknologi">Teknologi</option>
@@ -114,80 +121,88 @@ const saveDraft = () => {
             </div>
 
             <!-- Cover -->
-            <div>
+            <div class="bg-gray-50 p-4 rounded-md shadow-sm">
               <label class="block text-sm font-medium text-gray-700 mb-1">Cover</label>
               <input
                 type="file"
                 @change="onCoverChange"
                 accept="image/*"
-                class="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring focus:ring-blue-200 focus:outline-none"
+                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none"
               />
               <div v-if="form.errors.cover" class="text-sm text-red-600 mt-1">
                 {{ form.errors.cover }}
               </div>
 
               <!-- Preview Cover -->
-              <div v-if="coverPreview" class="mt-3">
-                <p class="text-xs text-gray-500 mb-1">Preview Cover:</p>
-                <img :src="coverPreview" alt="Preview" class="w-32 h-20 object-cover rounded border" />
+              <div v-if="coverPreview" class="mt-4">
+                <p class="text-xs text-gray-500 mb-2">Preview Cover:</p>
+                <img :src="coverPreview" alt="Preview"
+                  class="w-full h-40 object-cover rounded-md border shadow-sm" />
               </div>
             </div>
+          </div>
+
+          <!-- Kolom Kanan (Editor) -->
+          <div class="space-y-6 lg:col-span-2">
+            <h2 class="text-lg font-semibold text-gray-800 border-b pb-2">Konten Artikel</h2>
 
             <!-- Ringkasan -->
-<div>
-  <label class="block text-sm font-medium text-gray-700 mb-1">Ringkasan</label>
-  <div class="border border-gray-300 rounded-md">
-    <QuillEditor
-      v-model:content="form.summary"
-      contentType="html"
-      theme="snow"
-      class="min-h-[150px]"
-    />
-  </div>
-  <div v-if="form.errors.summary" class="text-sm text-red-600 mt-1">
-    {{ form.errors.summary }}
-  </div>
-</div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Ringkasan</label>
+              <div class="border border-gray-300 rounded-md">
+                <QuillEditor
+                  v-model:content="form.summary"
+                  contentType="html"
+                  theme="snow"
+                  class="min-h-[150px]"
+                />
+              </div>
+              <div v-if="form.errors.summary" class="text-sm text-red-600 mt-1">
+                {{ form.errors.summary }}
+              </div>
+            </div>
 
             <!-- Konten -->
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Konten</label>
               <div class="border border-gray-300 rounded-md">
                 <QuillEditor
-  v-model:content="form.content"
-  contentType="html"
-  theme="snow"
-  toolbar="essential"
-  class="min-h-[200px]"
-/>
-
+                  v-model:content="form.content"
+                  contentType="html"
+                  theme="snow"
+                  toolbar="essential"
+                  class="min-h-[250px]"
+                />
               </div>
               <div v-if="form.errors.content" class="text-sm text-red-600 mt-1">
                 {{ form.errors.content }}
               </div>
             </div>
-
-            <!-- Tombol Aksi -->
-            <div class="flex justify-between gap-4">
-              <button
-                type="button"
-                @click="saveDraft"
-                class="bg-gray-500 hover:bg-gray-600 text-white px-5 py-2 rounded-md text-sm font-medium shadow-sm transition"
-              >
-                Simpan Draft
-              </button>
-
-              <button
-                type="submit"
-                class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-md text-sm font-medium shadow-sm transition"
-              >
-                Kirim Artikel
-              </button>
-            </div>
-
-          </form>
+          </div>
         </div>
-      </div>
+
+        <!-- Tombol Aksi -->
+        <div class="flex justify-end gap-4 pt-6 border-t">
+          <button
+            type="button"
+            @click="saveDraft"
+            class="bg-gray-500 hover:bg-gray-600 text-white px-5 py-2 rounded-md text-sm font-medium shadow-sm transition"
+          >
+            Simpan Draft
+          </button>
+
+          <button
+            type="submit"
+            class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-md text-sm font-medium shadow-sm transition"
+          >
+            Kirim Artikel
+          </button>
+        </div>
+
+      </form>
     </div>
+  </div>
+</div>
+
   </AuthenticatedLayout>
 </template>
