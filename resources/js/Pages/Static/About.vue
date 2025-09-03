@@ -1,6 +1,6 @@
 <script setup>
 import PublicLayout from '@/Layouts/PublicLayout.vue'
-import { Head } from '@inertiajs/vue3'
+import { Head, Link } from '@inertiajs/vue3'
 import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
 import {
   Users, BookOpen, Layers, CheckCircle, Star, Target, Mail, Search, ChevronUp
@@ -299,6 +299,7 @@ const props = defineProps({
 
     <!-- FOOTER NOTE -->
     <div class="max-w-6xl mx-auto px-6 py-8 text-center text-xs text-gray-500">
+        <br>
       <p>Dokumen ini adalah representasi singkat tentang Tikeli. Untuk peluang kerja sama, sponsorship, atau pertanyaan hukum, hubungi <a href="mailto:legal@tikeli.app" class="underline">legal@tikeli.app</a>.</p>
     </div>
 

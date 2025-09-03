@@ -18,7 +18,7 @@ const form = useForm({
 })
 
 const showForm = ref(false)
-const showToast = ref(false) // ✅ state untuk notif
+const showToast = ref(false)
 
 const submit = () => {
   form.post(route('forum.store'), {
@@ -26,51 +26,45 @@ const submit = () => {
     onSuccess: () => {
       form.reset()
       showForm.value = false
-      showToast.value = true // ✅ munculin notif
-
-      // ✅ otomatis ilang setelah 3 detik
-      setTimeout(() => {
-        showToast.value = false
-      }, 3000)
+      showToast.value = true
+      setTimeout(() => (showToast.value = false), 3000)
     },
   })
 }
 
-//delete thread
 const deleteThread = (id) => {
-  if (!confirm('Apakah kamu yakin ingin menghapus thread ini?')) return;
-
+  if (!confirm('Apakah kamu yakin ingin menghapus thread ini?')) return
   form.delete(route('forum.destroy', id), {
     preserveScroll: true,
     onSuccess: () => {
-      // optional toast notif
       showToast.value = true
-      setTimeout(() => {
-        showToast.value = false
-      }, 3000)
+      setTimeout(() => (showToast.value = false), 3000)
     },
-  });
-};
-
-
-
+  })
+}
 </script>
 
 <template>
   <PublicLayout>
     <Head title="Forum Diskusi" />
 
-    <!-- Hero Section -->
+    <!-- Hero -->
     <section class="max-w-6xl mx-auto px-6 py-12">
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div
+        class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+      >
         <div>
-          <h1 class="text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+          <h1
+            class="text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight"
+          >
             Forum Diskusi
           </h1>
           <p class="mt-2 text-gray-600 dark:text-gray-400 text-base">
-            Tempat berbagi ide, berdiskusi, dan bertukar pengalaman bersama komunitas.
+            Tempat berbagi ide, berdiskusi, dan bertukar pengalaman bersama
+            komunitas.
           </p>
         </div>
+
         <div>
           <button
             v-if="$page.props.auth.user && $page.props.auth.user.trusted_writer"
@@ -86,110 +80,146 @@ const deleteThread = (id) => {
           >
             Kamu belum bisa membuat thread (butuh status trusted).
           </span>
+
+          <Link
+            v-else
+            :href="route('login')"
+            class="px-5 py-2.5 rounded-xl bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-medium shadow hover:bg-gray-300 dark:hover:bg-gray-600 transition"
+          >
+            Login untuk Diskusi
+          </Link>
         </div>
       </div>
     </section>
 
-<!-- List Threads -->
-<section class="max-w-6xl mx-auto px-6 pb-16">
-  <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-    <div
-      v-for="(thread, index) in threads.data"
-      :key="thread.id"
-      class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition flex flex-col overflow-hidden"
-    >
-      <!-- Header -->
-      <div class="flex items-center gap-3 p-4 border-b border-gray-100 dark:border-gray-800">
-        <img
-          :src="thread.user?.profile_photo_path
-            ? '/storage/' + thread.user.profile_photo_path
-            : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(thread.user?.name || 'User')"
-          class="w-11 h-11 rounded-full object-cover border border-gray-300 dark:border-gray-700"
-        />
-        <div>
-          <div class="flex items-center gap-1">
-            <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">
-              {{ thread.user?.name }}
-            </p>
-            <CheckCircle
-              v-if="thread.user?.trusted_writer"
-              class="w-4 h-4 text-green-500"
-            />
+    <!-- Threads + Free Slot -->
+    <section class="max-w-6xl mx-auto px-6 pb-16">
+      <div class="grid md:grid-cols-3 gap-6">
+        <!-- Thread list kiri -->
+        <div class="md:col-span-2">
+          <div class="grid gap-6 md:grid-cols-2">
+            <div
+              v-for="(thread, index) in threads.data"
+              :key="thread.id"
+              class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all flex flex-col overflow-hidden"
+            >
+              <!-- Header -->
+              <div
+                class="flex items-center gap-3 p-4 border-b border-gray-100 dark:border-gray-800"
+              >
+                <img
+                  :src="
+                    thread.user?.profile_photo_path
+                      ? '/storage/' + thread.user.profile_photo_path
+                      : 'https://ui-avatars.com/api/?name=' +
+                        encodeURIComponent(thread.user?.name || 'User')
+                  "
+                  class="w-11 h-11 rounded-full object-cover border border-gray-300 dark:border-gray-700"
+                />
+                <div>
+                  <div class="flex items-center gap-1">
+                    <p
+                      class="text-sm font-semibold text-gray-800 dark:text-gray-100"
+                    >
+                      {{ thread.user?.name }}
+                    </p>
+                    <CheckCircle
+                      v-if="thread.user?.trusted_writer"
+                      class="w-4 h-4 text-green-500"
+                    />
+                  </div>
+                  <p class="text-xs text-gray-400 dark:text-gray-500">
+                    {{ dayjs(thread.updated_at).fromNow() }}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Body -->
+              <div class="p-5 flex-1 flex flex-col">
+                <Link
+                  :href="route('forum.show', thread.id)"
+                  class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2 line-clamp-2 hover:text-blue-600 dark:hover:text-blue-400 transition"
+                >
+                  {{ thread.title }}
+                </Link>
+                <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-3">
+                  {{
+                    thread.posts.length > 0
+                      ? thread.posts[0].body.slice(0, 120) + '...'
+                      : 'Belum ada isi'
+                  }}
+                </p>
+              </div>
+
+              <!-- Footer -->
+              <div
+                class="flex items-center justify-between p-4 border-t border-gray-100 dark:border-gray-800 text-xs text-gray-500 dark:text-gray-400"
+              >
+                <span class="flex items-center gap-1">
+                  💬
+                  {{ thread.posts_count ?? thread.posts.length }} komentar
+                </span>
+
+                <div class="flex items-center gap-2">
+                  <button
+                    v-if="
+                      $page.props.auth.user &&
+                      $page.props.auth.user.id === thread.user?.id &&
+                      $page.props.auth.user.trusted_writer
+                    "
+                    @click="deleteThread(thread.id)"
+                    class="text-white bg-red-500 hover:bg-red-600 transition-all duration-200 px-3 py-1 rounded-md shadow-sm text-sm font-medium"
+                  >
+                    Hapus
+                  </button>
+                  <span class="font-medium text-gray-400">
+                    #{{
+                      threads.total -
+                      ((threads.current_page - 1) * threads.per_page + index)
+                    }}
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
-          <p class="text-xs text-gray-400 dark:text-gray-500">
-            {{ dayjs(thread.updated_at).fromNow() }}
-          </p>
+        </div>
+
+        <!-- Free Slot kanan (independen) -->
+        <div>
+          <div
+            class="h-[470px] rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 flex items-center justify-center text-gray-400 dark:text-gray-500 italic"
+          >
+            Free Slot
+          </div>
+<br>
+           <div
+            class="h-[257px] rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 flex items-center justify-center text-gray-400 dark:text-gray-500 italic"
+          >
+            Free Slot
+          </div>
+        </div>
+
+
+      </div>
+
+      <!-- Pagination -->
+      <div class="mt-12 flex justify-center">
+        <div class="flex gap-2">
+          <Link
+            v-for="link in threads.links"
+            :key="link.label"
+            :href="link.url || ''"
+            v-html="link.label"
+            class="px-3 py-1.5 rounded-lg border text-sm font-medium transition"
+            :class="{
+              'bg-blue-600 text-white border-blue-600 shadow': link.active,
+              'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 border-gray-300 dark:border-gray-700':
+                !link.active,
+            }"
+          />
         </div>
       </div>
-
-      <!-- Body -->
-      <div class="p-5 flex-1 flex flex-col">
-        <Link
-          :href="route('forum.show', thread.id)"
-          class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2 line-clamp-2 hover:text-blue-600 dark:hover:text-blue-400 transition"
-        >
-          {{ thread.title }}
-        </Link>
-        <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-3">
-          {{
-            thread.posts.length > 0
-              ? thread.posts[0].body.slice(0, 120) + '...'
-              : 'Belum ada isi'
-          }}
-        </p>
-      </div>
-
-      <!-- Footer -->
-      <div
-        class="flex items-center justify-between p-4 border-t border-gray-100 dark:border-gray-800 text-xs text-gray-500 dark:text-gray-400"
-      >
-        <span class="flex items-center gap-1">
-          💬 {{ thread.posts_count ?? thread.posts.length }} komentar
-        </span>
-
-
-  <div class="flex items-center gap-2">
-
-  <!-- Tombol Hapus -->
-  <button
-  v-if="$page.props.auth.user && $page.props.auth.user.id === thread.user?.id && $page.props.auth.user.trusted_writer"
-  @click="deleteThread(thread.id)"
-  class="text-white bg-red-500 hover:bg-red-100 hover:text-red-700 transition-all duration-200
-         px-3 py-1 rounded-md shadow-sm text-sm font-medium"
->
-  Hapus
-</button>
-
-<p> </p>
-    <span class="font-medium text-gray-400">
-      #{{ threads.total - ((threads.current_page - 1) * threads.per_page + index) }}
-    </span>
-
-
-  </div>
-</div>
-
-    </div>
-  </div>
-
-  <!-- Pagination -->
-  <div class="mt-12 flex justify-center">
-    <div class="flex gap-2">
-      <Link
-        v-for="link in threads.links"
-        :key="link.label"
-        :href="link.url || ''"
-        v-html="link.label"
-        class="px-3 py-1.5 rounded-lg border text-sm font-medium transition"
-        :class="{
-          'bg-blue-600 text-white border-blue-600 shadow': link.active,
-          'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 border-gray-300 dark:border-gray-700': !link.active,
-        }"
-      />
-    </div>
-  </div>
-</section>
-
+    </section>
 
     <!-- Modal Create Thread -->
     <div
@@ -199,7 +229,6 @@ const deleteThread = (id) => {
       <div
         class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-6 w-full max-w-lg relative animate-fadeIn"
       >
-        <!-- Close button -->
         <button
           @click="showForm = false"
           class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition"
@@ -256,13 +285,13 @@ const deleteThread = (id) => {
       </div>
     </div>
 
-    <!-- ✅ Toast Notification -->
+    <!-- Toast -->
     <transition name="fade">
       <div
         v-if="showToast"
         class="fixed bottom-6 right-6 bg-green-600 text-white px-4 py-3 rounded-lg shadow-lg z-50"
       >
-        🛠️ Halaman Thread berhasil diupdate!
+        🛠️ Thread berhasil diproses!
       </div>
     </transition>
   </PublicLayout>
@@ -282,18 +311,24 @@ const deleteThread = (id) => {
   overflow: hidden;
 }
 @keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 .animate-fadeIn {
   animation: fadeIn 0.2s ease-out;
 }
-
-/* ✅ animasi toast */
-.fade-enter-active, .fade-leave-active {
+.fade-enter-active,
+.fade-leave-active {
   transition: opacity 0.3s;
 }
-.fade-enter-from, .fade-leave-to {
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
 }
 </style>

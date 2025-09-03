@@ -677,11 +677,12 @@ html {
       </div>
     </div>
 
-    <!-- Banner disisipkan setelah 2 artikel -->
+<!-- Banner disisipkan setelah 2 artikel -->
 <div
   v-if="index === 1"
   class="rounded-xl p-[1px] bg-gradient-to-r from-blue-500 to-indigo-500
          hover:from-blue-600 hover:to-indigo-600 transition duration-300 cursor-pointer group"
+  @click="router.visit('/about')"
 >
   <div
     class="bg-white dark:bg-gray-900 rounded-xl shadow-sm flex flex-col overflow-hidden h-full"
@@ -696,6 +697,7 @@ html {
     </div>
   </div>
 </div>
+
 
   </template>
 </div>
