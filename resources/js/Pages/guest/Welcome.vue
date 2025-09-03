@@ -580,103 +580,126 @@ html {
 
 <!-- Grid Artikel -->
 <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-  <div
-    v-for="article in props.articles.data"
-    :key="article.id"
-    class="rounded-xl p-[1px] bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500
-           hover:from-blue-600 hover:via-indigo-600 hover:to-purple-600
-           transition duration-300 cursor-pointer group"
-    @click="router.visit(`/articles/${article.id}`)"
-  >
+  <template v-for="(article, index) in props.articles.data" :key="article.id">
+    <!-- Card Artikel -->
     <div
-      class="bg-white dark:bg-gray-900 rounded-xl shadow-sm group-hover:shadow-lg
-             transition duration-300 flex flex-col overflow-hidden h-full"
+      class="rounded-xl p-[1px] bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500
+             hover:from-blue-600 hover:via-indigo-600 hover:to-purple-600
+             transition duration-300 cursor-pointer group"
+      @click="router.visit(`/articles/${article.id}`)"
     >
-      <!-- Gambar cover -->
-      <div class="relative w-full h-48">
-        <img
-          :src="article.cover ?? 'https://via.placeholder.com/600x300?text=No+Cover'"
-          alt="cover"
-          class="w-full h-full object-cover group-hover:scale-105 transition duration-500"
-        />
-        <div
-          v-if="article.category"
-          class="absolute top-2 right-2 bg-gradient-to-r from-blue-600 to-purple-600
-                 text-white text-[10px] px-2 py-0.5 rounded-full shadow-sm uppercase"
-        >
-          {{ article.category }}
-        </div>
-      </div>
-
-      <!-- Konten -->
-      <div class="p-5 flex flex-col flex-grow">
-        <span class="text-xs text-blue-500 uppercase font-semibold mb-1">Artikel</span>
-        <h4
-          class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2
-                 group-hover:text-indigo-600 dark:group-hover:text-indigo-400"
-        >
-          {{ article.title }}
-        </h4>
-
-        <!-- Ringkasan -->
-        <div
-          class="text-sm text-gray-600 dark:text-gray-300 line-clamp-3 min-h-[60px] flex-grow"
-          v-html="article.summary || 'Tidak ada ringkasan'"
-        ></div>
-
-        <!-- Footer -->
-        <div class="text-xs text-gray-400 dark:text-gray-500 mt-4 flex justify-between items-center">
-          <!-- Penulis & waktu -->
-          <div class="flex items-center gap-1">
-            <span class="flex items-center gap-1">
-              {{ article.author?.name ?? 'Anonim' }}
-              <CheckCircle
-                v-if="article.trusted_writer"
-                class="w-3 h-3 text-white bg-green-500 rounded-full p-[1px]"
-                :stroke-width="2"
-              />
-            </span>
-            <span>•</span>
-            <span>
-              {{
-                article.updated_at
-                  ? dayjs(article.updated_at).from(now.value)
-                  : article.created_at
-                  ? dayjs(article.created_at).from(now.value)
-                  : 'Waktu tidak diketahui'
-              }}
-            </span>
+      <div
+        class="bg-white dark:bg-gray-900 rounded-xl shadow-sm group-hover:shadow-md
+               transition duration-300 flex flex-col overflow-hidden h-full"
+      >
+        <!-- Gambar cover -->
+        <div class="relative w-full h-48 overflow-hidden">
+          <img
+            :src="article.cover ?? 'https://via.placeholder.com/600x300?text=No+Cover'"
+            alt="cover"
+            class="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+          />
+          <div
+            v-if="article.category"
+            class="absolute top-2 right-2 bg-gradient-to-r from-indigo-600 to-purple-600
+                   text-white text-[11px] px-2 py-0.5 rounded-full shadow-sm font-medium tracking-wide"
+          >
+            {{ article.category }}
           </div>
+        </div>
 
-          <!-- Statistik -->
-          <div class="flex items-center gap-2">
-            <span
-              class="inline-flex items-center bg-yellow-100 dark:bg-yellow-900
-                     text-yellow-700 dark:text-yellow-200 text-xs font-semibold
-                     px-2 py-0.5 rounded-full"
-            >
-              🔄 {{ article.hits ?? 0 }}
-            </span>
-            <span
-              class="inline-flex items-center bg-red-100 dark:bg-red-900
-                     text-red-700 dark:text-red-200 text-xs font-semibold
-                     px-2 py-0.5 rounded-full"
-            >
-              ❤️ {{ article.likes ?? 0 }}
-            </span>
-            <span
-              class="inline-flex items-center bg-blue-100 dark:bg-blue-900
-                     text-blue-700 dark:text-blue-200 text-xs font-semibold
-                     px-2 py-0.5 rounded-full"
-            >
-              💬 {{ article.comments_count ?? 0 }}
-            </span>
+        <!-- Konten -->
+        <div class="p-5 flex flex-col flex-grow">
+          <span class="text-[11px] text-indigo-600 uppercase font-semibold mb-1 tracking-wide">Artikel</span>
+          <h4
+            class="text-lg font-bold text-gray-800 dark:text-gray-100 mb-2 leading-snug
+                   group-hover:text-indigo-600 dark:group-hover:text-indigo-400 line-clamp-2"
+          >
+            {{ article.title }}
+          </h4>
+
+          <!-- Ringkasan -->
+          <div
+            class="text-sm text-gray-600 dark:text-gray-300 line-clamp-3 min-h-[60px] flex-grow"
+            v-html="article.summary || 'Tidak ada ringkasan'"
+          ></div>
+
+          <!-- Footer -->
+          <div class="text-xs text-gray-500 dark:text-gray-400 mt-4 flex justify-between items-center">
+            <!-- Penulis & waktu -->
+            <div class="flex items-center gap-1">
+              <span class="flex items-center gap-1 font-medium text-gray-700 dark:text-gray-300">
+                {{ article.author?.name ?? 'Anonim' }}
+                <CheckCircle
+                  v-if="article.trusted_writer"
+                  class="w-3 h-3 text-white bg-green-500 rounded-full p-[1px]"
+                  :stroke-width="2"
+                />
+              </span>
+              <span>•</span>
+              <span>
+                {{
+                  article.updated_at
+                    ? dayjs(article.updated_at).from(now.value)
+                    : article.created_at
+                    ? dayjs(article.created_at).from(now.value)
+                    : 'Waktu tidak diketahui'
+                }}
+              </span>
+            </div>
+
+            <!-- Statistik -->
+            <div class="flex items-center gap-2">
+              <span
+                class="inline-flex items-center bg-yellow-50 dark:bg-yellow-900/40
+                       text-yellow-700 dark:text-yellow-200 text-xs font-medium
+                       px-2 py-0.5 rounded-full"
+              >
+                🔄 {{ article.hits ?? 0 }}
+              </span>
+              <span
+                class="inline-flex items-center bg-red-50 dark:bg-red-900/40
+                       text-red-700 dark:text-red-200 text-xs font-medium
+                       px-2 py-0.5 rounded-full"
+              >
+                ❤️ {{ article.likes ?? 0 }}
+              </span>
+              <span
+                class="inline-flex items-center bg-blue-50 dark:bg-blue-900/40
+                       text-blue-700 dark:text-blue-200 text-xs font-medium
+                       px-2 py-0.5 rounded-full"
+              >
+                💬 {{ article.comments_count ?? 0 }}
+              </span>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
+
+    <!-- Banner disisipkan setelah 2 artikel -->
+    <div
+      v-if="index === 1"
+      class="rounded-xl p-[1px] bg-gradient-to-r from-pink-500 to-rose-500
+             hover:from-pink-600 hover:to-rose-600 transition duration-300 cursor-pointer group"
+    >
+      <div
+        class="bg-white dark:bg-gray-900 rounded-xl shadow-sm flex flex-col overflow-hidden h-full"
+      >
+       <!-- Banner isi -->
+<div class="relative w-full h-48 overflow-hidden">
+  <img
+    src="https://via.placeholder.com/600x300?text=Banner+Promo"
+    alt="Banner Promo"
+    class="w-full h-full object-cover"
+  />
 </div>
+
+      </div>
+    </div>
+  </template>
+</div>
+
 
 
 

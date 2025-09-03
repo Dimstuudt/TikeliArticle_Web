@@ -289,7 +289,7 @@ class ArticleController extends Controller
     }
 
     // Pagination 6 per halaman + query string
-    $articles = $query->paginate(9)
+    $articles = $query->paginate(8)
         ->withQueryString()
         ->through(fn($article) => [
             'id'              => $article->id,
