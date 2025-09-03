@@ -678,25 +678,25 @@ html {
     </div>
 
     <!-- Banner disisipkan setelah 2 artikel -->
-    <div
-      v-if="index === 1"
-      class="rounded-xl p-[1px] bg-gradient-to-r from-pink-500 to-rose-500
-             hover:from-pink-600 hover:to-rose-600 transition duration-300 cursor-pointer group"
-    >
-      <div
-        class="bg-white dark:bg-gray-900 rounded-xl shadow-sm flex flex-col overflow-hidden h-full"
-      >
-       <!-- Banner isi -->
-<div class="relative w-full h-48 overflow-hidden">
-  <img
-    src="https://via.placeholder.com/600x300?text=Banner+Promo"
-    alt="Banner Promo"
-    class="w-full h-full object-cover"
-  />
+<div
+  v-if="index === 1"
+  class="rounded-xl p-[1px] bg-gradient-to-r from-blue-500 to-indigo-500
+         hover:from-blue-600 hover:to-indigo-600 transition duration-300 cursor-pointer group"
+>
+  <div
+    class="bg-white dark:bg-gray-900 rounded-xl shadow-sm flex flex-col overflow-hidden h-full"
+  >
+    <!-- Banner isi -->
+    <div class="relative w-full aspect-[4.5/4.7] overflow-hidden">
+      <img
+        src="Tikelibanner.png"
+        alt="Tikeli Banner"
+        class="w-full h-full object-cover"
+      />
+    </div>
+  </div>
 </div>
 
-      </div>
-    </div>
   </template>
 </div>
 
