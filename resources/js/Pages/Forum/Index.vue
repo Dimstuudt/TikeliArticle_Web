@@ -256,7 +256,7 @@ const deleteThread = (id) => {
 
 <!-- Slot 2: Rules Leaderboard Informative -->
 <div
-  class="h-[282px] relative rounded-2xl border border-gray-300 dark:border-gray-700 overflow-hidden p-5 flex flex-col justify-between shadow-xl bg-gradient-to-br from-pink-50 via-pink-100 to-pink-50 dark:from-gray-800 dark:via-gray-700 dark:to-gray-800"
+  class="h-[307px] relative rounded-2xl border border-gray-300 dark:border-gray-700 overflow-hidden p-5 flex flex-col justify-between shadow-xl bg-gradient-to-br from-pink-50 via-pink-100 to-pink-50 dark:from-gray-800 dark:via-gray-700 dark:to-gray-800"
 >
   <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100 mb-3 tracking-wide">
     Leaderboard Points 💎

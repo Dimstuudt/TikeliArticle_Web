@@ -7,7 +7,7 @@ import { router, Link } from '@inertiajs/vue3'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
 import { CheckCircleIcon } from '@heroicons/vue/24/solid'
 import { CheckCircle } from 'lucide-vue-next'
-
+import WelcomePopup from '@/Components/WelcomePopup.vue'
 dayjs.locale('id')
 dayjs.extend(relativeTime)
 
@@ -19,6 +19,7 @@ const props = defineProps({
   hits: Number, // total hits semua artikel
   likes: Number, // total likes semua artikel
     comments: Number, // total komentar semua artikel
+    auth: Object // untuk cek auth user
 })
 
 const now = ref(dayjs())
@@ -83,6 +84,12 @@ const submitFilter = () => {
     preserveState: true
   })
 }
+
+
+
+
+
+
 </script>
 
 <style>
@@ -132,6 +139,7 @@ html {
   scroll-behavior: smooth;
 }
 
+
 </style>
 <template>
   <PublicLayout>
@@ -175,6 +183,11 @@ html {
         Tikeli
       </span>
     </h1>
+
+
+    <!-- Tampilkan hanya kalau guest -->
+    <WelcomePopup v-if="!props.auth?.user" />
+  
 
     <!-- Subtitle -->
     <p

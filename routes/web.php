@@ -26,7 +26,7 @@ use App\Models\User;
 use App\Models\Article;
 
 // Redirect root ke login
-Route::get('/', fn () => redirect('/login'));
+Route::get('/', fn () => redirect('/welcome'));
 
 
 // === Google OAuth ===
