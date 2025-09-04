@@ -185,19 +185,30 @@ const deleteThread = (id) => {
         </div>
 
         <!-- Free Slot kanan (independen) -->
-        <div>
-          <div
-            class="h-[470px] rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 flex items-center justify-center text-gray-400 dark:text-gray-500 italic"
-          >
-            Free Slot
-          </div>
-<br>
-           <div
-            class="h-[257px] rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 flex items-center justify-center text-gray-400 dark:text-gray-500 italic"
-          >
-            Free Slot
-          </div>
-        </div>
+     <div class="space-y-4">
+  <!-- Slot 1 -->
+  <div
+    class="h-[470px] relative rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 overflow-hidden flex items-center justify-center text-gray-400 dark:text-gray-500 italic font-semibold text-xl"
+  >
+    <span class="z-10">Coming Soon Leaderboard</span>
+    <!-- Pola diagonal -->
+    <div class="absolute inset-0 bg-gradient-to-br from-gray-100 via-gray-200 to-gray-100 dark:from-gray-800 dark:via-gray-700 dark:to-gray-800 opacity-30 animate-pulse-slow"></div>
+    <!-- Beberapa lingkaran / shape -->
+    <div class="absolute w-24 h-24 bg-gray-200 dark:bg-gray-700 rounded-full -top-10 -left-10 opacity-50 animate-bounce-slow"></div>
+    <div class="absolute w-32 h-32 bg-gray-200 dark:bg-gray-700 rounded-full -bottom-12 -right-16 opacity-40 animate-bounce-slow delay-200"></div>
+  </div>
+
+  <!-- Slot 2 -->
+  <div
+    class="h-[257px] relative rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 overflow-hidden flex items-center justify-center text-gray-400 dark:text-gray-500 italic font-semibold text-lg"
+  >
+    <span class="z-10">Coming Soon </span>
+    <!-- Pola garis diagonal -->
+    <div class="absolute inset-0 bg-gradient-to-br from-gray-100 via-gray-200 to-gray-100 dark:from-gray-800 dark:via-gray-700 dark:to-gray-800 opacity-30 animate-pulse-slow"></div>
+    <!-- Shape lingkaran -->
+    <div class="absolute w-20 h-20 bg-gray-200 dark:bg-gray-700 rounded-full -top-8 -left-8 opacity-50 animate-bounce-slow"></div>
+  </div>
+</div>
 
 
       </div>
