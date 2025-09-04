@@ -4,12 +4,14 @@ import { Head, Link, useForm } from '@inertiajs/vue3'
 import { ref } from 'vue'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
-import { CheckCircle, X } from 'lucide-vue-next'
+import { CheckCircle, X, Star } from 'lucide-vue-next'
 
 dayjs.extend(relativeTime)
 
 const props = defineProps({
   threads: Object,
+  leaderboard: Array,
+    authUserId: Number,
 })
 
 const form = useForm({
@@ -184,31 +186,84 @@ const deleteThread = (id) => {
           </div>
         </div>
 
-        <!-- Free Slot kanan (independen) -->
-     <div class="space-y-4">
-  <!-- Slot 1 -->
-  <div
-    class="h-[470px] relative rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 overflow-hidden flex items-center justify-center text-gray-400 dark:text-gray-500 italic font-semibold text-xl"
-  >
-    <span class="z-10">Coming Soon Leaderboard</span>
-    <!-- Pola diagonal -->
-    <div class="absolute inset-0 bg-gradient-to-br from-gray-100 via-gray-200 to-gray-100 dark:from-gray-800 dark:via-gray-700 dark:to-gray-800 opacity-30 animate-pulse-slow"></div>
-    <!-- Beberapa lingkaran / shape -->
-    <div class="absolute w-24 h-24 bg-gray-200 dark:bg-gray-700 rounded-full -top-10 -left-10 opacity-50 animate-bounce-slow"></div>
-    <div class="absolute w-32 h-32 bg-gray-200 dark:bg-gray-700 rounded-full -bottom-12 -right-16 opacity-40 animate-bounce-slow delay-200"></div>
-  </div>
 
-  <!-- Slot 2 -->
+
+<div class="space-y-4">
+<!-- Slot 1: Leaderboard -->
+<div
+  class="h-[420px] relative rounded-3xl border border-gray-300 dark:border-gray-700 p-5 bg-white dark:bg-gray-900 flex flex-col shadow-2xl"
+>
+  <h2 class="text-xl font-extrabold mb-4 text-gray-800 dark:text-gray-100 tracking-wide">
+  User Leaderboard 🏆
+  </h2>
+
+  <ul class="space-y-3 flex-1">
+    <li
+      v-for="(u, i) in props.leaderboard.slice(0,4)"
+      :key="u.id"
+      :class="[
+        'flex items-center gap-4 p-3 rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-md',
+        u.id === props.authUserId ? 'bg-yellow-50 dark:bg-yellow-900' : 'bg-gradient-to-r from-gray-50 via-gray-100 to-gray-50 dark:from-gray-800 dark:via-gray-900 dark:to-gray-800'
+      ]"
+    >
+      <!-- Medali top 3 -->
+      <div class="w-6 text-lg flex justify-center">
+        <span v-if="i === 0">🥇</span>
+        <span v-else-if="i === 1">🥈</span>
+        <span v-else-if="i === 2">🥉</span>
+        <span v-else class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ i + 1 }}</span>
+      </div>
+
+      <!-- Profil photo / inisial -->
+      <div
+        class="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-white font-bold overflow-hidden ring-2 ring-yellow-400 dark:ring-yellow-300 shadow-inner"
+      >
+        <img v-if="u.profile_photo_url" :src="u.profile_photo_url" class="w-full h-full object-cover rounded-full" />
+        <span v-else>{{ getInitials(u.name) }}</span>
+      </div>
+
+      <!-- Nama + username + role -->
+      <div class="flex-1 flex flex-col justify-center gap-1">
+        <div class="flex items-center gap-2">
+          <span class="font-semibold text-gray-800 dark:text-gray-100 line-clamp-1">
+            {{ u.name.split(' ').slice(0,2).join(' ') }}
+          </span>
+          <CheckCircle
+            v-if="u.trusted_writer"
+            class="w-4 h-4 text-green-500"
+            stroke-width="2"
+          />
+        </div>
+        <div class="text-xs text-gray-500 dark:text-gray-400 truncate">
+          @{{ u.username.split(' ').slice(0,2).join(' ') }} - {{ u.role }}
+        </div>
+      </div>
+
+      <!-- Points dengan icon bintang di belakang -->
+      <div class="flex flex-col items-end justify-center relative">
+        <span class="text-lg font-bold text-yellow-500 dark:text-yellow-400 animate-pulse relative z-10">
+          {{ u.total_points }}
+        </span>
+        <!-- Icon samar di belakang -->
+        <Star class="absolute text-yellow-200 dark:text-yellow-700 opacity-20 w-6 h-6 top-1 right-0 z-0"/>
+        <span class="text-[10px] text-gray-400 dark:text-gray-500 mt-1 z-10">points</span>
+      </div>
+    </li>
+  </ul>
+</div>
+
+
+
+  <!-- Slot 2: tetap placeholder -->
   <div
-    class="h-[257px] relative rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 overflow-hidden flex items-center justify-center text-gray-400 dark:text-gray-500 italic font-semibold text-lg"
+    class="h-[282px] relative rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 overflow-hidden flex items-center justify-center text-gray-400 dark:text-gray-500 italic font-semibold text-lg"
   >
-    <span class="z-10">Coming Soon </span>
-    <!-- Pola garis diagonal -->
+    <span class="z-10">Coming Soon</span>
     <div class="absolute inset-0 bg-gradient-to-br from-gray-100 via-gray-200 to-gray-100 dark:from-gray-800 dark:via-gray-700 dark:to-gray-800 opacity-30 animate-pulse-slow"></div>
-    <!-- Shape lingkaran -->
     <div class="absolute w-20 h-20 bg-gray-200 dark:bg-gray-700 rounded-full -top-8 -left-8 opacity-50 animate-bounce-slow"></div>
   </div>
 </div>
+
 
 
       </div>
