@@ -1,8 +1,8 @@
 <?php
 return [
     'approved' => 100,
-    'view'     => 50,
-    'like'     => 75,
+    'view'     => 20,
+    'like'     => 25,
     'hit'      => 1,
-    'comment'  => 10,
+    'comment'  => 5,
 ];

@@ -254,14 +254,58 @@ const deleteThread = (id) => {
 
 
 
-  <!-- Slot 2: tetap placeholder -->
-  <div
-    class="h-[282px] relative rounded-2xl border border-dashed border-gray-300 dark:border-gray-700 overflow-hidden flex items-center justify-center text-gray-400 dark:text-gray-500 italic font-semibold text-lg"
-  >
-    <span class="z-10">Coming Soon</span>
-    <div class="absolute inset-0 bg-gradient-to-br from-gray-100 via-gray-200 to-gray-100 dark:from-gray-800 dark:via-gray-700 dark:to-gray-800 opacity-30 animate-pulse-slow"></div>
-    <div class="absolute w-20 h-20 bg-gray-200 dark:bg-gray-700 rounded-full -top-8 -left-8 opacity-50 animate-bounce-slow"></div>
-  </div>
+<!-- Slot 2: Rules Leaderboard Informative -->
+<div
+  class="h-[282px] relative rounded-2xl border border-gray-300 dark:border-gray-700 overflow-hidden p-5 flex flex-col justify-between shadow-xl bg-gradient-to-br from-pink-50 via-pink-100 to-pink-50 dark:from-gray-800 dark:via-gray-700 dark:to-gray-800"
+>
+  <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100 mb-3 tracking-wide">
+    Leaderboard Points 💎
+  </h3>
+
+  <ul class="flex-1 space-y-2 text-sm text-gray-700 dark:text-gray-300">
+    <li class="flex justify-between items-center">
+      <div class="flex items-center gap-2">
+        <span class="text-pink-500 animate-pulse">🏆</span>
+        Approved Articles
+      </div>
+      <span class="font-semibold text-gray-800 dark:text-gray-100">+100</span>
+    </li>
+    <li class="flex justify-between items-center">
+      <div class="flex items-center gap-2">
+        <span class="text-yellow-500 animate-bounce">❤️</span>
+        Likes
+      </div>
+      <span class="font-semibold text-gray-800 dark:text-gray-100">+25</span>
+    </li>
+    <li class="flex justify-between items-center">
+      <div class="flex items-center gap-2">
+        <span class="text-blue-500 animate-bounce-slow">👁️</span>
+        Views
+      </div>
+      <span class="font-semibold text-gray-800 dark:text-gray-100">+20</span>
+    </li>
+    <li class="flex justify-between items-center">
+      <div class="flex items-center gap-2">
+        <span class="text-green-500 animate-pulse-slow">⚡</span>
+        Hits
+      </div>
+      <span class="font-semibold text-gray-800 dark:text-gray-100">+1</span>
+    </li>
+    <li class="flex justify-between items-center">
+      <div class="flex items-center gap-2">
+        <span class="text-purple-500 animate-bounce-slow">💬</span>
+        Comments
+      </div>
+      <span class="font-semibold text-gray-800 dark:text-gray-100">+5</span>
+    </li>
+  </ul>
+
+  <!-- Decorative elements -->
+  <div class="absolute top-0 left-0 w-16 h-16 bg-pink-200 dark:bg-pink-700 rounded-full opacity-20 animate-bounce-slow"></div>
+  <div class="absolute bottom-0 right-0 w-24 h-24 bg-pink-300 dark:bg-pink-600 rounded-full opacity-15 animate-pulse-slow"></div>
+</div>
+
+
 </div>
 
 
@@ -396,5 +440,23 @@ const deleteThread = (id) => {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 0.15; }
+  50% { opacity: 0.3; }
+}
+
+@keyframes bounce-slow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 4s ease-in-out infinite;
+}
+
+.animate-bounce-slow {
+  animation: bounce-slow 6s ease-in-out infinite;
 }
 </style>
