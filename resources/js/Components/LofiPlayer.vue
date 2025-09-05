@@ -71,7 +71,7 @@ const onSeek = (event) => {
   <transition name="fade-scale">
     <div
       v-show="true"
-      class="fixed bottom-6 left-6 transition-all duration-300 shadow-xl border dark:border-gray-700 overflow-visible"
+      class="fixed bottom-20 left-6 transition-all duration-300 shadow-xl border dark:border-gray-700 overflow-visible"
       :class="[
         minimized
           ? 'w-12 h-12 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center cursor-pointer'

@@ -6,6 +6,7 @@ import DropdownLink from "@/Components/DropdownLink.vue"
 import "@fortawesome/fontawesome-free/css/all.min.css"
 import SearchBar from "@/Components/SearchBar.vue"
 import LofiPlayer from "@/Components/LofiPlayer.vue"
+import ReportPopup from "@/Components/ReportPopup.vue"
 // ===== User =====
 const page = usePage()
 const user = computed(() => page.props.auth?.user || null)
@@ -51,7 +52,22 @@ onUnmounted(() => {
   window.removeEventListener("scroll", handleScroll)
 })
 
+// ===== Report Popup =====
+const showPopup = ref(false)
 
+const openPopup = () => {
+  showPopup.value = true
+}
+
+const closePopup = () => {
+  showPopup.value = false
+}
+
+const handleSubmit = (data) => {
+  console.log("Nama:", data.name)
+  console.log("Laporan:", data.laporan)
+  closePopup()
+}
 
 </script>
 
@@ -234,8 +250,29 @@ onUnmounted(() => {
     </transition>
 
     <LofiPlayer />
+    <!-- Pop Up Laporan -->
+<ReportPopup
+  :show="showPopup"
+  @close="closePopup"
+  @submit="handleSubmit"
+/>
 
+<!-- Floating Report Button -->
+<button
+  @click="openPopup"
+  class="fixed bottom-6 left-6 flex items-center justify-center w-12 h-12
+         rounded-full bg-red-500 text-white shadow-lg hover:bg-red-600
+         transition-all duration-300 focus:outline-none hover:scale-110 active:scale-95 z-40"
+>
+  <i class="fas fa-flag"></i>
+</button>
 
+<!-- Pop Up -->
+<ReportPopup
+  :show="showPopup"
+  @close="closePopup"
+  @submit="handleSubmit"
+/>
 
  </div>
 
