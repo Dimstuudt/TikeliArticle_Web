@@ -16,3 +16,9 @@ Route::post('/articles/{article}/like', [ArticleLikeController::class, 'toggle']
 
 // Comments
 Route::post('/articles/{article}/comments', [CommentController::class, 'store'])->middleware('auth')->name('comments.store');
+
+// Laporan
+use App\Http\Controllers\LaporanController;
+
+Route::post('/laporan', [LaporanController::class, 'store'])->name('laporan.store');
+

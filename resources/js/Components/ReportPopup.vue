@@ -1,14 +1,15 @@
 <script setup>
 import { ref } from "vue"
+import axios from "axios"
 
 const props = defineProps({
   show: Boolean
 })
 
-const emit = defineEmits(["close", "submit"])
+const emit = defineEmits(["close"])
 
 const form = ref({
-  name: "",
+  email: "",
   laporan: ""
 })
 
@@ -19,26 +20,25 @@ const handleSubmit = async () => {
   if (isSubmitting.value) return
   isSubmitting.value = true
 
-  // Simulasi delay
-  await new Promise((r) => setTimeout(r, 1500))
+  try {
+    await axios.post("/laporan", form.value)
 
-  // Emit data ke parent
-  emit("submit", { ...form.value })
-
-  // Tampilkan sukses
-  isSuccess.value = true
-  isSubmitting.value = false
-
-  // Reset form
-  form.value = { name: "", laporan: "" }
+    isSuccess.value = true
+    form.value = { email: "", laporan: "" }
+  } catch (err) {
+    console.error(err.response?.data || err)
+    alert("Gagal mengirim laporan, coba lagi.")
+  } finally {
+    isSubmitting.value = false
+  }
 }
 
-// Tutup modal
 const closeModal = () => {
   isSuccess.value = false
   emit("close")
 }
 </script>
+
 
 <template>
   <!-- Overlay -->
@@ -73,21 +73,21 @@ const closeModal = () => {
             </svg>
           </button>
 
-        <!-- Left Side: Mascot -->
-<div class="col-span-5 flex items-start justify-center relative -top-10">
-  <transition name="fade">
-    <img
-      :src="!isSuccess ? '/mascot.png' : '/mascot2.png'"
-      alt="Mascot"
-      :class="[
-        'w-70 h-90 object-contain drop-shadow-[0_25px_25px_rgba(0,0,0,0.25)] rounded-3xl transform transition-transform duration-500 hover:scale-105',
-        isSuccess ? 'translate-x-8' : ''  // 👉 geser kanan kalau mascot2
-      ]"
-      draggable="false"
-    />
-  </transition>
-  <div class="absolute inset-0 pointer-events-none animate-float"></div>
-</div>
+          <!-- Left Side: Mascot -->
+          <div class="col-span-5 flex items-start justify-center relative -top-10">
+            <transition name="fade">
+              <img
+                :src="!isSuccess ? '/mascot.png' : '/mascot2.png'"
+                alt="Mascot"
+                :class="[
+                  'w-70 h-90 object-contain drop-shadow-[0_25px_25px_rgba(0,0,0,0.25)] rounded-3xl transform transition-transform duration-500 hover:scale-105',
+                  isSuccess ? 'translate-x-8' : ''  // 👉 geser kanan kalau mascot2
+                ]"
+                draggable="false"
+              />
+            </transition>
+            <div class="absolute inset-0 pointer-events-none animate-float"></div>
+          </div>
 
           <!-- Right Side -->
           <div class="col-span-7 flex flex-col justify-center">
@@ -105,21 +105,21 @@ const closeModal = () => {
                   id="modal-description"
                   class="text-gray-600 dark:text-gray-300 mb-8 leading-relaxed"
                 >
-                  Silakan isi nama dan laporkan apa yang ingin kamu sampaikan. Kami siap mendengarkan!
+                  Silakan isi email dan tulis laporanmu. Kami akan segera menindaklanjuti!
                 </p>
 
                 <form @submit.prevent="handleSubmit" class="space-y-6">
                   <div>
-                    <label for="name" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                      Nama
+                    <label for="email" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                      Email
                     </label>
                     <input
-                      id="name"
-                      v-model="form.name"
-                      type="text"
-                      placeholder="Masukkan nama lengkapmu"
+                      id="email"
+                      v-model="form.email"
+                      type="email"
+                      placeholder="Masukkan email kamu"
                       required
-                      autocomplete="name"
+                      autocomplete="email"
                       :disabled="isSubmitting"
                       class="w-full rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-5 py-3 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 shadow-sm focus:outline-none focus:ring-4 focus:ring-indigo-500 focus:border-indigo-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
                     />
@@ -161,24 +161,24 @@ const closeModal = () => {
                 </form>
               </div>
 
-             <!-- Success -->
-<div v-else key="success" class="flex flex-col items-center justify-center space-y-6 py-10 select-none">
-  <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-green-500 drop-shadow-lg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-  </svg>
-  <h3 class="text-3xl font-extrabold text-gray-900 dark:text-white pl-4">
-    Laporan berhasil dikirim!
-  </h3>
-  <p class="text-gray-600 dark:text-gray-300 max-w-md text-center pl-4">
-    Terima kasih atas laporannya. Kami akan segera menindaklanjuti.
-  </p>
-  <button
-    @click="closeModal"
-    class="mt-4 px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition"
-  >
-    OK
-  </button>
-</div>
+              <!-- Success -->
+              <div v-else key="success" class="flex flex-col items-center justify-center space-y-6 py-10 select-none">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-green-500 drop-shadow-lg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                <h3 class="text-3xl font-extrabold text-gray-900 dark:text-white pl-4">
+                  Laporan berhasil dikirim!
+                </h3>
+                <p class="text-gray-600 dark:text-gray-300 max-w-md text-center pl-4">
+                  Terima kasih atas laporannya. Kami akan segera menindaklanjuti.
+                </p>
+                <button
+                  @click="closeModal"
+                  class="mt-4 px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition"
+                >
+                  OK
+                </button>
+              </div>
 
             </transition>
           </div>
@@ -189,7 +189,7 @@ const closeModal = () => {
 </template>
 
 <style scoped>
-/* Fade overlay and mascot fade */
+/* sama kaya punyamu, ga gw ubah kecuali yg perlu */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
@@ -198,8 +198,6 @@ const closeModal = () => {
 .fade-leave-to {
   opacity: 0;
 }
-
-/* Scale modal */
 .scale-enter-active,
 .scale-leave-active {
   transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
@@ -212,8 +210,6 @@ const closeModal = () => {
   transform: scale(0.85);
   opacity: 0;
 }
-
-/* Slide + fade content (form and success) */
 .slide-fade-enter-active,
 .slide-fade-leave-active {
   transition: opacity 0.35s ease, transform 0.35s ease;
@@ -226,8 +222,6 @@ const closeModal = () => {
   opacity: 0;
   transform: translateY(-20px);
 }
-
-/* Scrollbar for textarea */
 textarea::-webkit-scrollbar {
   width: 8px;
 }
@@ -235,28 +229,22 @@ textarea::-webkit-scrollbar-track {
   background: transparent;
 }
 textarea::-webkit-scrollbar-thumb {
-  background-color: rgba(99, 102, 241, 0.5); /* indigo-500 */
+  background-color: rgba(99, 102, 241, 0.5);
   border-radius: 4px;
   border: 2px solid transparent;
   background-clip: content-box;
 }
 .dark textarea::-webkit-scrollbar-thumb {
-  background-color: rgba(139, 92, 246, 0.7); /* indigo-400 */
+  background-color: rgba(139, 92, 246, 0.7);
 }
-
-/* Input and textarea focus ring enhancement */
 input:focus,
 textarea:focus {
   outline-offset: 2px;
 }
-
-/* Button active state */
 button:active {
   transform: scale(0.95);
   transition-duration: 100ms;
 }
-
-/* Floating animation for mascot */
 @keyframes float {
   0%, 100% {
     transform: translateY(0);
@@ -268,8 +256,6 @@ button:active {
 .animate-float {
   animation: float 4s ease-in-out infinite;
 }
-
-/* Responsive adjustments */
 @media (max-width: 768px) {
   .col-span-5 {
     grid-column: span 12 / span 12;
@@ -278,16 +264,16 @@ button:active {
     grid-column: span 12 / span 12;
   }
   .w-70 {
-    width: 17.5rem; /* 280px */
+    width: 17.5rem;
   }
   .h-90 {
-    height: 22.5rem; /* 360px */
+    height: 22.5rem;
   }
   .p-10 {
-    padding: 2rem /* 32px */;
+    padding: 2rem;
   }
   h2 {
-    font-size: 2.25rem /* 36px */;
+    font-size: 2.25rem;
   }
 }
 </style>
