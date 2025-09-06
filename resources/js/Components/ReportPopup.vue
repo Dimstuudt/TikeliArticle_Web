@@ -19,21 +19,21 @@ const handleSubmit = async () => {
   if (isSubmitting.value) return
   isSubmitting.value = true
 
-  // Simulate delay
+  // Simulasi delay
   await new Promise((r) => setTimeout(r, 1500))
 
-  // Emit data to parent
+  // Emit data ke parent
   emit("submit", { ...form.value })
 
-  // Show success popup
+  // Tampilkan sukses
   isSuccess.value = true
   isSubmitting.value = false
 
-  // Clear form
+  // Reset form
   form.value = { name: "", laporan: "" }
 }
 
-// Close modal / success popup manually
+// Tutup modal
 const closeModal = () => {
   isSuccess.value = false
   emit("close")
@@ -53,13 +53,12 @@ const closeModal = () => {
     >
       <!-- Modal -->
       <transition name="scale">
-     <div
-  class="relative max-w-4xl mx-4 grid grid-cols-12 gap-8 px-6 py-4 rounded-3xl shadow-2xl
-         bg-gradient-to-tr from-white via-indigo-50 to-indigo-100
-         dark:from-gray-900 dark:via-gray-800 dark:to-gray-900
-         h-auto"
->
-
+        <div
+          class="relative max-w-4xl mx-4 grid grid-cols-12 gap-8 px-6 py-4 rounded-3xl shadow-2xl
+                 bg-gradient-to-tr from-white via-indigo-50 to-indigo-100
+                 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900
+                 h-auto"
+        >
           <!-- Close Button -->
           <button
             @click="closeModal"
@@ -74,107 +73,114 @@ const closeModal = () => {
             </svg>
           </button>
 
-          <!-- Left Side: Mascot -->
-          <div
-            class="col-span-5 flex items-start justify-center relative -top-10"
-          >
-            <img
-              src="/mascot.png"
-              alt="Mascot"
-              class="w-70 h-90 object-contain drop-shadow-[0_25px_25px_rgba(0,0,0,0.25)] rounded-3xl transform transition-transform duration-500 hover:scale-105"
-              draggable="false"
-            />
-            <div class="absolute inset-0 pointer-events-none animate-float"></div>
-          </div>
+        <!-- Left Side: Mascot -->
+<div class="col-span-5 flex items-start justify-center relative -top-10">
+  <transition name="fade">
+    <img
+      :src="!isSuccess ? '/mascot.png' : '/mascot2.png'"
+      alt="Mascot"
+      :class="[
+        'w-70 h-90 object-contain drop-shadow-[0_25px_25px_rgba(0,0,0,0.25)] rounded-3xl transform transition-transform duration-500 hover:scale-105',
+        isSuccess ? 'translate-x-8' : ''  // 👉 geser kanan kalau mascot2
+      ]"
+      draggable="false"
+    />
+  </transition>
+  <div class="absolute inset-0 pointer-events-none animate-float"></div>
+</div>
 
-          <!-- Right Side: Form or Success -->
+          <!-- Right Side -->
           <div class="col-span-7 flex flex-col justify-center">
-            <template v-if="!isSuccess">
-              <h2
-                id="modal-title"
-                class="text-4xl font-extrabold text-gray-900 dark:text-white mb-6 select-none"
-              >
-                Ada apa nih?
-              </h2>
+            <transition name="slide-fade" mode="out-in">
+              <!-- Form -->
+              <div v-if="!isSuccess" key="form">
+                <h2
+                  id="modal-title"
+                  class="text-4xl font-extrabold text-gray-900 dark:text-white mb-6 select-none"
+                >
+                  Ada apa nih?
+                </h2>
 
-              <p
-                id="modal-description"
-                class="text-gray-600 dark:text-gray-300 mb-8 leading-relaxed"
-              >
-                Silakan isi nama dan laporkan apa yang ingin kamu sampaikan. Kami siap mendengarkan!
-              </p>
+                <p
+                  id="modal-description"
+                  class="text-gray-600 dark:text-gray-300 mb-8 leading-relaxed"
+                >
+                  Silakan isi nama dan laporkan apa yang ingin kamu sampaikan. Kami siap mendengarkan!
+                </p>
 
-              <form @submit.prevent="handleSubmit" class="space-y-6">
-                <div>
-                  <label for="name" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                    Nama
-                  </label>
-                  <input
-                    id="name"
-                    v-model="form.name"
-                    type="text"
-                    placeholder="Masukkan nama lengkapmu"
-                    required
-                    autocomplete="name"
-                    :disabled="isSubmitting"
-                    class="w-full rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-5 py-3 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 shadow-sm focus:outline-none focus:ring-4 focus:ring-indigo-500 focus:border-indigo-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                  />
-                </div>
+                <form @submit.prevent="handleSubmit" class="space-y-6">
+                  <div>
+                    <label for="name" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                      Nama
+                    </label>
+                    <input
+                      id="name"
+                      v-model="form.name"
+                      type="text"
+                      placeholder="Masukkan nama lengkapmu"
+                      required
+                      autocomplete="name"
+                      :disabled="isSubmitting"
+                      class="w-full rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-5 py-3 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 shadow-sm focus:outline-none focus:ring-4 focus:ring-indigo-500 focus:border-indigo-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    />
+                  </div>
 
-                <div>
-                  <label for="laporan" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                    Laporan
-                  </label>
-                  <textarea
-                    id="laporan"
-                    v-model="form.laporan"
-                    placeholder="Tulis laporanmu di sini..."
-                    required
-                    rows="6"
-                    :disabled="isSubmitting"
-                    class="w-full rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-5 py-3 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 shadow-sm resize-none focus:outline-none focus:ring-4 focus:ring-indigo-500 focus:border-indigo-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                  ></textarea>
-                </div>
+                  <div>
+                    <label for="laporan" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                      Laporan
+                    </label>
+                    <textarea
+                      id="laporan"
+                      v-model="form.laporan"
+                      placeholder="Tulis laporanmu di sini..."
+                      required
+                      rows="6"
+                      :disabled="isSubmitting"
+                      class="w-full rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-5 py-3 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 shadow-sm resize-none focus:outline-none focus:ring-4 focus:ring-indigo-500 focus:border-indigo-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    ></textarea>
+                  </div>
 
-                <div class="flex justify-end">
-                  <button
-                    type="submit"
-                    :disabled="isSubmitting"
-                    class="inline-flex items-center justify-center rounded-xl bg-indigo-600 hover:bg-indigo-700 focus:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 dark:focus:ring-indigo-800 text-white font-semibold px-8 py-3 shadow-lg transition transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <template v-if="isSubmitting">
-                      <svg class="animate-spin h-5 w-5 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-                      </svg>
-                      Mengirim...
-                    </template>
-                    <template v-else>
-                      SUBMIT
-                    </template>
-                  </button>
-                </div>
-              </form>
-            </template>
+                  <div class="flex justify-end">
+                    <button
+                      type="submit"
+                      :disabled="isSubmitting"
+                      class="inline-flex items-center justify-center rounded-xl bg-indigo-600 hover:bg-indigo-700 focus:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 dark:focus:ring-indigo-800 text-white font-semibold px-8 py-3 shadow-lg transition transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <template v-if="isSubmitting">
+                        <svg class="animate-spin h-5 w-5 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                        </svg>
+                        Mengirim...
+                      </template>
+                      <template v-else>
+                        SUBMIT
+                      </template>
+                    </button>
+                  </div>
+                </form>
+              </div>
 
-        <template v-else>
-  <div class="flex flex-col items-center justify-center space-y-6 py-10 select-none">
-    <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-green-500 drop-shadow-lg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-    </svg>
-    <h3 class="text-3xl font-extrabold text-gray-900 dark:text-white">Laporan berhasil dikirim!</h3>
-    <p class="text-gray-600 dark:text-gray-300 max-w-md text-center">
-      Terima kasih atas laporannya. Kami akan segera menindaklanjuti.
-    </p>
-    <button
-      @click="closeModal"
-      class="mt-4 px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition"
-    >
-      OK
-    </button>
-  </div>
-</template>
+             <!-- Success -->
+<div v-else key="success" class="flex flex-col items-center justify-center space-y-6 py-10 select-none">
+  <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-green-500 drop-shadow-lg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+  </svg>
+  <h3 class="text-3xl font-extrabold text-gray-900 dark:text-white pl-4">
+    Laporan berhasil dikirim!
+  </h3>
+  <p class="text-gray-600 dark:text-gray-300 max-w-md text-center pl-4">
+    Terima kasih atas laporannya. Kami akan segera menindaklanjuti.
+  </p>
+  <button
+    @click="closeModal"
+    class="mt-4 px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition"
+  >
+    OK
+  </button>
+</div>
 
+            </transition>
           </div>
         </div>
       </transition>
@@ -183,7 +189,7 @@ const closeModal = () => {
 </template>
 
 <style scoped>
-/* Fade overlay */
+/* Fade overlay and mascot fade */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
@@ -207,6 +213,20 @@ const closeModal = () => {
   opacity: 0;
 }
 
+/* Slide + fade content (form and success) */
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+.slide-fade-enter-from {
+  opacity: 0;
+  transform: translateY(20px);
+}
+.slide-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
 /* Scrollbar for textarea */
 textarea::-webkit-scrollbar {
   width: 8px;
@@ -220,8 +240,6 @@ textarea::-webkit-scrollbar-thumb {
   border: 2px solid transparent;
   background-clip: content-box;
 }
-
-/* Dark mode scrollbar */
 .dark textarea::-webkit-scrollbar-thumb {
   background-color: rgba(139, 92, 246, 0.7); /* indigo-400 */
 }

@@ -66,8 +66,9 @@ const closePopup = () => {
 const handleSubmit = (data) => {
   console.log("Nama:", data.name)
   console.log("Laporan:", data.laporan)
-  closePopup()
+ 
 }
+
 
 </script>
 
@@ -250,12 +251,7 @@ const handleSubmit = (data) => {
     </transition>
 
     <LofiPlayer />
-    <!-- Pop Up Laporan -->
-<ReportPopup
-  :show="showPopup"
-  @close="closePopup"
-  @submit="handleSubmit"
-/>
+
 
 <!-- Floating Report Button -->
 <button
@@ -267,12 +263,13 @@ const handleSubmit = (data) => {
   <i class="fas fa-flag"></i>
 </button>
 
-<!-- Pop Up -->
+<!-- Pop Up (cukup 1x aja) -->
 <ReportPopup
   :show="showPopup"
   @close="closePopup"
   @submit="handleSubmit"
 />
+
 
  </div>
 
