@@ -133,13 +133,13 @@ watch(() => form.username, (val) => {
     <InputLabel for="username" value="Username" />
 
     <TextInput
-        id="username"
-        type="text"
-        class="mt-1 block w-full"
-        v-model="form.username"
-        required
-        autocomplete="username"
-    />
+    id="username"
+    type="text"
+    class="mt-1 block w-full bg-gray-100 cursor-not-allowed"
+    v-model="form.username"
+    readonly
+/>
+
 <InputError class="mt-2" :message="usernameError || form.errors.username" />
 
 </div>

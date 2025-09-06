@@ -7,8 +7,7 @@ use Inertia\Inertia;
 use Laravel\Socialite\Facades\Socialite;
 
 // Controllers
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\ProfilePhotoController;
+
 use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\ArticleController;
@@ -139,17 +138,7 @@ Route::middleware([
 
 
 
-// === Profile Routes ===
-Route::middleware([
-    'auth',
-    PreventBackHistory::class,
-    EnsureProfileComplete::class,
-])->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    Route::post('/profile/photo', [ProfilePhotoController::class, 'update'])->name('profile.photo.update');
-});
+
 
 // === Email Verification Routes ===
 Route::get('/email/verify', fn () => Inertia::render('Auth/VerifyEmail'))
@@ -169,22 +158,7 @@ Route::get('/verified', fn () => Inertia::render('Auth/EmailVerified'))
 
 
 
-// MyProfile - edit profil publik (nama, bio, foto profil, background)
-Route::middleware(['auth'])->group(function () {
-    // Tampilkan halaman profil publik
-    Route::get('/my-profile', function () {
-        return Inertia::render('Profile/MyProfile');
-    })->name('my.profile');
 
-    // Update nama & bio (profil publik)
-    Route::patch('/my-profile/public', [ProfileController::class, 'updatePublicProfile'])->name('my.profile.update');
-
-    // Update foto profil
-    Route::post('/my-profile/photo', [ProfileController::class, 'updatePhoto'])->name('my.profile.photo');
-
-    // Update background
-    Route::post('/my-profile/background', [ProfileController::class, 'updateBackgroundPhoto'])->name('my.profile.background');
-});
 
 
 
@@ -195,3 +169,4 @@ require __DIR__.'/forum.php';
 require __DIR__.'/guest.php';
 require __DIR__.'/search.php';
 require __DIR__.'/static.php';
+require __DIR__.'/profile.php';
