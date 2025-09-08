@@ -78,7 +78,7 @@ Route::middleware([
     'verified',
     PreventBackHistory::class,
     EnsureProfileComplete::class,
-    RoleMiddleware::class . ':admin',
+    RoleMiddleware::class . ':admin,super-admin',
 ])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [DashboardController::class, 'adminIndex'])->name('dashboard');
 
@@ -126,7 +126,7 @@ Route::middleware([
     'verified',
     PreventBackHistory::class,
     EnsureProfileComplete::class,
-    RoleMiddleware::class . ':operator',
+    RoleMiddleware::class . ':operator,super-admin',
 ])->prefix('operator')->name('operator.')->group(function () {
 
     // Dashboard operator (pakai controller)

@@ -30,33 +30,19 @@ const user = usePage().props.auth.user
             <!-- Menu -->
             <div class="hidden sm:flex space-x-8">
               <NavLink :href="route('dashboard')" :active="route().current('dashboard')">Dashboard</NavLink>
-              
-<template v-if="role === 'admin'">
-  <NavLink :href="route('admin.users')" :active="route().current('admin.users')">
-    Users
-  </NavLink>
 
-  <NavLink :href="route('admin.articles.index')" :active="route().current('admin.articles.index')">
-    Manajemen Artikel
-  </NavLink>
+              <!-- Admin & Super Admin Menu -->
+              <template v-if="role === 'admin' || role === 'super-admin'">
+                <NavLink :href="route('admin.users')" :active="route().current('admin.users')">Users</NavLink>
+                <NavLink :href="route('admin.articles.index')" :active="route().current('admin.articles.index')">Manajemen Artikel</NavLink>
+                <NavLink :href="route('admin.approved-articles.index')" :active="route().current('admin.approved-articles.index')">Approved</NavLink>
+                <NavLink :href="route('admin.reports.index')" :active="route().current('admin.reports.index')">Reports</NavLink>
+              </template>
 
-  <NavLink :href="route('admin.approved-articles.index')" :active="route().current('admin.approved-articles.index')">
-    Approved
-  </NavLink>
-
-  <NavLink :href="route('admin.reports.index')" :active="route().current('admin.reports.index')">
-    Reports
-  </NavLink>
-</template>
-
-
-              <template v-if="role === 'operator'">
-                <NavLink :href="route('operator.articles.create')" :active="route().current('operator.articles.create')">
-                  Tulis Artikel
-                </NavLink>
-                <NavLink :href="route('operator.articles.mine')" :active="route().current('operator.articles.mine')">
-                  Artikel Saya
-                </NavLink>
+              <!-- Operator Menu -->
+              <template v-if="role === 'operator' || role === 'super-admin'">
+                <NavLink :href="route('operator.articles.create')" :active="route().current('operator.articles.create')">Tulis Artikel</NavLink>
+                <NavLink :href="route('operator.articles.mine')" :active="route().current('operator.articles.mine')">Artikel Saya</NavLink>
               </template>
             </div>
           </div>
@@ -65,9 +51,7 @@ const user = usePage().props.auth.user
           <div class="hidden sm:flex sm:items-center">
             <Dropdown align="right" width="48">
               <template #trigger>
-                <button
-                  class="flex items-center text-sm font-medium text-gray-700 hover:text-blue-700 focus:outline-none"
-                >
+                <button class="flex items-center text-sm font-medium text-gray-700 hover:text-blue-700 focus:outline-none">
                   <img
                     :src="user.profile_photo_url"
                     class="h-9 w-9 rounded-full object-cover border-2 border-blue-500"
@@ -123,7 +107,7 @@ const user = usePage().props.auth.user
       <div
         :class="[
           showingNavigationDropdown ? 'block' : 'hidden',
-          role === 'admin' ? 'bg-blue-900 text-gray-200' : 'bg-blue-50 text-gray-800',
+          role === 'admin' || role === 'super-admin' ? 'bg-blue-900 text-gray-200' : 'bg-blue-50 text-gray-800',
           'sm:hidden'
         ]"
       >
@@ -132,13 +116,16 @@ const user = usePage().props.auth.user
             Dashboard
           </ResponsiveNavLink>
 
-          <template v-if="role === 'admin'">
+          <!-- Admin & Super Admin -->
+          <template v-if="role === 'admin' || role === 'super-admin'">
             <ResponsiveNavLink :href="route('admin.users')" :active="route().current('admin.users')">Users</ResponsiveNavLink>
             <ResponsiveNavLink :href="route('admin.articles.index')" :active="route().current('admin.articles.index')">Manajemen Artikel</ResponsiveNavLink>
-
+            <ResponsiveNavLink :href="route('admin.approved-articles.index')" :active="route().current('admin.approved-articles.index')">Approved</ResponsiveNavLink>
+            <ResponsiveNavLink :href="route('admin.reports.index')" :active="route().current('admin.reports.index')">Reports</ResponsiveNavLink>
           </template>
 
-          <template v-if="role === 'operator'">
+          <!-- Operator & Super Admin -->
+          <template v-if="role === 'operator' || role === 'super-admin'">
             <ResponsiveNavLink :href="route('operator.articles.create')" :active="route().current('operator.articles.create')">Tulis Artikel</ResponsiveNavLink>
             <ResponsiveNavLink :href="route('operator.articles.mine')" :active="route().current('operator.articles.mine')">Artikel Saya</ResponsiveNavLink>
           </template>
@@ -158,36 +145,31 @@ const user = usePage().props.auth.user
       </div>
     </nav>
 
-  <!-- Header -->
-<header v-if="$slots.header" class="bg-gradient-to-r from-blue-500 to-blue-700 shadow-md text-white">
-  <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-    <slot name="header" />
-  </div>
-</header>
-
+    <!-- Header -->
+    <header v-if="$slots.header" class="bg-gradient-to-r from-blue-500 to-blue-700 shadow-md text-white">
+      <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        <slot name="header" />
+      </div>
+    </header>
 
     <!-- Main Content -->
-<!-- Main Content -->
-<main class="flex-1 min-h-screen bg-gradient-to-br from-blue-100 via-blue-200 to-blue-300">
-  <div class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
-    <!-- Isi konten -->
-    <slot />
-  </div>
-</main>
+    <main class="flex-1 min-h-screen bg-gradient-to-br from-blue-100 via-blue-200 to-blue-300">
+      <div class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
+        <slot />
+      </div>
+    </main>
 
-<!-- Footer -->
-<footer class="bg-blue-600 text-white py-6 mt-auto shadow-inner">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-    <p class="text-sm">&copy; {{ new Date().getFullYear() }} Tikeli. All rights reserved.</p>
-    <nav class="flex gap-4 text-sm">
-      <a href="/about" class="hover:underline">Tentang</a>
-      <a href="/terms" class="hover:underline">Kebijakan</a>
-      <a href="/contact" class="hover:underline">Kontak</a>
-      <a href="/privacy" class="hover:underline">Privasi</a>
-    </nav>
-  </div>
-</footer>
-
-
+    <!-- Footer -->
+    <footer class="bg-blue-600 text-white py-6 mt-auto shadow-inner">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <p class="text-sm">&copy; {{ new Date().getFullYear() }} Tikeli. All rights reserved.</p>
+        <nav class="flex gap-4 text-sm">
+          <a href="/about" class="hover:underline">Tentang</a>
+          <a href="/terms" class="hover:underline">Kebijakan</a>
+          <a href="/contact" class="hover:underline">Kontak</a>
+          <a href="/privacy" class="hover:underline">Privasi</a>
+        </nav>
+      </div>
+    </footer>
   </div>
 </template>

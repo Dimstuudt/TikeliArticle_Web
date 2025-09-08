@@ -71,24 +71,34 @@ const formatDate = (date) => {
 
     <!-- Info -->
     <div class="flex-1 min-w-0">
-      <!-- Name + Role Badge -->
-      <div class="flex items-center gap-2">
-        <p class="font-semibold text-gray-800 dark:text-gray-100 truncate">
-          {{ user.name }}
-        </p>
-        <span
-          v-if="user.role === 'admin'"
-          class="px-2 py-0.5 text-xs font-medium rounded-full bg-gradient-to-r from-red-600 to-red-500 text-white shadow-sm"
-        >
-          Admin
-        </span>
-        <span
-          v-else
-          class="px-2 py-0.5 text-xs font-medium rounded-full bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-sm"
-        >
-          Operator
-        </span>
-      </div>
+   <!-- Name + Role Badge -->
+<div class="flex items-center gap-2">
+  <p class="font-semibold text-gray-800 dark:text-gray-100 truncate">
+    {{ user.name }}
+  </p>
+
+  <span
+    v-if="user.role === 'super-admin'"
+    class="px-2 py-0.5 text-xs font-medium rounded-full bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-sm"
+  >
+    Super Admin
+  </span>
+
+  <span
+    v-else-if="user.role === 'admin'"
+    class="px-2 py-0.5 text-xs font-medium rounded-full bg-gradient-to-r from-red-600 to-red-500 text-white shadow-sm"
+  >
+    Admin
+  </span>
+
+  <span
+    v-else
+    class="px-2 py-0.5 text-xs font-medium rounded-full bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-sm"
+  >
+    Operator
+  </span>
+</div>
+
 
       <!-- Bio -->
       <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 truncate">
