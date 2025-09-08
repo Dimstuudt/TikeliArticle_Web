@@ -13,6 +13,8 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\ReportController;
+
 
 
 // Middleware
@@ -79,6 +81,10 @@ Route::middleware([
     RoleMiddleware::class . ':admin',
 ])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [DashboardController::class, 'adminIndex'])->name('dashboard');
+
+//report
+Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+
 
 
     // User Management

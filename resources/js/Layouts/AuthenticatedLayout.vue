@@ -30,19 +30,25 @@ const user = usePage().props.auth.user
             <!-- Menu -->
             <div class="hidden sm:flex space-x-8">
               <NavLink :href="route('dashboard')" :active="route().current('dashboard')">Dashboard</NavLink>
+              
+<template v-if="role === 'admin'">
+  <NavLink :href="route('admin.users')" :active="route().current('admin.users')">
+    Users
+  </NavLink>
 
-              <template v-if="role === 'admin'">
-                <NavLink :href="route('admin.users')" :active="route().current('admin.users')">Users</NavLink>
-                <NavLink :href="route('admin.articles.index')" :active="route().current('admin.articles.index')">
-                  Manajemen Artikel
-                </NavLink>
-                <NavLink
-                  :href="route('admin.approved-articles.index')"
-                  :active="route().current('admin.approved-articles.index')"
-                >
-                  Approved
-                </NavLink>
-              </template>
+  <NavLink :href="route('admin.articles.index')" :active="route().current('admin.articles.index')">
+    Manajemen Artikel
+  </NavLink>
+
+  <NavLink :href="route('admin.approved-articles.index')" :active="route().current('admin.approved-articles.index')">
+    Approved
+  </NavLink>
+
+  <NavLink :href="route('admin.reports.index')" :active="route().current('admin.reports.index')">
+    Reports
+  </NavLink>
+</template>
+
 
               <template v-if="role === 'operator'">
                 <NavLink :href="route('operator.articles.create')" :active="route().current('operator.articles.create')">
@@ -129,6 +135,7 @@ const user = usePage().props.auth.user
           <template v-if="role === 'admin'">
             <ResponsiveNavLink :href="route('admin.users')" :active="route().current('admin.users')">Users</ResponsiveNavLink>
             <ResponsiveNavLink :href="route('admin.articles.index')" :active="route().current('admin.articles.index')">Manajemen Artikel</ResponsiveNavLink>
+
           </template>
 
           <template v-if="role === 'operator'">
