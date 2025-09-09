@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { Head, useForm, router, Link} from '@inertiajs/vue3' // ✅ tambahin router
+import { Head, useForm, router, Link } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import PrimaryButton from '@/Components/PrimaryButton.vue'
 import DangerButton from '@/Components/DangerButton.vue'
@@ -17,9 +17,9 @@ const form = useForm({
   name: '',
   email: '',
   username: '',
-  role: 'operator',
+  roles: [], // ✅ pakai array untuk Spatie
   is_active: true,
-  trusted_writer: false, // ✅ untuk badge
+  trusted_writer: false,
   password: '',
   password_confirmation: '',
 })
@@ -34,14 +34,14 @@ const openModal = (user = null) => {
     form.name = user.name
     form.email = user.email
     form.username = user.username
-    form.role = user.role
+    form.roles = user.roles || [] // ✅ ambil dari Spatie
     form.is_active = !!user.is_active
     form.trusted_writer = !!user.trusted_writer
     form.password = ''
     form.password_confirmation = ''
   } else {
     form.reset()
-    form.role = 'operator'
+    form.roles = [] // default kosong
     form.is_active = true
     form.trusted_writer = false
   }
@@ -49,7 +49,7 @@ const openModal = (user = null) => {
 
 const closeModal = () => {
   form.reset()
-  form.role = 'operator'
+  form.roles = []
   form.is_active = true
   form.trusted_writer = false
   showModal.value = false
@@ -78,14 +78,14 @@ const toggleStatus = (user) => {
   form.name = user.name
   form.email = user.email
   form.username = user.username
-  form.role = user.role
+  form.roles = user.roles || []
   form.is_active = !user.is_active
   form.trusted_writer = user.trusted_writer
 
   form.put(route('admin.users.update', user.id), {
     preserveScroll: true,
     onSuccess: () => {
-      user.is_active = !user.is_active // ✅ update UI langsung
+      user.is_active = !user.is_active
     },
     onError: () => alert('Gagal update status'),
   })
@@ -97,14 +97,14 @@ const toggleTrusted = (user) => {
   form.name = user.name
   form.email = user.email
   form.username = user.username
-  form.role = user.role
+  form.roles = user.roles || []
   form.is_active = user.is_active
   form.trusted_writer = !user.trusted_writer
 
   form.put(route('admin.users.update', user.id), {
     preserveScroll: true,
     onSuccess: () => {
-      user.trusted_writer = !user.trusted_writer // ✅ update UI langsung
+      user.trusted_writer = !user.trusted_writer
     },
     onError: () => alert('Gagal update trusted writer'),
   })
@@ -134,7 +134,6 @@ const filteredUsers = computed(() => {
 })
 </script>
 
-
 <template>
   <Head title="Manajemen User" />
   <AuthenticatedLayout>
@@ -153,154 +152,176 @@ const filteredUsers = computed(() => {
     </template>
 
     <div class="py-12">
-      <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-        <div class="bg-white shadow-xl sm:rounded-lg p-6">
-          <div class="flex justify-between mb-4">
-            <h3 class="text-lg font-bold text-gray-700">Daftar User</h3>
-            <PrimaryButton @click="openModal()">Tambah User</PrimaryButton>
-          </div>
+  <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="bg-white shadow-xl sm:rounded-lg p-6">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
+        <h3 class="text-lg font-bold text-gray-700">Daftar User</h3>
+        <PrimaryButton @click="openModal()">Tambah User</PrimaryButton>
+      </div>
 
-          <!-- Input Pencarian -->
-          <input
-            v-model="search"
-            type="text"
-            placeholder="Cari username..."
-            class="border rounded px-3 py-1 mb-4 w-1/3"
-          />
+      <!-- Input Pencarian -->
+      <div class="mb-4">
+        <input
+          v-model="search"
+          type="text"
+          placeholder="Cari username..."
+          class="border rounded px-3 py-1 w-full sm:w-1/3"
+        />
+      </div>
 
-          <table class="w-full text-sm text-left">
-            <thead class="bg-gray-100">
-              <tr>
-                <th class="px-4 py-2">Nama</th>
-                <th class="px-4 py-2">Username</th>
-                <th class="px-4 py-2">Email</th>
-                <th class="px-4 py-2">Role</th>
-                <th class="px-4 py-2">Status</th>
-                <th class="px-4 py-2">Trusted</th> <!-- ✅ baru -->
-                <th class="px-4 py-2">Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="user in filteredUsers" :key="user.id" class="border-t">
-                <td class="px-4 py-2">{{ user.name }}</td>
-                <td class="px-4 py-2">{{ user.username }}</td>
-                <td class="px-4 py-2">{{ user.email }}</td>
-                <td class="px-4 py-2 capitalize">{{ user.role }}</td>
-                <td class="px-4 py-2">
-                  <button
-                    @click="toggleStatus(user)"
-                    class="text-xs px-3 py-1 rounded-full font-semibold transition"
-                    :class="user.is_active ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-red-100 text-red-700 hover:bg-red-200'"
-                  >
-                    {{ user.is_active ? 'Aktif' : 'Nonaktif' }}
-                  </button>
-
-                </td>
+      <!-- Table Wrapper -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm text-left min-w-[600px]">
+          <thead class="bg-gray-100">
+            <tr>
+              <th class="px-4 py-2">Nama</th>
+              <th class="px-4 py-2">Username</th>
+              <th class="px-4 py-2">Email</th>
+              <th class="px-4 py-2">Roles</th>
+              <th class="px-4 py-2">Status</th>
+              <th class="px-4 py-2">Trusted</th>
+              <th class="px-4 py-2">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="user in filteredUsers" :key="user.id" class="border-t">
+              <td class="px-4 py-2">{{ user.name }}</td>
+              <td class="px-4 py-2">{{ user.username }}</td>
+              <td class="px-4 py-2">{{ user.email }}</td>
+              <td class="px-4 py-2 capitalize">{{ Array.isArray(user.roles) ? user.roles.join(', ') : '-' }}</td>
               <td class="px-4 py-2">
-  <button
-  @click="toggleTrusted(user)"
-  class="text-xs px-3 py-1 rounded-full font-semibold transition"
-  :class="user.trusted_writer ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'"
->
-  {{ user.trusted_writer ? 'Trusted' : 'Biasa' }}
-</button>
-
-</td>
-                <td class="px-4 py-2 space-x-2">
-                  <PrimaryButton @click="openModal(user)">Edit</PrimaryButton>
-                  <DangerButton @click="deleteUser(user.id)">Hapus</DangerButton>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+                <button
+                  @click="toggleStatus(user)"
+                  class="text-xs px-2 py-1 rounded-full font-semibold transition"
+                  :class="user.is_active ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-red-100 text-red-700 hover:bg-red-200'"
+                >
+                  {{ user.is_active ? 'Aktif' : 'Nonaktif' }}
+                </button>
+              </td>
+              <td class="px-4 py-2">
+                <button
+                  @click="toggleTrusted(user)"
+                  class="text-xs px-2 py-1 rounded-full font-semibold transition"
+                  :class="user.trusted_writer ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'"
+                >
+                  {{ user.trusted_writer ? 'Trusted' : 'Biasa' }}
+                </button>
+              </td>
+              <td class="px-4 py-2">
+                <div class="flex flex-wrap gap-2">
+                  <PrimaryButton size="sm" @click="openModal(user)">Edit</PrimaryButton>
+                  <DangerButton size="sm" @click="deleteUser(user.id)">Hapus</DangerButton>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
+  </div>
+</div>
 
-    <!-- Modal Form -->
-    <Modal :show="showModal" @close="closeModal">
-      <div class="p-6">
-        <h2 class="text-lg font-semibold mb-4">
-          {{ editMode ? 'Edit User' : 'Tambah User' }}
-        </h2>
+<!-- Modal Form Tambah/Edit User -->
 
-        <form @submit.prevent="saveUser" class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium">Nama</label>
-            <input v-model="form.name" class="w-full mt-1 rounded-md shadow-sm" type="text" />
-          </div>
+   <Modal :show="showModal" @close="closeModal">
+  <div class="p-6 w-full max-w-lg mx-auto">
+    <h2 class="text-lg sm:text-xl font-semibold mb-4 text-gray-800">
+      {{ editMode ? 'Edit User' : 'Tambah User' }}
+    </h2>
 
-          <div>
-            <label class="block text-sm font-medium">Email</label>
-            <input v-model="form.email" class="w-full mt-1 rounded-md shadow-sm" type="email" />
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium">Username</label>
-            <input v-model="form.username" class="w-full mt-1 rounded-md shadow-sm" type="text" />
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium">Role</label>
-            <select v-model="form.role" class="w-full mt-1 rounded-md shadow-sm">
-              <option value="admin">Admin</option>
-              <option value="operator">Operator</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium">Status</label>
-            <select v-model="form.is_active" class="w-full mt-1 rounded-md shadow-sm">
-              <option :value="true">Aktif</option>
-              <option :value="false">Nonaktif</option>
-            </select>
-          </div>
-
-          <!-- ✅ Checkbox Trusted Writer -->
-          <div>
-            <label class="inline-flex items-center">
-              <input type="checkbox" v-model="form.trusted_writer"
-                     class="rounded border-gray-300 text-green-600 shadow-sm focus:ring-green-500" />
-              <span class="ml-2 text-sm text-gray-700">Trusted Writer</span>
-            </label>
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium">Password</label>
-            <input v-model="form.password" class="w-full mt-1 rounded-md shadow-sm" type="password" />
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium">Konfirmasi Password</label>
-            <input v-model="form.password_confirmation" class="w-full mt-1 rounded-md shadow-sm" type="password" />
-          </div>
-
-          <!-- Validasi Password -->
-          <div
-            class="mt-2 rounded-md px-4 py-2 text-sm"
-            :class="{
-              'bg-red-100 border border-red-300': !isPasswordLongEnough,
-              'bg-yellow-100 border border-yellow-300': isPasswordLongEnough && !isPasswordStrong,
-              'bg-blue-100 border border-blue-300': isPasswordLongEnough && isPasswordStrong && form.password !== form.password_confirmation,
-              'bg-green-100 border border-green-300': isPasswordLongEnough && isPasswordStrong && form.password === form.password_confirmation
-            }"
-          >
-            <ul>
-              <li v-if="!isPasswordLongEnough" class="text-red-600">Minimal 8 karakter</li>
-              <li v-else-if="!isPasswordStrong" class="text-yellow-700">Gunakan huruf besar, kecil, angka, dan simbol</li>
-              <li v-else-if="form.password !== form.password_confirmation" class="text-green-700">Konfirmasi belum cocok</li>
-              <li v-else class="text-green-700 font-medium">✓ Password valid!</li>
-            </ul>
-          </div>
-
-          <div class="mt-6 flex justify-end space-x-2">
-            <DangerButton type="button" @click="closeModal">Batal</DangerButton>
-            <PrimaryButton type="submit" :disabled="form.processing">
-              {{ editMode ? 'Simpan' : 'Tambah' }}
-            </PrimaryButton>
-          </div>
-        </form>
+    <form @submit.prevent="saveUser" class="space-y-4">
+      <!-- Nama -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Nama</label>
+        <input v-model="form.name" type="text"
+               class="w-full mt-1 rounded-md shadow-sm border-gray-300 focus:ring-blue-500 focus:border-blue-500" />
       </div>
-    </Modal>
+
+      <!-- Email -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Email</label>
+        <input v-model="form.email" type="email"
+               class="w-full mt-1 rounded-md shadow-sm border-gray-300 focus:ring-blue-500 focus:border-blue-500" />
+      </div>
+
+      <!-- Username -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Username</label>
+        <input v-model="form.username" type="text"
+               class="w-full mt-1 rounded-md shadow-sm border-gray-300 focus:ring-blue-500 focus:border-blue-500" />
+      </div>
+
+      <!-- Roles -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Roles</label>
+        <select v-model="form.roles" multiple
+                class="w-full mt-1 rounded-md shadow-sm border-gray-300 focus:ring-blue-500 focus:border-blue-500">
+          <option value="super-admin">Super Admin</option>
+          <option value="admin">Admin</option>
+          <option value="operator">Operator</option>
+        </select>
+        <p class="text-xs text-gray-500 mt-1">*Bisa pilih lebih dari 1 role</p>
+      </div>
+
+      <!-- Status -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Status</label>
+        <select v-model="form.is_active"
+                class="w-full mt-1 rounded-md shadow-sm border-gray-300 focus:ring-blue-500 focus:border-blue-500">
+          <option :value="true">Aktif</option>
+          <option :value="false">Nonaktif</option>
+        </select>
+      </div>
+
+      <!-- Trusted Writer -->
+      <div>
+        <label class="inline-flex items-center">
+          <input type="checkbox" v-model="form.trusted_writer"
+                 class="rounded border-gray-300 text-green-600 shadow-sm focus:ring-green-500" />
+          <span class="ml-2 text-sm text-gray-700">Trusted Writer</span>
+        </label>
+      </div>
+
+      <!-- Password -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Password</label>
+          <input v-model="form.password" type="password"
+                 class="w-full mt-1 rounded-md shadow-sm border-gray-300 focus:ring-blue-500 focus:border-blue-500" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Konfirmasi Password</label>
+          <input v-model="form.password_confirmation" type="password"
+                 class="w-full mt-1 rounded-md shadow-sm border-gray-300 focus:ring-blue-500 focus:border-blue-500" />
+        </div>
+      </div>
+
+      <!-- Validasi Password -->
+      <div
+        class="mt-2 rounded-md px-4 py-2 text-sm"
+        :class="{
+          'bg-red-100 border border-red-300': !isPasswordLongEnough,
+          'bg-yellow-100 border border-yellow-300': isPasswordLongEnough && !isPasswordStrong,
+          'bg-blue-100 border border-blue-300': isPasswordLongEnough && isPasswordStrong && form.password !== form.password_confirmation,
+          'bg-green-100 border border-green-300': isPasswordLongEnough && isPasswordStrong && form.password === form.password_confirmation
+        }"
+      >
+        <ul class="list-disc list-inside">
+          <li v-if="!isPasswordLongEnough" class="text-red-600">Minimal 8 karakter</li>
+          <li v-else-if="!isPasswordStrong" class="text-yellow-700">Gunakan huruf besar, kecil, angka, dan simbol</li>
+          <li v-else-if="form.password !== form.password_confirmation" class="text-blue-700">Konfirmasi belum cocok</li>
+          <li v-else class="text-green-700 font-medium">✓ Password valid!</li>
+        </ul>
+      </div>
+
+      <!-- Buttons -->
+      <div class="mt-6 flex flex-wrap gap-2 justify-end">
+        <DangerButton type="button" @click="closeModal">Batal</DangerButton>
+        <PrimaryButton type="submit" :disabled="form.processing">{{ editMode ? 'Simpan' : 'Tambah' }}</PrimaryButton>
+      </div>
+    </form>
+  </div>
+</Modal>
+
   </AuthenticatedLayout>
 </template>

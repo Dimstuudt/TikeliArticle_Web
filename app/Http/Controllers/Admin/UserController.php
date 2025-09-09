@@ -13,29 +13,54 @@ class UserController extends Controller
     public function index()
     {
         return Inertia::render('Admin/Users', [
-            'users' => User::latest()->get(),
+            'users' => User::with('roles', 'permissions') // ✅ load roles + permissions
+                ->latest()
+                ->get()
+                ->map(function ($user) {
+                    return [
+                        'id'             => $user->id,
+                        'name'           => $user->name,
+                        'email'          => $user->email,
+                        'username'       => $user->username,
+                        'roles'          => $user->getRoleNames(),        // ✅ array of strings
+                        'permissions'    => $user->getPermissionNames(),  // ✅ array of strings
+                        'is_active'      => $user->is_active,
+                        'trusted_writer' => $user->trusted_writer,
+                        'created_at'     => $user->created_at?->toDateString(),
+                    ];
+                }),
         ]);
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name'       => 'required|string|max:255',
-            'email'      => 'required|email|unique:users,email',
-            'username'   => 'required|string|max:255|unique:users,username',
-            'password'   => 'required|string|min:8',
-            'role'       => 'required|in:admin,operator',
-            'is_active'  => 'required|boolean',
+            'name'            => 'required|string|max:255',
+            'email'           => 'required|email|unique:users,email',
+            'username'        => 'required|string|max:255|unique:users,username',
+            'password'        => 'required|string|min:8',
+            'roles'           => 'required|array',
+            'roles.*'         => 'string|exists:roles,name',
+            'permissions'     => 'nullable|array',
+            'permissions.*'   => 'string|exists:permissions,name',
+            'is_active'       => 'required|boolean',
+            'trusted_writer'  => 'boolean',
         ]);
 
-        User::create([
-            'name'       => $validated['name'],
-            'email'      => $validated['email'],
-            'username'   => $validated['username'],
-            'password'   => Hash::make($validated['password']),
-            'role'       => $validated['role'],
-            'is_active'  => $validated['is_active'],
+        $user = User::create([
+            'name'           => $validated['name'],
+            'email'          => $validated['email'],
+            'username'       => $validated['username'],
+            'password'       => Hash::make($validated['password']),
+            'is_active'      => $validated['is_active'],
+            'trusted_writer' => $validated['trusted_writer'] ?? false,
         ]);
+
+        // ✅ assign roles & permissions Spatie
+        $user->assignRole($validated['roles']);
+        if (!empty($validated['permissions'])) {
+            $user->givePermissionTo($validated['permissions']);
+        }
 
         return redirect()
             ->route('admin.users')
@@ -43,37 +68,43 @@ class UserController extends Controller
     }
 
     public function update(Request $request, User $user)
-{
-    $validated = $request->validate([
-        'name'       => 'required|string|max:255',
-        'email'      => 'required|email|unique:users,email,' . $user->id,
-        'username'   => 'required|string|max:255|unique:users,username,' . $user->id,
-        'role'       => 'required|in:admin,operator',
-        'is_active'  => 'required|boolean',
-        'trusted_writer' => 'required|boolean', // ✅ tambahin validasi
-        'password'   => ['sometimes', 'nullable', 'string', 'min:8'],
-    ]);
+    {
+        $validated = $request->validate([
+            'name'           => 'required|string|max:255',
+            'email'          => 'required|email|unique:users,email,' . $user->id,
+            'username'       => 'required|string|max:255|unique:users,username,' . $user->id,
+            'roles'          => 'required|array',
+            'roles.*'        => 'string|exists:roles,name',
+            'permissions'    => 'nullable|array',
+            'permissions.*'  => 'string|exists:permissions,name',
+            'is_active'      => 'required|boolean',
+            'trusted_writer' => 'required|boolean',
+            'password'       => ['sometimes', 'nullable', 'string', 'min:8'],
+        ]);
 
-    // Update data
-    $data = [
-        'name'           => $validated['name'],
-        'email'          => $validated['email'],
-        'username'       => $validated['username'],
-        'role'           => $validated['role'],
-        'is_active'      => $validated['is_active'],
-        'trusted_writer' => $validated['trusted_writer'], // ✅ tambahin
-    ];
+        $data = [
+            'name'           => $validated['name'],
+            'email'          => $validated['email'],
+            'username'       => $validated['username'],
+            'is_active'      => $validated['is_active'],
+            'trusted_writer' => $validated['trusted_writer'],
+        ];
 
-    if (!empty($validated['password'])) {
-        $data['password'] = Hash::make($validated['password']);
+        if (!empty($validated['password'])) {
+            $data['password'] = Hash::make($validated['password']);
+        }
+
+        $user->update($data);
+
+        // ✅ sync roles & permissions Spatie
+        $user->syncRoles($validated['roles']);
+        $user->syncPermissions($validated['permissions'] ?? []);
+
+        return redirect()
+            ->route('admin.users')
+            ->with('success', 'User berhasil diperbarui.');
     }
 
-    $user->update($data);
-
-    return redirect()
-        ->route('admin.users')
-        ->with('success', 'User berhasil diperbarui.');
-}
     public function destroy(User $user)
     {
         $user->delete();
@@ -91,13 +122,11 @@ class UserController extends Controller
         return back()->with('success', 'Status user berhasil diperbarui.');
     }
 
-    //trusteed
     public function toggleTrusted(User $user)
-{
-    $user->trusted_writer = !$user->trusted_writer; // flip 0 ↔ 1
-    $user->save();
+    {
+        $user->trusted_writer = !$user->trusted_writer;
+        $user->save();
 
-    return back()->with('success', 'Status Trusted Writer berhasil diperbarui.');
-}
-
+        return back()->with('success', 'Status Trusted Writer berhasil diperbarui.');
+    }
 }

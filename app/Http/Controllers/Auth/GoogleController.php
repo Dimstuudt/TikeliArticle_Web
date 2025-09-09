@@ -62,9 +62,11 @@ class GoogleController extends Controller
             return redirect()->route('complete-profile');
         }
 
-        // Redirect sesuai role
-        return redirect()->route(
-            $user->role === 'admin' ? 'admin.dashboard' : 'operator.dashboard'
-        );
+      return redirect()->route(
+    $user->hasAnyRole(['super-admin', 'admin'])
+        ? 'admin.dashboard'
+        : 'operator.dashboard'
+);
+
     }
 }

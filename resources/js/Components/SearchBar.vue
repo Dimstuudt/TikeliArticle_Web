@@ -47,71 +47,73 @@ const formatDate = (date) => {
         v-if="query.length"
         class="absolute bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg mt-1 w-full shadow-lg z-20 overflow-hidden max-h-72 overflow-y-auto"
       >
-        <!-- Loading state dengan animasi gelombang -->
+        <!-- Loading state -->
         <template v-if="loading">
           <div class="p-3 text-gray-500 dark:text-gray-400 flex items-center gap-1">
             <span>Searching</span>
             <span class="wave-dot" v-for="n in 3" :key="n"></span>
           </div>
         </template>
-<!-- Results -->
-<template v-else-if="results.length">
-  <div
-    v-for="user in results"
-    :key="user.id"
-    class="p-4 border-b border-gray-200 dark:border-gray-700 cursor-pointer flex items-center gap-4 transition hover:bg-gray-50 dark:hover:bg-gray-700"
-    @click="goToUser(user.id)"
-  >
-    <!-- Avatar -->
-    <img
-      :src="user.profile_photo_url || '/default-avatar.png'"
-      class="h-12 w-12 rounded-full object-cover border border-gray-300 dark:border-gray-600 shadow-sm"
-      alt="Profil"
-    >
 
-    <!-- Info -->
-    <div class="flex-1 min-w-0">
-   <!-- Name + Role Badge -->
-<div class="flex items-center gap-2">
-  <p class="font-semibold text-gray-800 dark:text-gray-100 truncate">
-    {{ user.name }}
-  </p>
+        <!-- Results -->
+        <template v-else-if="results.length">
+          <div
+            v-for="user in results"
+            :key="user.id"
+            class="p-4 border-b border-gray-200 dark:border-gray-700 cursor-pointer flex items-center gap-4 transition hover:bg-gray-50 dark:hover:bg-gray-700"
+            @click="goToUser(user.id)"
+          >
+            <!-- Avatar -->
+            <img
+              :src="user.profile_photo_url || '/default-avatar.png'"
+              class="h-12 w-12 rounded-full object-cover border border-gray-300 dark:border-gray-600 shadow-sm"
+              alt="Profil"
+            />
 
-  <span
-    v-if="user.role === 'super-admin'"
-    class="px-2 py-0.5 text-xs font-medium rounded-full bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-sm"
-  >
-    Super Admin
-  </span>
+            <!-- Info -->
+            <div class="flex-1 min-w-0">
+              <!-- Name + Role Badges -->
+              <div class="flex items-center gap-2 flex-wrap">
+                <p class="font-semibold text-gray-800 dark:text-gray-100 truncate">
+                  {{ user.name }}
+                </p>
 
-  <span
-    v-else-if="user.role === 'admin'"
-    class="px-2 py-0.5 text-xs font-medium rounded-full bg-gradient-to-r from-red-600 to-red-500 text-white shadow-sm"
-  >
-    Admin
-  </span>
+                <!-- Loop roles -->
+                <span
+                  v-for="role in user.roles"
+                  :key="role"
+                  class="px-2 py-0.5 text-xs font-medium rounded-full shadow-sm"
+                  :class="{
+                    'bg-gradient-to-r from-purple-600 to-purple-500 text-white': role === 'super-admin',
+                    'bg-gradient-to-r from-red-600 to-red-500 text-white': role === 'admin',
+                    'bg-gradient-to-r from-blue-600 to-blue-500 text-white': role === 'operator',
+                    'bg-gray-200 text-gray-700': !['super-admin','admin','operator'].includes(role)
+                  }"
+                >
+                  {{ role }}
+                </span>
 
-  <span
-    v-else
-    class="px-2 py-0.5 text-xs font-medium rounded-full bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-sm"
-  >
-    Operator
-  </span>
-</div>
+                <!-- No role -->
+                <span
+                  v-if="!user.roles || user.roles.length === 0"
+                  class="px-2 py-0.5 text-xs font-medium rounded-full bg-gray-300 text-gray-800"
+                >
+                  No Role
+                </span>
+              </div>
 
+              <!-- Bio -->
+              <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 truncate">
+                {{ user.bio || 'Belum ada bio' }}
+              </p>
 
-      <!-- Bio -->
-      <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 truncate">
-        {{ user.bio || 'Belum ada bio' }}
-      </p>
-
-      <!-- Joined Date -->
-      <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
-        Joined: {{ formatDate(user.created_at) }}
-      </p>
-    </div>
-  </div>
-</template>
+              <!-- Joined Date -->
+              <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                Joined: {{ formatDate(user.created_at) }}
+              </p>
+            </div>
+          </div>
+        </template>
 
         <!-- No results -->
         <template v-else>
@@ -180,7 +182,7 @@ const goToUser = (id) => {
   opacity: 0;
 }
 
-/* Animasi gelombang untuk titik */
+/* Animasi gelombang */
 .wave-dot {
   display: inline-block;
   width: 6px;

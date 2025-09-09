@@ -4,37 +4,27 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Laravel\Socialite\Facades\Socialite;
 
 // Controllers
-
 use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ReportController;
-
-
+use App\Http\Controllers\Admin\ApprovedArticleController;
+use App\Http\Controllers\Admin\RolePermissionController; // ✅ Tambahan
 
 // Middleware
 use App\Http\Middleware\PreventBackHistory;
 use App\Http\Middleware\EnsureProfileComplete;
-use App\Http\Middleware\RoleMiddleware;
 
-// Models
-use App\Models\User;
-use App\Models\Article;
-
-// Redirect root ke login
+// Redirect root ke welcome
 Route::get('/', fn () => redirect('/welcome'));
-
 
 // === Google OAuth ===
 Route::get('/auth/google', [GoogleController::class, 'redirect'])->name('login.google');
 Route::get('/auth/google/callback', [GoogleController::class, 'callback']);
-
-
 
 // === Lengkapi Profil ===
 Route::middleware('auth')->group(function () {
@@ -54,7 +44,7 @@ Route::middleware('auth')->group(function () {
         ]);
 
         return redirect()->route(
-            $user->role === 'admin' ? 'admin.dashboard' : 'operator.dashboard'
+            $user->hasRole('admin') ? 'admin.dashboard' : 'operator.dashboard'
         );
     });
 });
@@ -68,7 +58,7 @@ Route::middleware([
 ])->get('/dashboard', function () {
     $user = auth()->user();
     return redirect()->route(
-        $user->role === 'admin' ? 'admin.dashboard' : 'operator.dashboard'
+        $user->hasRole('admin') ? 'admin.dashboard' : 'operator.dashboard'
     );
 })->name('dashboard');
 
@@ -78,62 +68,86 @@ Route::middleware([
     'verified',
     PreventBackHistory::class,
     EnsureProfileComplete::class,
-    RoleMiddleware::class . ':admin,super-admin',
+    'role:admin|super-admin', // Role tetap, tapi nanti cek juga permission
 ])->prefix('admin')->name('admin.')->group(function () {
+
+    // Dashboard (bisa diakses semua admin)
     Route::get('/', [DashboardController::class, 'adminIndex'])->name('dashboard');
 
-//report
-Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+    // ===============================
+    // 🔹 REPORTS (butuh permission view reports)
+    // ===============================
+    Route::middleware('permission:view reports')->group(function () {
+        Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+    });
 
+    // ===============================
+    // 🔹 USER MANAGEMENT (butuh permission manage users)
+    // ===============================
+    Route::middleware('permission:manage users')->group(function () {
+        Route::get('/users', [UserController::class, 'index'])->name('users');
+        Route::post('/users', [UserController::class, 'store'])->name('users.store');
+        Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
+        Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
 
+        // Toggle aktif/nonaktif user
+        Route::patch('/users/{user}/toggle-active', [UserController::class, 'toggleActive'])
+            ->name('users.toggleActive');
 
-    // User Management
-    Route::get('/users', [UserController::class, 'index'])->name('users');
-    Route::post('/users', [UserController::class, 'store'])->name('users.store');
-    Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
-    Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+        // Toggle trusted writer
+        Route::patch('/users/{user}/toggle-trusted', [UserController::class, 'toggleTrusted'])
+            ->name('users.toggleTrusted');
+    });
 
-// Toggle aktif/nonaktif user
-Route::patch('/admin/users/{user}/toggle-active', [UserController::class, 'toggleActive'])
-    ->name('admin.users.toggleActive');
+    // ===============================
+    // 🔹 ARTICLE MANAGEMENT (butuh permission manage articles)
+    // ===============================
+    Route::middleware('permission:manage articles')->group(function () {
+        Route::get('/articles', [ArticleController::class, 'index'])->name('articles.index');
+        Route::put('/articles/{article}/approve', [ArticleController::class, 'approve'])->name('articles.approve');
+        Route::put('/articles/{article}/reject', [ArticleController::class, 'reject'])->name('articles.reject');
+        Route::get('/articles/{article}', [ArticleController::class, 'show'])->name('articles.show');
+        Route::delete('/articles/{id}', [ArticleController::class, 'destroy'])->name('articles.destroy');
 
-// Toggle trusted writer
-Route::patch('/admin/users/{user}/toggle-trusted', [UserController::class, 'toggleTrusted'])
-    ->name('admin.users.toggleTrusted');
-
-    // Artikel admin
-    Route::get('/articles', [ArticleController::class, 'index'])->name('articles.index');
-    Route::put('/articles/{article}/approve', [ArticleController::class, 'approve'])->name('articles.approve');
-    Route::put('/articles/{article}/reject', [ArticleController::class, 'reject'])->name('articles.reject');
-    Route::get('/admin/articles/{article}', [ArticleController::class, 'show'])->name('admin.articles.show');
-    Route::get('/articles/approved', [ArticleController::class, 'approved'])->name('admin.articles.approved');
-Route::delete('/articles/{id}', [ArticleController::class, 'destroy'])->name('admin.articles.destroy');
-
-
-//admin approved
-Route::get('/articles/approved', [\App\Http\Controllers\Admin\ApprovedArticleController::class, 'index'])
+        // Approved
+        Route::get('/articles/approved', [ApprovedArticleController::class, 'index'])
             ->name('approved-articles.index');
+        Route::delete('/articles/approved/{id}', [ApprovedArticleController::class, 'destroy'])
+            ->name('approved-articles.destroy');
+    });
 
-     Route::delete('/articles/approved/{id}', [\App\Http\Controllers\Admin\ApprovedArticleController::class, 'destroy'])
-    ->name('approved-articles.destroy');
+    // ===============================
+    // 🔹 ROLE & PERMISSION MANAGEMENT (butuh permission manage permissions)
+    // ===============================
+    Route::middleware('permission:manage permissions')->group(function () {
+        // Halaman utama
+        Route::get('/roles-permissions', [RolePermissionController::class, 'index'])->name('roles-permissions');
 
+        // Role CRUD
+        Route::post('/roles', [RolePermissionController::class, 'storeRole'])->name('roles.store');
+        Route::put('/roles/{role}', [RolePermissionController::class, 'updateRole'])->name('roles.update');
+        Route::delete('/roles/{role}', [RolePermissionController::class, 'destroyRole'])->name('roles.destroy');
 
+        // Permission CRUD
+        Route::post('/permissions', [RolePermissionController::class, 'storePermission'])->name('permissions.store');
+        Route::delete('/permissions/{permission}', [RolePermissionController::class, 'destroyPermission'])->name('permissions.destroy');
+    });
 });
 
-
+// === OPERATOR Routes ===
 Route::middleware([
     'auth',
     'verified',
     PreventBackHistory::class,
     EnsureProfileComplete::class,
-    RoleMiddleware::class . ':operator,super-admin',
+    'role:operator|super-admin', // ✅ Spatie
 ])->prefix('operator')->name('operator.')->group(function () {
 
-    // Dashboard operator (pakai controller)
+    // Dashboard operator
     Route::get('/', [DashboardController::class, 'operatorIndex'])->name('dashboard');
 
     // Artikel operator
-    Route::get('/articles/create', [ArticleController::class, 'create'])->name('articles.create'); // URL lowercase
+    Route::get('/articles/create', [ArticleController::class, 'create'])->name('articles.create');
     Route::post('/articles', [ArticleController::class, 'store'])->name('articles.store');
     Route::get('/articles/mine', [ArticleController::class, 'mine'])->name('articles.mine');
     Route::get('/articles/{article}/edit', [ArticleController::class, 'edit'])->name('articles.edit');
@@ -141,10 +155,6 @@ Route::middleware([
     Route::post('/articles/{article}/edit-save', [ArticleController::class, 'saveEdit'])->name('articles.saveEdit');
     Route::delete('/articles/{article}', [ArticleController::class, 'destroy'])->name('articles.destroy');
 });
-
-
-
-
 
 // === Email Verification Routes ===
 Route::get('/email/verify', fn () => Inertia::render('Auth/VerifyEmail'))
@@ -161,13 +171,6 @@ Route::get('/email/verify/{id}/{hash}', VerifyEmailController::class)
 
 Route::get('/verified', fn () => Inertia::render('Auth/EmailVerified'))
     ->middleware('auth');
-
-
-
-
-
-
-
 
 // === Auth routes dari Laravel Breeze ===
 require __DIR__.'/auth.php';

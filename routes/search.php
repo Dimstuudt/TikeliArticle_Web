@@ -10,16 +10,22 @@ Route::get('/api/search-users', function(Request $request) {
 
     return User::query()
         ->where('name', 'like', "%{$q}%")
-        ->orWhere('role', 'like', "%{$q}%")
+        ->orWhereHas('roles', function($query) use ($q) {
+            $query->where('name', 'like', "%{$q}%");
+        })
         ->limit(5)
-        ->get(['id', 'name', 'role', 'bio', 'profile_photo_path', 'created_at'])
+        ->get()
         ->map(fn($user) => [
             'id' => $user->id,
             'name' => $user->name,
-            'role' => $user->role,
+            // 🔑 ambil role array dari spatie
+            'roles' => $user->getRoleNames(),
             'bio' => $user->bio,
-            'trusted_writer' => $user->trusted_writer,
-            'profile_photo_url' => $user->profile_photo_path ? asset('storage/' . $user->profile_photo_path) : null,
+            'trusted_writer' => $user->trusted_writer ?? false,
+            'profile_photo_url' => $user->profile_photo_path
+                ? asset('storage/' . $user->profile_photo_path)
+                : null,
             'created_at' => $user->created_at?->toDateString(),
         ]);
 });
+

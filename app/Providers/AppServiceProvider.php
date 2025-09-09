@@ -34,28 +34,33 @@ class AppServiceProvider extends ServiceProvider
         }
 
         Inertia::share([
-            // Data auth
+            // 🔐 Data auth user
             'auth' => fn () => [
-                'user' => Auth::check() ? array_merge(
-                    Auth::user()->only([
-                        'id',
-                        'name',
-                        'email',
-                        'username',
-                        'profile_photo_path',
-                        'trusted_writer'
-                    ]),
-                    ['profile_photo_url' => Auth::user()->profile_photo_url]
-                ) : null,
+                'user' => Auth::check()
+                    ? array_merge(
+                        Auth::user()->only([
+                            'id',
+                            'name',
+                            'email',
+                            'username',
+                            'profile_photo_path',
+                            'trusted_writer',
+                        ]),
+                        [
+                            'profile_photo_url' => Auth::user()->profile_photo_url,
+                            'roles' => Auth::user()->getRoleNames()->toArray(),              // ✅ Spatie roles
+                            'permissions' => Auth::user()->getAllPermissions()->pluck('name')->toArray(), // ✅ Spatie permissions
+                        ]
+                    )
+                    : null,
             ],
 
-            // Statistik global
+            // 📊 Statistik global
             'stats' => fn () => [
                 [
                     'id' => 'articles',
                     'label' => 'Artikel',
-                    'display' => \App\Models\Article::where('status', 'approved')->count(),
-
+                    'display' => Article::where('status', 'approved')->count(),
                 ],
                 [
                     'id' => 'users',
