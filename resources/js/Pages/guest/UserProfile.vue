@@ -24,12 +24,13 @@ const now = ref(new Date())
   <PublicLayout>
 <!-- Background -->
 <section class="relative w-full h-48 bg-gray-200 overflow-hidden">
-  <img
-    v-if="user.background_photo_path"
-    :src="`/storage/${user.background_photo_path}`"
-    alt="Background"
-    class="absolute inset-0 w-full h-full object-cover"
-  />
+<img
+  v-if="user.background_photo_path"
+  :src="user.background_photo_path"
+  alt="Background"
+  class="absolute inset-0 w-full h-full object-cover"
+/>
+
 </section>
 
 <!-- Profil -->
@@ -45,16 +46,12 @@ const now = ref(new Date())
         <div
           class="w-28 h-28 border-4 border-white dark:border-gray-800 rounded-full overflow-hidden shadow -mt-16"
         >
-          <img
-            :src="
-              user.profile_photo_path
-                ? `/storage/${user.profile_photo_path}`
-                : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`
-            "
-            alt="Foto Profil"
-            class="w-full h-full object-cover"
-          />
-        </div>
+     <img
+  :src="user.profile_photo_url"
+  alt="Foto Profil"
+  class="w-full h-full object-cover rounded-full"
+/>
+</div>
 
         <!-- Info teks -->
         <div class="flex-1">
@@ -71,13 +68,24 @@ const now = ref(new Date())
   </span>
 </h2>
 
-          <!-- Role -->
-          <span
-            class="inline-block mt-1 px-3 py-0.5 text-xs font-semibold rounded-full
-                   bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-200"
-          >
-            {{ user.role }}
-          </span>
+<!-- Role -->
+<span
+  v-if="user.roles_array && user.roles_array.length"
+  class="inline-block mt-1 px-3 py-0.5 text-xs font-semibold rounded-full
+         bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-200"
+>
+  {{ user.roles_array[0] }}
+</span>
+
+<!-- Fallback kalau ga ada role -->
+<span
+  v-else
+  class="inline-block mt-1 px-3 py-0.5 text-xs font-semibold rounded-full
+         bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
+>
+  No Role
+</span>
+
 
           <!-- Bio -->
           <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">

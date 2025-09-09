@@ -48,6 +48,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     protected $appends = [
         'profile_photo_url',
+        'roles_array', // 🔥 tambahkan roles_array
     ];
 
     /**
@@ -88,5 +89,12 @@ public function articleLikes()
 {
     return $this->hasManyThrough(ArticleLike::class, Article::class);
 }
+
+// Tambahkan di User.php
+public function getRolesArrayAttribute()
+{
+    return $this->getRoleNames(); // 🔥 collection of strings
+}
+
 }
 
