@@ -299,7 +299,7 @@ html {
     'bg-blue-100 text-blue-700 border border-blue-300 dark:bg-blue-900 dark:text-blue-300 dark:border-blue-700':
       user.roles[0] === 'operator',
     'bg-purple-100 text-purple-800 border border-purple-300 dark:bg-purple-900 dark:text-purple-300 dark:border-purple-700':
-      user.roles[0] === 'super admin',
+      user.roles[0] === 'super-admin',
   }"
 >
   {{ user.roles[0] }}
@@ -343,12 +343,12 @@ html {
            dark:bg-gradient-to-r dark:from-yellow-600 dark:via-yellow-700 dark:to-yellow-800
            dark:text-yellow-100 dark:border-yellow-700 shadow-md"
   >
-    🔑 Full Access
+    🔑 Article Management
   </span>
 </template>
 
 <!-- Super Admin badge -->
-<template v-else-if="user.roles[0] === 'super admin'">
+<template v-else-if="user.roles[0] === 'super-admin'">
   <span
     class="inline-flex items-center px-2 py-0.5 text-[11px] font-semibold rounded-lg
            bg-gradient-to-r from-purple-200 via-purple-400 to-purple-500 text-purple-900
@@ -364,7 +364,7 @@ html {
             <!-- Tanggal Bergabung -->
 
 <p class="text-[11px] text-gray-400 dark:text-gray-500 italic">
-  Bergabung {{ user.joined_at }}
+  Joined {{ user.joined_at }}
 </p>
           </div>
         </div>
