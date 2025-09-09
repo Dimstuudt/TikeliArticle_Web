@@ -187,7 +187,7 @@ html {
 
     <!-- Tampilkan hanya kalau guest -->
     <WelcomePopup v-if="!props.auth?.user" />
-  
+
 
     <!-- Subtitle -->
     <p
@@ -253,13 +253,11 @@ html {
             <div
               class="w-16 h-16 flex-shrink-0 rounded-full ring-2 ring-offset-2 overflow-hidden bg-gradient-to-tr from-blue-400 to-cyan-500 p-[2px]"
             >
-              <img
-                :src="user.profile_photo_path
-                  ? `/storage/${user.profile_photo_path}`
-                  : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`"
-                alt="Foto Profil"
-                class="w-full h-full rounded-full object-cover"
-              />
+             <img
+  :src="user.profile_photo_url"
+  alt="Foto Profil"
+  class="w-full h-full rounded-full object-cover"
+/>
             </div>
 
             <!-- Nama & Bio -->
@@ -291,55 +289,83 @@ html {
           <div class="mt-5 flex flex-col flex-1 justify-end">
             <!-- Badges -->
             <div class="flex flex-wrap gap-2 mb-2">
-              <!-- Role -->
-              <span
-                class="inline-block px-2 py-0.5 text-[11px] font-medium rounded-lg"
-                :class="{
-                  'bg-green-100 text-green-800 border border-green-300 dark:bg-green-900 dark:text-green-300 dark:border-green-700': user.role === 'admin',
-                  'bg-blue-100 text-blue-700 border border-blue-300 dark:bg-blue-900 dark:text-blue-300 dark:border-blue-700': user.role === 'operator',
-                }"
-              >
-                {{ user.role }}
-              </span>
+             <!-- Role -->
+<span
+  v-if="user.roles && user.roles.length"
+  class="inline-block px-2 py-0.5 text-[11px] font-medium rounded-lg"
+  :class="{
+    'bg-green-100 text-green-800 border border-green-300 dark:bg-green-900 dark:text-green-300 dark:border-green-700':
+      user.roles[0] === 'admin',
+    'bg-blue-100 text-blue-700 border border-blue-300 dark:bg-blue-900 dark:text-blue-300 dark:border-blue-700':
+      user.roles[0] === 'operator',
+    'bg-purple-100 text-purple-800 border border-purple-300 dark:bg-purple-900 dark:text-purple-300 dark:border-purple-700':
+      user.roles[0] === 'super admin',
+  }"
+>
+  {{ user.roles[0] }}
+</span>
 
-              <!-- Operator stats -->
-              <template v-if="user.role === 'operator'">
-                <span
-                  class="inline-flex items-center px-2 py-0.5 text-[11px] font-medium rounded-lg
-                             bg-pink-100 text-pink-700 border border-pink-300
-                             dark:bg-pink-900 dark:text-pink-300 dark:border-pink-700"
-                >
-                  ❤️ {{ user.total_likes || 0 }}
-                </span>
-                <span
-                  class="inline-flex items-center px-2 py-0.5 text-[11px] font-medium rounded-lg
-                             bg-yellow-100 text-yellow-700 border border-yellow-300
-                             dark:bg-yellow-900 dark:text-yellow-300 dark:border-yellow-700"
-                >
-                  🔥 {{ user.total_hits || 0 }}
-                </span>
-              </template>
+<!-- ✅ fallback kalau belum ada role -->
+<span
+  v-else
+  class="inline-block px-2 py-0.5 text-[11px] font-medium rounded-lg
+         bg-gray-100 text-gray-500 border border-gray-300
+         dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700"
+>
+  No Role
+</span>
 
-              <!-- Admin badge -->
-              <template v-else-if="user.role === 'admin'">
-                <span
-                  class="inline-flex items-center px-2 py-0.5 text-[11px] font-semibold rounded-lg
-                         bg-gradient-to-r from-yellow-200 via-yellow-400 to-yellow-500 text-yellow-900
-                         border border-yellow-300
-                         dark:bg-gradient-to-r dark:from-yellow-600 dark:via-yellow-700 dark:to-yellow-800
-                         dark:text-yellow-100 dark:border-yellow-700 shadow-md"
-                >
-                  🔑 Full Access
-                </span>
+
+<!-- Operator stats -->
+<template v-if="user.roles[0] === 'operator'">
+  <span
+    class="inline-flex items-center px-2 py-0.5 text-[11px] font-medium rounded-lg
+               bg-pink-100 text-pink-700 border border-pink-300
+               dark:bg-pink-900 dark:text-pink-300 dark:border-pink-700"
+  >
+    ❤️ {{ user.total_likes || 0 }}
+  </span>
+  <span
+    class="inline-flex items-center px-2 py-0.5 text-[11px] font-medium rounded-lg
+               bg-yellow-100 text-yellow-700 border border-yellow-300
+               dark:bg-yellow-900 dark:text-yellow-300 dark:border-yellow-700"
+  >
+    🔥 {{ user.total_hits || 0 }}
+  </span>
+</template>
+
+<!-- Admin badge -->
+<template v-else-if="user.roles[0] === 'admin'">
+  <span
+    class="inline-flex items-center px-2 py-0.5 text-[11px] font-semibold rounded-lg
+           bg-gradient-to-r from-yellow-200 via-yellow-400 to-yellow-500 text-yellow-900
+           border border-yellow-300
+           dark:bg-gradient-to-r dark:from-yellow-600 dark:via-yellow-700 dark:to-yellow-800
+           dark:text-yellow-100 dark:border-yellow-700 shadow-md"
+  >
+    🔑 Full Access
+  </span>
+</template>
+
+<!-- Super Admin badge -->
+<template v-else-if="user.roles[0] === 'super admin'">
+  <span
+    class="inline-flex items-center px-2 py-0.5 text-[11px] font-semibold rounded-lg
+           bg-gradient-to-r from-purple-200 via-purple-400 to-purple-500 text-purple-900
+           border border-purple-300
+           dark:bg-gradient-to-r dark:from-purple-600 dark:via-purple-700 dark:to-purple-800
+           dark:text-purple-100 dark:border-purple-700 shadow-md"
+  >
+    👑 Super Power
+  </span>
               </template>
             </div>
 
             <!-- Tanggal Bergabung -->
-            <p
-              class="text-[11px] text-gray-400 dark:text-gray-500 italic"
-            >
-              Bergabung {{ dayjs(user.created_at).fromNow() }}
-            </p>
+
+<p class="text-[11px] text-gray-400 dark:text-gray-500 italic">
+  Bergabung {{ user.joined_at }}
+</p>
           </div>
         </div>
       </Link>

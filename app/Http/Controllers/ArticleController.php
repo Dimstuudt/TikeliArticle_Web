@@ -267,11 +267,11 @@ class ArticleController extends Controller
         ]);
     }
 
-  public function landing(Request $request)
+public function landing(Request $request)
 {
     // Query utama untuk artikel paginasi
     $query = Article::where('status', 'approved')
-        ->with('user')
+        ->with('user.roles') // 🔥 load roles langsung
         ->latest();
 
     // Filter pencarian
@@ -288,46 +288,58 @@ class ArticleController extends Controller
         $query->where('category', $request->category);
     }
 
-    // Pagination 6 per halaman + query string
+    // Pagination 8 per halaman + query string
     $articles = $query->paginate(8)
         ->withQueryString()
         ->through(fn($article) => [
-            'id'              => $article->id,
-            'title'           => $article->title,
-            'summary'         => $article->summary,
-            'content'         => $article->content,
-            'category'        => $article->category,
-            'hits'            => $article->hits,
-            'views'           => DB::table('article_views')->where('article_id', $article->id)->count(),
-            'likes'           => $article->likes()->count(), // 🔥 jumlah like
-            'comments_count'  => $article->comments()->count(), // 🔥 jumlah komentar
-            'cover'           => $article->cover ? asset('storage/' . $article->cover) : null,
-            'updated_at'      => $article->updated_at->toISOString(),
-            'created_at'      => $article->created_at->diffForHumans(),
-            'trusted_writer'  => $article->user->trusted_writer,
-            'author'          => [
-                'id'                 => $article->user->id,
-                'name'               => $article->user->name,
-                'role'               => $article->user->role,
-                'bio'                => $article->user->bio, // 🔥 tambahan bio author
-                'profile_photo_path' => $article->user->profile_photo_path
-                    ? asset('storage/' . $article->user->profile_photo_path)
-                    : null,
+            'id'             => $article->id,
+            'title'          => $article->title,
+            'summary'        => $article->summary,
+            'content'        => $article->content,
+            'category'       => $article->category,
+            'hits'           => $article->hits,
+            'views'          => DB::table('article_views')->where('article_id', $article->id)->count(),
+            'likes'          => $article->likes()->count(),
+            'comments_count' => $article->comments()->count(),
+            'cover'          => $article->cover ? asset('storage/' . $article->cover) : null,
+            'updated_at'     => $article->updated_at->toISOString(),
+            'created_at'     => $article->created_at->diffForHumans(),
+            'trusted_writer' => $article->user->trusted_writer,
+            'author'         => [
+                'id'                => $article->user->id,
+                'name'              => $article->user->name,
+                'roles'             => $article->user->getRoleNames(),
+                'bio'               => $article->user->bio,
+                'profile_photo_url' => $article->user->profile_photo_url, // ✅ konsisten accessor
+                'joined_at'         => $article->user->created_at->diffForHumans(),
             ],
         ]);
 
-   // 🔹 Ambil 4 user terbaru + statistiknya
-$latestUsers = User::query()
-    ->withCount(['articleLikes as total_likes']) // total like dari semua artikel user
-    ->withSum('articles as total_hits', 'hits') // jumlah view dari semua artikel user
-    ->latest()
-    ->take(4)
-    ->get(['id', 'name', 'role', 'bio', 'profile_photo_path', 'trusted_writer']); // ✅ tambahin trusted_writer
+    // 🔹 Ambil 4 user terbaru + statistiknya
+    $latestUsers = User::query()
+        ->with('roles')
+        ->withCount(['articleLikes as total_likes'])
+        ->withSum('articles as total_hits', 'hits')
+        ->latest()
+        ->take(4)
+        ->get(['id', 'name', 'bio', 'profile_photo_path', 'trusted_writer', 'created_at'])
+        ->map(function ($user) {
+            return [
+                'id'                => $user->id,
+                'name'              => $user->name,
+                'bio'               => $user->bio,
+                'profile_photo_url' => $user->profile_photo_url, // ✅ konsisten accessor
+                'trusted_writer'    => $user->trusted_writer,
+                'total_likes'       => $user->total_likes,
+                'total_hits'        => $user->total_hits,
+                'roles'             => $user->getRoleNames(),
+                'joined_at'         => $user->created_at->diffForHumans(),
+            ];
+        });
 
-
-    // 🔹 Ambil 3 artikel terhits berdasarkan kolom hits
+    // 🔹 Ambil 3 artikel terhits
     $topArticles = Article::where('status', 'approved')
-        ->with('user')
+        ->with('user.roles')
         ->orderByDesc('hits')
         ->take(3)
         ->get()
@@ -335,24 +347,22 @@ $latestUsers = User::query()
             'id'             => $article->id,
             'title'          => $article->title,
             'summary'        => $article->summary,
-            'likes'          => $article->likes()->count(), // 🔥 jumlah like
-            'comments_count' => $article->comments()->count(), // 🔥 jumlah komentar
+            'likes'          => $article->likes()->count(),
+            'comments_count' => $article->comments()->count(),
             'cover'          => $article->cover ? asset('storage/' . $article->cover) : null,
             'trusted_writer' => $article->user->trusted_writer,
             'hits'           => $article->hits,
             'created_at'     => $article->created_at->toISOString(),
             'updated_at'     => $article->updated_at->toISOString(),
             'author'         => [
-                'id'                 => $article->user->id,
-                'name'               => $article->user->name,
-                'role'               => $article->user->role,
-                'bio'                => $article->user->bio, // 🔥 bio ditambah
-                'profile_photo_path' => $article->user->profile_photo_path
-                    ? asset('storage/' . $article->user->profile_photo_path)
-                    : null,
+                'id'                => $article->user->id,
+                'name'              => $article->user->name,
+                'roles'             => $article->user->getRoleNames(),
+                'bio'               => $article->user->bio,
+                'profile_photo_url' => $article->user->profile_photo_url, // ✅ konsisten accessor
+                'joined_at'         => $article->user->created_at->diffForHumans(),
             ],
-             // 🔥 langsung ambil dari kolom category
-        'category' => $article->category ?? 'UNKNOWN',
+            'category' => $article->category ?? 'UNKNOWN',
         ]);
 
     return Inertia::render('guest/Welcome', [
@@ -365,6 +375,7 @@ $latestUsers = User::query()
         ],
     ]);
 }
+
 
 
   // Guest - Lihat Artikel

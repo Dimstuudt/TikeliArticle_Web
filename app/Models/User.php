@@ -74,6 +74,8 @@ class User extends Authenticatable implements MustVerifyEmail
             : 'https://ui-avatars.com/api/?name=' . urlencode($this->name);
     }
 
+
+
 // artikel
 public function articles()
 {
