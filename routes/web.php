@@ -58,7 +58,7 @@ Route::middleware([
 ])->get('/dashboard', function () {
     $user = auth()->user();
     return redirect()->route(
-        $user->hasRole('admin') ? 'admin.dashboard' : 'operator.dashboard'
+        $user->hasAnyRole('admin', 'super-admin') ? 'admin.dashboard' : 'operator.dashboard'
     );
 })->name('dashboard');
 

@@ -48,7 +48,9 @@ const saveDraft = () => {
     <Head title="Buat Artikel" />
 
     <template #header>
-  <div class="flex items-center justify-between bg-blue-100 border border-blue-200 rounded-lg px-4 py-3 shadow-sm">
+  <!-- Wrapper full width -->
+  <div class="w-full flex justify-between items-center bg-blue-100 border border-blue-200 rounded-lg px-4 py-3 shadow-sm">
+
     <!-- Judul -->
     <div class="flex items-center gap-2">
       <svg xmlns="http://www.w3.org/2000/svg"
@@ -59,7 +61,7 @@ const saveDraft = () => {
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
           d="M5.121 17.804A13.937 13.937 0 0112 15c2.21 0 4.29.534 6.121 1.475M15 10a3 3 0 11-6 0 3 3 0 016 0z" />
       </svg>
-      <h2 class="text-lg sm:text-xl font-semibold text-blue-800">Buat Artikel</h2>
+      <h2 class="text-lg sm:text-xl font-semibold text-blue-800 truncate">Buat Artikel</h2>
     </div>
 
     <!-- Tombol ke Artikel -->
@@ -71,6 +73,7 @@ const saveDraft = () => {
     </Link>
   </div>
 </template>
+
 
 
     <div class="py-8">
