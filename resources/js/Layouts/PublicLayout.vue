@@ -13,10 +13,20 @@ const user = computed(() => page.props.auth?.user || null)
 
 const getDashboardRoute = () => {
   if (!user.value) return "/"
-  return user.value.role === "admin"
-    ? route("admin.dashboard")
-    : route("operator.dashboard")
+
+  const roles = user.value.roles?.map(r => r.toLowerCase()) || []
+
+  if (roles.includes("admin") || roles.includes("super-admin")) {
+    return route("admin.dashboard")
+  }
+
+  if (roles.includes("operator")) {
+    return route("operator.dashboard")
+  }
+
+  return "/"
 }
+
 
 // ===== Dark Mode =====
 const isDark = ref(localStorage.getItem("theme") === "dark")
@@ -66,7 +76,7 @@ const closePopup = () => {
 const handleSubmit = (data) => {
   console.log("Nama:", data.name)
   console.log("Laporan:", data.laporan)
- 
+
 }
 
 

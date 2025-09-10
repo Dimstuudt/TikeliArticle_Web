@@ -98,7 +98,8 @@ Route::middleware([
         Route::patch('/users/{user}/toggle-trusted', [UserController::class, 'toggleTrusted'])
             ->name('users.toggleTrusted');
     });
-
+        Route::get('/articles/approved', [ApprovedArticleController::class, 'index'])
+            ->name('approved-articles.index');
     // ===============================
     // 🔹 ARTICLE MANAGEMENT (butuh permission manage articles)
     // ===============================
@@ -110,8 +111,7 @@ Route::middleware([
         Route::delete('/articles/{id}', [ArticleController::class, 'destroy'])->name('articles.destroy');
 
         // Approved
-        Route::get('/articles/approved', [ApprovedArticleController::class, 'index'])
-            ->name('approved-articles.index');
+
         Route::delete('/articles/approved/{id}', [ApprovedArticleController::class, 'destroy'])
             ->name('approved-articles.destroy');
     });
