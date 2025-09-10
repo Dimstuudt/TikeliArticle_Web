@@ -112,6 +112,7 @@ const submit = () => {
       <!-- Tombol Login -->
       <div>
         <PrimaryButton
+        type="submit"
           class="w-full justify-center"
           :class="{ 'opacity-25': form.processing }"
           :disabled="form.processing"

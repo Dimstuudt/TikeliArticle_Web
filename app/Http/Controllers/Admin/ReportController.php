@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use App\Models\Report;
 
 class ReportController extends Controller
 {
@@ -17,6 +18,15 @@ class ReportController extends Controller
             'reports' => $reports,
         ]);
     }
+
+    public function destroy(Report $report)
+{
+    $report->delete();
+
+    return redirect()->route('admin.reports.index')
+        ->with('success', 'Laporan berhasil dihapus.');
+}
+
 }
 
 

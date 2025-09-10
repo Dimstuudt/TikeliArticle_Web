@@ -77,9 +77,14 @@ Route::middleware([
     // ===============================
     // 🔹 REPORTS (butuh permission view reports)
     // ===============================
-    Route::middleware('permission:view reports')->group(function () {
-        Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
-    });
+Route::middleware(['permission:view reports'])->group(function () {
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+});
+
+Route::middleware(['permission:delete reports'])->group(function () {
+    Route::delete('/reports/{report}', [ReportController::class, 'destroy'])->name('reports.destroy');
+});
+
 
     // ===============================
     // 🔹 USER MANAGEMENT (butuh permission manage users)
