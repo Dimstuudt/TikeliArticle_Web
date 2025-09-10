@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Thread;
 use App\Models\Post;
 use App\Models\User;
-use App\Models\ArticleView; // pastikan import
+use App\Models\ArticleView;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -25,17 +25,12 @@ class ForumController extends Controller
             'articles as approved_count' => fn($q) => $q->where('status', 'approved'),
             'articleLikes as total_likes',
         ])
-        ->with(['articles' => fn($q) => $q->withCount('comments')])
+        ->with(['articles' => fn($q) => $q->withCount('comments'), 'roles']) // ← tambahkan roles
         ->get()
         ->map(function ($u) use ($p) {
-            // Ambil total hits dari kolom articles.hits
             $total_hits = $u->articles->sum('hits');
-
-            // Ambil total views hanya dari user login (tabel article_views)
             $articleIds = $u->articles->pluck('id');
             $total_views = ArticleView::whereIn('article_id', $articleIds)->count();
-
-            // Total comments dari withCount('comments')
             $total_comments = $u->articles->sum('comments_count');
 
             $u->total_points =
@@ -44,6 +39,9 @@ class ForumController extends Controller
                 ($u->total_likes ?? 0) * $p['like'] +
                 ($total_hits ?? 0)     * $p['hit'] +
                 ($total_comments ?? 0) * $p['comment'];
+
+            // Ambil nama role pertama dari Spatie
+            $u->role = $u->roles->pluck('name')->first() ?? 'User';
 
             return $u;
         })
@@ -54,6 +52,7 @@ class ForumController extends Controller
         return Inertia::render('Forum/Index', [
             'threads' => $threads,
             'leaderboard' => $leaderboard,
+            'authUserId' => auth()->id(), // buat highlight di frontend
         ]);
     }
 
@@ -83,7 +82,6 @@ class ForumController extends Controller
             'title'   => $request->title,
         ]);
 
-        // Post pertama = isi thread
         Post::create([
             'thread_id' => $thread->id,
             'user_id'   => auth()->id(),
