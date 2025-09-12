@@ -1,15 +1,15 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import { Head, router, Link } from '@inertiajs/vue3'
-import { Eye, Trash2, Tag } from 'lucide-vue-next'
+import { Eye, Trash2, Tag, Archive } from 'lucide-vue-next'
 
 const props = defineProps({
   articles: Array
 })
 
-// Hapus artikel
+// Hapus artikel (soft delete)
 function deleteArticle(id) {
-  if (confirm('Yakin mau hapus artikel ini?')) {
+  if (confirm('Yakin mau hapus artikel ini (soft delete)?')) {
     router.delete(route('admin.approved-articles.destroy', id), {
       preserveScroll: true
     })
@@ -30,38 +30,62 @@ function formatDate(date) {
   <Head title="Artikel Disetujui" />
 
   <AuthenticatedLayout>
-  <template #header>
-  <!-- Wrapper full width -->
-  <div class="w-full flex justify-between items-center bg-blue-100 border border-blue-200 rounded-lg px-4 py-3 shadow-sm">
+    <template #header>
+      <!-- Wrapper full width -->
+      <div
+        class="w-full flex justify-between items-center bg-blue-100 border border-blue-200 rounded-lg px-4 py-3 shadow-sm"
+      >
+        <!-- Judul -->
+        <div class="flex items-center gap-2">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-6 w-6 text-blue-600"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M5.121 17.804A13.937 13.937 0 0112 15c2.21 0 4.29.534 6.121 1.475M15 10a3 3 0 11-6 0 3 0 016 0z"
+            />
+          </svg>
+          <h2 class="text-lg sm:text-xl font-semibold text-blue-800 truncate">
+            Approved Articles
+          </h2>
+        </div>
 
-    <!-- Judul -->
-    <div class="flex items-center gap-2">
-      <svg xmlns="http://www.w3.org/2000/svg"
-           class="h-6 w-6 text-blue-600"
-           fill="none"
-           viewBox="0 0 24 24"
-           stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M5.121 17.804A13.937 13.937 0 0112 15c2.21 0 4.29.534 6.121 1.475M15 10a3 3 0 11-6 0 3 3 0 016 0z" />
-      </svg>
-      <h2 class="text-lg sm:text-xl font-semibold text-blue-800 truncate">Aproved Article</h2>
-    </div>
+        <!-- Tombol kanan -->
+        <div class="flex items-center gap-2">
+          <!-- Link ke Trashed -->
+          <Link
+            :href="route('admin.approved-articles.trashed')"
+            class="inline-flex items-center gap-2 bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 text-sm font-medium rounded-lg shadow transition"
+          >
+            <Archive class="w-4 h-4" /> Trash
+          </Link>
 
-    <!-- Tombol ke Artikel -->
-    <Link
-      :href="route('guest.welcome')"
-      class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 text-sm font-medium rounded-lg shadow transition"
-    >
-      📖 Lihat Artikel
-    </Link>
-  </div>
-</template>
+          <!-- Link ke Artikel Publik -->
+          <Link
+            :href="route('guest.welcome')"
+            class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 text-sm font-medium rounded-lg shadow transition"
+          >
+            📖 Lihat Artikel
+          </Link>
+        </div>
+      </div>
+    </template>
 
     <div class="py-6">
       <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-        <div class="bg-white shadow-lg rounded-xl overflow-hidden border border-gray-200">
+        <div
+          class="bg-white dark:bg-gray-900 shadow-lg rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700"
+        >
           <table class="w-full text-sm">
-            <thead class="bg-gray-50 border-b border-gray-200 text-gray-700">
+            <thead
+              class="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300"
+            >
               <tr>
                 <th class="p-3 text-left font-medium">Judul</th>
                 <th class="p-3 text-left font-medium">Kategori</th>
@@ -80,10 +104,10 @@ function formatDate(date) {
               <tr
                 v-for="article in articles"
                 :key="article.id"
-                class="hover:bg-gray-50 transition duration-200 border-b border-gray-100"
+                class="hover:bg-gray-50 dark:hover:bg-gray-800 transition duration-200 border-b border-gray-100 dark:border-gray-700"
               >
                 <!-- Judul -->
-                <td class="p-3 font-medium text-gray-800">
+                <td class="p-3 font-medium text-gray-800 dark:text-gray-100">
                   {{ article.title }}
                 </td>
 
@@ -96,7 +120,7 @@ function formatDate(date) {
                 </td>
 
                 <!-- Hits -->
-                <td class="p-3 text-left text-gray-600">
+                <td class="p-3 text-left text-gray-600 dark:text-gray-300">
                   <div class="flex items-center gap-1">
                     <Eye class="w-4 h-4 text-blue-500" />
                     <span>{{ article.hits }}</span>
@@ -104,7 +128,7 @@ function formatDate(date) {
                 </td>
 
                 <!-- Tanggal -->
-                <td class="p-3 text-left text-gray-500">
+                <td class="p-3 text-left text-gray-500 dark:text-gray-400">
                   {{ formatDate(article.created_at) }}
                 </td>
 
@@ -121,7 +145,10 @@ function formatDate(date) {
 
               <!-- Jika Kosong -->
               <tr v-if="articles.length === 0">
-                <td colspan="5" class="text-center p-6 text-gray-500 italic">
+                <td
+                  colspan="5"
+                  class="text-center p-6 text-gray-500 italic dark:text-gray-400"
+                >
                   Tidak ada artikel disetujui
                 </td>
               </tr>

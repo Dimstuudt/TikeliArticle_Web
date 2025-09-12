@@ -78,8 +78,10 @@ class RegisteredUserController extends Controller
             'username' => $request->username,
             'email'    => $request->email,
             'password' => Hash::make($request->password),
-            'role'     => 'operator', // default role
         ]);
+
+        // ✅ Beri role default "operator" pake Spatie
+        $user->assignRole('operator');
 
         event(new Registered($user));
         Auth::login($user);

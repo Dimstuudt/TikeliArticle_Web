@@ -13,7 +13,7 @@ class UserController extends Controller
     public function index()
     {
         return Inertia::render('Admin/Users', [
-            'users' => User::with('roles', 'permissions') // ✅ load roles + permissions
+            'users' => User::with('roles', 'permissions')
                 ->latest()
                 ->get()
                 ->map(function ($user) {
@@ -22,8 +22,8 @@ class UserController extends Controller
                         'name'           => $user->name,
                         'email'          => $user->email,
                         'username'       => $user->username,
-                        'roles'          => $user->getRoleNames(),        // ✅ array of strings
-                        'permissions'    => $user->getPermissionNames(),  // ✅ array of strings
+                        'roles'          => $user->getRoleNames(),
+                        'permissions'    => $user->getPermissionNames(),
                         'is_active'      => $user->is_active,
                         'trusted_writer' => $user->trusted_writer,
                         'created_at'     => $user->created_at?->toDateString(),
@@ -35,16 +35,16 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name'            => 'required|string|max:255',
-            'email'           => 'required|email|unique:users,email',
-            'username'        => 'required|string|max:255|unique:users,username',
-            'password'        => 'required|string|min:8',
-            'roles'           => 'required|array',
-            'roles.*'         => 'string|exists:roles,name',
-            'permissions'     => 'nullable|array',
-            'permissions.*'   => 'string|exists:permissions,name',
-            'is_active'       => 'required|boolean',
-            'trusted_writer'  => 'boolean',
+            'name'           => 'required|string|max:255',
+            'email'          => 'required|email|unique:users,email',
+            'username'       => 'required|string|max:255|unique:users,username',
+            'password'       => 'required|string|min:8',
+            'roles'          => 'required|array',
+            'roles.*'        => 'string|exists:roles,name',
+            'permissions'    => 'nullable|array',
+            'permissions.*'  => 'string|exists:permissions,name',
+            'is_active'      => 'required|boolean',
+            'trusted_writer' => 'boolean',
         ]);
 
         $user = User::create([
@@ -56,7 +56,6 @@ class UserController extends Controller
             'trusted_writer' => $validated['trusted_writer'] ?? false,
         ]);
 
-        // ✅ assign roles & permissions Spatie
         $user->assignRole($validated['roles']);
         if (!empty($validated['permissions'])) {
             $user->givePermissionTo($validated['permissions']);
@@ -96,7 +95,6 @@ class UserController extends Controller
 
         $user->update($data);
 
-        // ✅ sync roles & permissions Spatie
         $user->syncRoles($validated['roles']);
         $user->syncPermissions($validated['permissions'] ?? []);
 
@@ -111,7 +109,36 @@ class UserController extends Controller
 
         return redirect()
             ->route('admin.users')
-            ->with('success', 'User berhasil dihapus.');
+            ->with('success', 'User berhasil dihapus (tersimpan di trash).');
+    }
+
+    public function trashed()
+    {
+        $users = User::onlyTrashed()->latest()->get();
+
+        return Inertia::render('Admin/Users/Trashed', [
+            'users' => $users,
+        ]);
+    }
+
+    public function restore($id)
+    {
+        $user = User::onlyTrashed()->findOrFail($id);
+        $user->restore();
+
+        return redirect()
+            ->route('admin.users.trashed')
+            ->with('success', 'User berhasil direstore.');
+    }
+
+    public function forceDelete($id)
+    {
+        $user = User::onlyTrashed()->findOrFail($id);
+        $user->forceDelete();
+
+        return redirect()
+            ->route('admin.users.trashed')
+            ->with('success', 'User dihapus permanen.');
     }
 
     public function toggleActive(User $user)

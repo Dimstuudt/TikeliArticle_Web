@@ -13,7 +13,7 @@ use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\ApprovedArticleController;
-use App\Http\Controllers\Admin\RolePermissionController; // ✅ Tambahan
+use App\Http\Controllers\Admin\RolePermissionController;
 
 // Middleware
 use App\Http\Middleware\PreventBackHistory;
@@ -68,64 +68,71 @@ Route::middleware([
     'verified',
     PreventBackHistory::class,
     EnsureProfileComplete::class,
-    'role:admin|super-admin', // Role tetap, tapi nanti cek juga permission
+    'role:admin|super-admin',
 ])->prefix('admin')->name('admin.')->group(function () {
 
-    // Dashboard (bisa diakses semua admin)
+    // Dashboard
     Route::get('/', [DashboardController::class, 'adminIndex'])->name('dashboard');
 
     // ===============================
-    // 🔹 REPORTS (butuh permission view reports)
+    // 🔹 REPORTS
     // ===============================
-Route::middleware(['permission:view reports'])->group(function () {
-    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
-});
-
-Route::middleware(['permission:delete reports'])->group(function () {
-    Route::delete('/reports/{report}', [ReportController::class, 'destroy'])->name('reports.destroy');
-});
-
-
-    // ===============================
-    // 🔹 USER MANAGEMENT (butuh permission manage users)
-    // ===============================
-    Route::middleware('permission:manage users')->group(function () {
-        Route::get('/users', [UserController::class, 'index'])->name('users');
-        Route::post('/users', [UserController::class, 'store'])->name('users.store');
-        Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
-        Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
-
-        // Toggle aktif/nonaktif user
-        Route::patch('/users/{user}/toggle-active', [UserController::class, 'toggleActive'])
-            ->name('users.toggleActive');
-
-        // Toggle trusted writer
-        Route::patch('/users/{user}/toggle-trusted', [UserController::class, 'toggleTrusted'])
-            ->name('users.toggleTrusted');
+    Route::middleware(['permission:view reports'])->group(function () {
+        Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
     });
-        Route::get('/articles/approved', [ApprovedArticleController::class, 'index'])
-            ->name('approved-articles.index');
+    Route::middleware(['permission:delete reports'])->group(function () {
+        Route::delete('/reports/{report}', [ReportController::class, 'destroy'])->name('reports.destroy');
+    });
+
     // ===============================
-    // 🔹 ARTICLE MANAGEMENT (butuh permission manage articles)
+// 🔹 USER MANAGEMENT
+// ===============================
+Route::middleware('permission:manage users')->group(function () {
+    Route::get('/users', [UserController::class, 'index'])->name('users');
+    Route::post('/users', [UserController::class, 'store'])->name('users.store');
+    Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
+    Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+
+    // Toggle aktif/nonaktif & trusted writer
+    Route::patch('/users/{user}/toggle-active', [UserController::class, 'toggleActive'])->name('users.toggleActive');
+    Route::patch('/users/{user}/toggle-trusted', [UserController::class, 'toggleTrusted'])->name('users.toggleTrusted');
+
+    // 🔹 Trash & Restore
+    Route::get('/users/trashed', [UserController::class, 'trashed'])->name('users.trashed');
+    Route::put('/users/{id}/restore', [UserController::class, 'restore'])->name('users.restore');
+    Route::delete('/users/{id}/force', [UserController::class, 'forceDelete'])->name('users.forceDelete');
+});
+
+
+  // Approved Articles
+        Route::prefix('articles/approved')->name('approved-articles.')->group(function () {
+            Route::get('/', [ApprovedArticleController::class, 'index'])->name('index');
+            Route::delete('/{id}', [ApprovedArticleController::class, 'destroy'])->name('destroy');
+
+            // Trashed (soft deleted)
+            Route::get('/trashed', [ApprovedArticleController::class, 'trashed'])->name('trashed');
+            Route::put('/{id}/restore', [ApprovedArticleController::class, 'restore'])->name('restore');
+            Route::delete('/{id}/force', [ApprovedArticleController::class, 'forceDelete'])->name('forceDelete');
+        });
+
+    // ===============================
+    // 🔹 ARTICLE MANAGEMENT
     // ===============================
     Route::middleware('permission:manage articles')->group(function () {
+        // Semua artikel
         Route::get('/articles', [ArticleController::class, 'index'])->name('articles.index');
         Route::put('/articles/{article}/approve', [ArticleController::class, 'approve'])->name('articles.approve');
         Route::put('/articles/{article}/reject', [ArticleController::class, 'reject'])->name('articles.reject');
         Route::get('/articles/{article}', [ArticleController::class, 'show'])->name('articles.show');
         Route::delete('/articles/{id}', [ArticleController::class, 'destroy'])->name('articles.destroy');
 
-        // Approved
 
-        Route::delete('/articles/approved/{id}', [ApprovedArticleController::class, 'destroy'])
-            ->name('approved-articles.destroy');
     });
 
     // ===============================
-    // 🔹 ROLE & PERMISSION MANAGEMENT (butuh permission manage permissions)
+    // 🔹 ROLE & PERMISSION MANAGEMENT
     // ===============================
     Route::middleware('permission:manage permissions')->group(function () {
-        // Halaman utama
         Route::get('/roles-permissions', [RolePermissionController::class, 'index'])->name('roles-permissions');
 
         // Role CRUD
@@ -145,10 +152,10 @@ Route::middleware([
     'verified',
     PreventBackHistory::class,
     EnsureProfileComplete::class,
-    'role:operator|super-admin', // ✅ Spatie
+    'role:operator|super-admin',
 ])->prefix('operator')->name('operator.')->group(function () {
 
-    // Dashboard operator
+    // Dashboard
     Route::get('/', [DashboardController::class, 'operatorIndex'])->name('dashboard');
 
     // Artikel operator

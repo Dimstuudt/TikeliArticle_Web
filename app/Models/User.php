@@ -8,10 +8,12 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
+// 🔹 tambahin SoftDeletes
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
-    use HasApiTokens, HasFactory, Notifiable, HasRoles;
+    use HasApiTokens, HasFactory, Notifiable, HasRoles, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -26,9 +28,9 @@ class User extends Authenticatable implements MustVerifyEmail
         'role',
         'profile_photo_path',
         'google_id',
-        'is_active', // ✅ benar, hanya string
-        'bio', // ✅ tambahkan bio
-        'background_photo_path', // ✅ tambahkan background_photo_path
+        'is_active',
+        'bio',
+        'background_photo_path',
         'trusted_writer',
     ];
 
@@ -48,7 +50,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     protected $appends = [
         'profile_photo_url',
-        'roles_array', // 🔥 tambahkan roles_array
+        'roles_array',
     ];
 
     /**
@@ -61,7 +63,7 @@ class User extends Authenticatable implements MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'is_active' => 'boolean', // ✅ cast ke boolean
+            'is_active' => 'boolean',
         ];
     }
 
@@ -75,26 +77,20 @@ class User extends Authenticatable implements MustVerifyEmail
             : 'https://ui-avatars.com/api/?name=' . urlencode($this->name);
     }
 
+    // Artikel
+    public function articles()
+    {
+        return $this->hasMany(Article::class);
+    }
 
+    // Likes lewat artikel
+    public function articleLikes()
+    {
+        return $this->hasManyThrough(ArticleLike::class, Article::class);
+    }
 
-// artikel
-public function articles()
-{
-    return $this->hasMany(Article::class);
+    public function getRolesArrayAttribute()
+    {
+        return $this->getRoleNames();
+    }
 }
-
-
-// Likes lewat artikel
-public function articleLikes()
-{
-    return $this->hasManyThrough(ArticleLike::class, Article::class);
-}
-
-// Tambahkan di User.php
-public function getRolesArrayAttribute()
-{
-    return $this->getRoleNames(); // 🔥 collection of strings
-}
-
-}
-

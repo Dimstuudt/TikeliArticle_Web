@@ -8,29 +8,66 @@ use Inertia\Inertia;
 
 class ApprovedArticleController extends Controller
 {
-    // Menampilkan daftar artikel approved
+    // Menampilkan daftar artikel approved (belum dihapus)
     public function index()
     {
         $articles = Article::where('status', 'approved')
-    ->select('id', 'title','hits', 'created_at','category')
-    ->latest()
-    ->get();
-
+            ->select('id', 'title', 'hits', 'created_at', 'category')
+            ->latest()
+            ->get();
 
         return Inertia::render('Admin/Articles/Approved', [
-            'articles' => $articles
+            'articles' => $articles,
         ]);
     }
 
-    // Hapus artikel approved
-  public function destroy($id)
-{
-    $article = Article::where('status', 'approved')->findOrFail($id);
-    $article->delete(); // Soft delete. Kalau mau hard delete pakai ->forceDelete()
+    // Soft delete artikel approved
+    public function destroy($id)
+    {
+        $article = Article::where('status', 'approved')->findOrFail($id);
+        $article->delete();
 
-    return redirect()->route('admin.approved-articles.index')
-        ->with('success', 'Artikel berhasil dihapus.');
-}
+        return redirect()->route('admin.approved-articles.index')
+            ->with('success', 'Artikel berhasil dihapus (soft delete).');
+    }
 
+    // Menampilkan artikel yang sudah dihapus (trash)
+    public function trashed()
+    {
+        $articles = Article::onlyTrashed()
+            ->where('status', 'approved')
+            ->select('id', 'title', 'hits', 'created_at', 'category', 'deleted_at')
+            ->latest('deleted_at')
+            ->get();
 
+        return Inertia::render('Admin/Articles/Trashed', [
+            'articles' => $articles,
+        ]);
+    }
+
+    // Restore artikel dari trash
+    public function restore($id)
+    {
+        $article = Article::onlyTrashed()
+            ->where('status', 'approved')
+            ->findOrFail($id);
+
+        $article->restore();
+
+        return redirect()->route('admin.approved-articles.trashed')
+            ->with('success', 'Artikel berhasil direstore.');
+    }
+
+    // Hard delete permanen dari trash
+    public function forceDelete($id)
+    {
+        $article = Article::onlyTrashed()
+            ->where('status', 'approved')
+            ->findOrFail($id);
+
+        $article->forceDelete();
+
+        return redirect()->route('admin.approved-articles.trashed')
+            ->with('success', 'Artikel berhasil dihapus permanen.');
+    }
 }

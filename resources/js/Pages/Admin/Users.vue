@@ -5,6 +5,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import PrimaryButton from '@/Components/PrimaryButton.vue'
 import DangerButton from '@/Components/DangerButton.vue'
 import Modal from '@/Components/Modal.vue'
+import { Archive } from 'lucide-vue-next'
 
 const props = defineProps({ users: Array })
 
@@ -138,31 +139,51 @@ const filteredUsers = computed(() => {
   <Head title="Manajemen User" />
   <AuthenticatedLayout>
    <template #header>
-  <!-- Wrapper full width -->
-  <div class="w-full flex justify-between items-center bg-blue-100 border border-blue-200 rounded-lg px-4 py-3 shadow-sm">
+      <!-- Wrapper full width -->
+      <div
+        class="w-full flex justify-between items-center bg-blue-100 border border-blue-200 rounded-lg px-4 py-3 shadow-sm"
+      >
+        <!-- Judul -->
+        <div class="flex items-center gap-2">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-6 w-6 text-blue-600"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M5.121 17.804A13.937 13.937 0 0112 15c2.21 0 4.29.534 6.121 1.475M15 10a3 3 0 11-6 0 3 0 016 0z"
+            />
+          </svg>
+          <h2 class="text-lg sm:text-xl font-semibold text-blue-800 truncate">
+            Approved Articles
+          </h2>
+        </div>
 
-    <!-- Judul -->
-    <div class="flex items-center gap-2">
-      <svg xmlns="http://www.w3.org/2000/svg"
-           class="h-6 w-6 text-blue-600"
-           fill="none"
-           viewBox="0 0 24 24"
-           stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M5.121 17.804A13.937 13.937 0 0112 15c2.21 0 4.29.534 6.121 1.475M15 10a3 3 0 11-6 0 3 3 0 016 0z" />
-      </svg>
-      <h2 class="text-lg sm:text-xl font-semibold text-blue-800 truncate">Manajemen User</h2>
-    </div>
+        <!-- Tombol kanan -->
+        <div class="flex items-center gap-2">
+          <!-- Link ke Trashed -->
+          <Link
+            :href="route('admin.users.trashed')"
+            class="inline-flex items-center gap-2 bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 text-sm font-medium rounded-lg shadow transition"
+          >
+            <Archive class="w-4 h-4" /> Trash
+          </Link>
 
-    <!-- Tombol ke Artikel -->
-    <Link
-      :href="route('guest.welcome')"
-      class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 text-sm font-medium rounded-lg shadow transition"
-    >
-      📖 Lihat Artikel
-    </Link>
-  </div>
-</template>
+          <!-- Link ke Artikel Publik -->
+          <Link
+            :href="route('guest.welcome')"
+            class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 text-sm font-medium rounded-lg shadow transition"
+          >
+            📖 Lihat Artikel
+          </Link>
+        </div>
+      </div>
+    </template>
 
 
     <div class="py-12">
@@ -237,7 +258,7 @@ const filteredUsers = computed(() => {
 
 <!-- Modal Form Tambah/Edit User -->
 
-   <Modal :show="showModal" @close="closeModal">
+  <Modal :show="showModal" @close="closeModal">
   <div class="p-6 w-full max-w-lg mx-auto">
     <h2 class="text-lg sm:text-xl font-semibold mb-4 text-gray-800">
       {{ editMode ? 'Edit User' : 'Tambah User' }}
@@ -265,17 +286,22 @@ const filteredUsers = computed(() => {
                class="w-full mt-1 rounded-md shadow-sm border-gray-300 focus:ring-blue-500 focus:border-blue-500" />
       </div>
 
-      <!-- Roles -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700">Roles</label>
-        <select v-model="form.roles" multiple
-                class="w-full mt-1 rounded-md shadow-sm border-gray-300 focus:ring-blue-500 focus:border-blue-500">
-          <option value="super-admin">Super Admin</option>
-          <option value="admin">Admin</option>
-          <option value="operator">Operator</option>
-        </select>
-        <p class="text-xs text-gray-500 mt-1">*Bisa pilih lebih dari 1 role</p>
-      </div>
+<!-- Role -->
+<div>
+  <label class="block text-sm font-medium text-gray-700 mb-2">Roles</label>
+  <div class="flex flex-wrap gap-3">
+    <label v-for="role in ['super-admin', 'admin', 'operator']" :key="role"
+           class="flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition
+                  hover:bg-blue-50"
+           :class="form.roles.includes(role) ? 'bg-blue-100 border-blue-400' : 'bg-white border-gray-300'">
+      <input type="checkbox" :value="role" v-model="form.roles" class="hidden" />
+      <span class="text-sm font-medium capitalize">{{ role }}</span>
+    </label>
+  </div>
+  <p class="text-xs text-gray-500 mt-1">✓ Bisa pilih lebih dari satu role</p>
+</div>
+
+
 
       <!-- Status -->
       <div>
@@ -336,6 +362,7 @@ const filteredUsers = computed(() => {
     </form>
   </div>
 </Modal>
+
 
   </AuthenticatedLayout>
 </template>
