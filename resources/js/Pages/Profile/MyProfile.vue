@@ -1,49 +1,69 @@
 <script setup>
-import { useForm, usePage, router } from '@inertiajs/vue3'
-import { ref } from 'vue'
+import { useForm, usePage } from '@inertiajs/vue3'
+import { ref, reactive } from 'vue'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 
-const user = usePage().props.auth.user
+// ✅ bikin reactive user lokal dari props
+const page = usePage()
+const user = reactive({
+  ...page.props.auth.user,
+  bio: page.props.auth.user.bio ?? '', // fallback
+  background_photo_path: page.props.auth.user.background_photo_path ?? '',
+})
 
-// Preview refs
-const previewPhoto = ref(user.profile_photo_url)
-const previewBg = ref(user.background_photo_path ? `/storage/${user.background_photo_path}` : '')
+// ✅ preview awal
+const previewPhoto = ref(user.profile_photo_url || '/images/default-avatar.png')
+const previewBg = ref(
+  user.background_photo_path
+    ? `/storage/${user.background_photo_path}`
+    : '/images/default-bg.jpg'
+)
 
 // Form data publik
 const profileForm = useForm({
-  name: user.name,
+  name: user.name || '',
   bio: user.bio || '',
 })
 
 // Form upload foto profil
-const photoForm = useForm({
-  photo: null,
-})
+const photoForm = useForm({ photo: null })
 
 // Form upload background
-const bgForm = useForm({
-  background: null,
-})
+const bgForm = useForm({ background: null })
 
-// Handle submit
+// Handle submit profil
 const submitProfile = () => {
   profileForm.patch(route('my.profile.update'), {
     preserveScroll: true,
-    onSuccess: () => router.reload({ only: ['auth'] })
+    onSuccess: () => {
+      // ✅ langsung update reactive user lokal
+      user.name = profileForm.name
+      user.bio = profileForm.bio
+    },
   })
 }
 
+// Handle submit foto profil
 const submitPhoto = () => {
   photoForm.post(route('my.profile.photo'), {
     preserveScroll: true,
-    onSuccess: () => router.reload({ only: ['auth'] })
+    onSuccess: () => {
+      if (photoForm.photo) {
+        previewPhoto.value = URL.createObjectURL(photoForm.photo)
+      }
+    },
   })
 }
 
+// Handle submit background
 const submitBackground = () => {
   bgForm.post(route('my.profile.background'), {
     preserveScroll: true,
-    onSuccess: () => router.reload({ only: ['auth'] })
+    onSuccess: () => {
+      if (bgForm.background) {
+        previewBg.value = URL.createObjectURL(bgForm.background)
+      }
+    },
   })
 }
 

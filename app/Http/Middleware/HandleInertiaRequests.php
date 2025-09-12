@@ -35,11 +35,16 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user() ? [
                     'id'    => $request->user()->id,
                     'name'  => $request->user()->name,
+                    'username' => $request->user()->username, // ✅ tambahin username
                     'email' => $request->user()->email,
-                    'profile_photo_url' => $request->user()->profile_photo_url, // ✅ biar foto muncul
-                    // ambil roles dari Spatie (array of strings)
+                    'profile_photo_url' => $request->user()->profile_photo_url,
+
+                    // tambahan field custom
+                    'bio' => $request->user()->bio,
+                    'background_photo_path' => $request->user()->background_photo_path,
+
+                    // roles & permissions dari Spatie
                     'roles' => $request->user()->getRoleNames(),
-                    // ambil permissions dari Spatie (array of strings)
                     'permissions' => $request->user()->getAllPermissions()->pluck('name'),
                 ] : null,
             ],
