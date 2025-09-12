@@ -5,12 +5,12 @@ import PublicLayout from '@/Layouts/PublicLayout.vue'
 import dayjs from 'dayjs'
 import 'dayjs/locale/id'
 import { CheckCircle } from 'lucide-vue-next'
-import NativeShareSimple from '@/Components/NativeShareSimple.vue' // import component
-import ExportDocxButton from '@/Components/ExportDocxButton.vue' // import component
+import Swal from 'sweetalert2' // ✅ import SweetAlert
+import NativeShareSimple from '@/Components/NativeShareSimple.vue'
+import ExportDocxButton from '@/Components/ExportDocxButton.vue'
 
 dayjs.locale('id')
 
-// Props dari backend
 const props = defineProps({
   article: Object,
   views: Number,
@@ -24,19 +24,12 @@ const props = defineProps({
   canComment: Boolean,
 })
 
-// state like
 const likes = ref(props.likeCount)
 const liked = ref(props.isLiked)
 
-// form komentar
-const form = useForm({
-  body: ''
-})
-
-// 🔹 state untuk pesan sukses
+const form = useForm({ body: '' })
 const successMessage = ref("")
 
-// kirim komentar
 const submitComment = () => {
   form.post(route('comments.store', props.article.id), {
     preserveScroll: true,
@@ -48,7 +41,6 @@ const submitComment = () => {
   })
 }
 
-// navigasi back
 const goBack = () => {
   if (props.from) {
     window.location.href = props.from
@@ -59,32 +51,37 @@ const goBack = () => {
   }
 }
 
-// format tanggal artikel
 const formatDate = (date) => dayjs(date).format('DD MMMM YYYY')
-
-// format tanggal komentar
 const formatCommentDate = (date) => dayjs(date).format('DD MMMM YYYY HH:mm')
 
-// like
+// 🔹 Toggle like dengan SweetAlert toast
 const toggleLike = () => {
   router.post(route('articles.like', props.article.id), {}, {
     preserveScroll: true,
     onSuccess: () => {
       liked.value = !liked.value
       likes.value = liked.value ? likes.value + 1 : likes.value - 1
+
+      // SweetAlert toast
+      Swal.fire({
+        icon: liked.value ? 'success' : 'info',
+        title: liked.value ? 'Disukai!' : 'Tidak lagi disukai',
+        text: liked.value
+              ? 'Kamu menyukai artikel ini ❤️'
+              : 'Kamu menghapus like dari artikel ini 💔',
+        timer: 3000,
+        showConfirmButton: false,
+        position: 'top-end',
+        toast: true,
+      })
     }
   })
 }
 
-// 🔹 state untuk URL share
 const shareUrl = ref('')
-
-// 🔹 ambil URL publik kalau sudah di browser
 onMounted(() => {
-  // contoh: LOCAL_TUNNEL_URL = https://xxxx.loca.lt
   shareUrl.value = import.meta.env.VITE_APP_URL + window.location.pathname
 })
-
 </script>
 
 

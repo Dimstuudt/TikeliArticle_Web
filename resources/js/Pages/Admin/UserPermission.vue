@@ -5,6 +5,7 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue"
 import PrimaryButton from "@/Components/PrimaryButton.vue"
 import DangerButton from "@/Components/DangerButton.vue"
 import Modal from "@/Components/Modal.vue"
+import Swal from "sweetalert2"
 
 const props = defineProps({
   roles: Array,
@@ -56,28 +57,113 @@ const saveRole = () => {
 
   roleForm[method](route(routeName, id), {
     preserveScroll: true,
-    onSuccess: () => closeRoleModal(),
+    onSuccess: () => {
+      closeRoleModal()
+      Swal.fire({
+        icon: 'success',
+        title: editMode.value ? 'Role berhasil diperbarui' : 'Role berhasil ditambahkan',
+        timer: 1500,
+        showConfirmButton: false
+      })
+    },
+    onError: () => {
+      Swal.fire({
+        icon: 'error',
+        title: 'Gagal simpan role',
+        text: 'Coba lagi nanti'
+      })
+    }
   })
 }
 
+// 🔹 SweetAlert delete role
 const deleteRole = (id) => {
-  if (!confirm("Yakin hapus role ini?")) return
-  roleForm.delete(route("admin.roles.destroy", id), { preserveScroll: true })
+  Swal.fire({
+    title: 'Yakin hapus role ini?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Ya, hapus!',
+    cancelButtonText: 'Batal'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      roleForm.delete(route("admin.roles.destroy", id), {
+        preserveScroll: true,
+        onSuccess: () => {
+          Swal.fire({
+            icon: 'success',
+            title: 'Role berhasil dihapus',
+            timer: 1500,
+            showConfirmButton: false
+          })
+        },
+        onError: () => {
+          Swal.fire({
+            icon: 'error',
+            title: 'Gagal hapus role',
+            text: 'Coba lagi nanti'
+          })
+        }
+      })
+    }
+  })
 }
 
 // ===== PERMISSION ACTIONS =====
 const savePermission = () => {
   permissionForm.post(route("admin.permissions.store"), {
     preserveScroll: true,
-    onSuccess: () => closePermissionModal(),
+    onSuccess: () => {
+      closePermissionModal()
+      Swal.fire({
+        icon: 'success',
+        title: 'Permission berhasil ditambahkan',
+        timer: 1500,
+        showConfirmButton: false
+      })
+    },
+    onError: () => {
+      Swal.fire({
+        icon: 'error',
+        title: 'Gagal simpan permission',
+        text: 'Coba lagi nanti'
+      })
+    }
   })
 }
 
+// 🔹 SweetAlert delete permission
 const deletePermission = (id) => {
-  if (!confirm("Yakin hapus permission ini?")) return
-  permissionForm.delete(route("admin.permissions.destroy", id), { preserveScroll: true })
+  Swal.fire({
+    title: 'Yakin hapus permission ini?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Ya, hapus!',
+    cancelButtonText: 'Batal'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      permissionForm.delete(route("admin.permissions.destroy", id), {
+        preserveScroll: true,
+        onSuccess: () => {
+          Swal.fire({
+            icon: 'success',
+            title: 'Permission berhasil dihapus',
+            timer: 1500,
+            showConfirmButton: false
+          })
+        },
+        onError: () => {
+          Swal.fire({
+            icon: 'error',
+            title: 'Gagal hapus permission',
+            text: 'Coba lagi nanti'
+          })
+        }
+      })
+    }
+  })
 }
 </script>
+
 
 <template>
   <Head title="Role & Permission Management" />

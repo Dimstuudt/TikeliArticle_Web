@@ -1,20 +1,45 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import { Head, router, Link } from '@inertiajs/vue3'
+import Swal from 'sweetalert2'
 
 const props = defineProps({
   reports: Object
 })
 
-// Hapus report
+// 🔹 SweetAlert hapus report
 const deleteReport = (id) => {
-  if (confirm("Yakin ingin menghapus laporan ini?")) {
-    router.delete(route("admin.reports.destroy", id), {
-      preserveScroll: true,
-    })
-  }
+  Swal.fire({
+    title: 'Yakin ingin menghapus laporan ini?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Ya, hapus!',
+    cancelButtonText: 'Batal'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      router.delete(route("admin.reports.destroy", id), {
+        preserveScroll: true,
+        onSuccess: () => {
+          Swal.fire({
+            icon: 'success',
+            title: 'Laporan berhasil dihapus',
+            timer: 1500,
+            showConfirmButton: false
+          })
+        },
+        onError: () => {
+          Swal.fire({
+            icon: 'error',
+            title: 'Gagal hapus laporan',
+            text: 'Coba lagi nanti'
+          })
+        }
+      })
+    }
+  })
 }
 </script>
+
 
 <template>
   <AuthenticatedLayout>
