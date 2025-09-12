@@ -2,18 +2,44 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import { Head, router, Link } from '@inertiajs/vue3'
 import { Eye, Trash2, Tag, Archive } from 'lucide-vue-next'
+import Swal from 'sweetalert2'
 
 const props = defineProps({
   articles: Array
 })
 
-// Hapus artikel (soft delete)
+// Hapus artikel (soft delete) pakai SweetAlert2
 function deleteArticle(id) {
-  if (confirm('Yakin mau hapus artikel ini (soft delete)?')) {
-    router.delete(route('admin.approved-articles.destroy', id), {
-      preserveScroll: true
-    })
-  }
+  Swal.fire({
+    title: 'Yakin mau hapus artikel ini?',
+    text: "Artikel akan masuk ke trash (soft delete)",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Ya, hapus!',
+    cancelButtonText: 'Batal'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      router.delete(route('admin.approved-articles.destroy', id), {
+        preserveScroll: true,
+        onSuccess: () => {
+          Swal.fire(
+            'Terhapus!',
+            'Artikel berhasil dihapus.',
+            'success'
+          )
+        },
+        onError: () => {
+          Swal.fire(
+            'Gagal!',
+            'Terjadi kesalahan saat menghapus artikel.',
+            'error'
+          )
+        }
+      })
+    }
+  })
 }
 
 // Format tanggal

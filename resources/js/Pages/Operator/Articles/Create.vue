@@ -4,6 +4,7 @@ import { Head, router, useForm, Link } from '@inertiajs/vue3'
 import { QuillEditor } from '@vueup/vue-quill'
 import '@vueup/vue-quill/dist/vue-quill.snow.css'
 import { ref } from 'vue'
+import Swal from 'sweetalert2'
 
 const form = useForm({
   title: '',
@@ -22,26 +23,44 @@ const onCoverChange = (e) => {
   coverPreview.value = file ? URL.createObjectURL(file) : null
 }
 
+// Fungsi submit pakai SweetAlert
 const submit = () => {
   form.post('/operator/articles', {
     preserveScroll: true,
     forceFormData: true,
     onSuccess: () => {
-      router.visit('/operator/articles/mine')
+      Swal.fire({
+        icon: 'success',
+        title: form.status === 'draft' ? 'Draft tersimpan!' : 'Artikel terkirim!',
+        showConfirmButton: false,
+        timer: 1500
+      }).then(() => {
+        router.visit('/operator/articles/mine')
+      })
+    },
+    onError: () => {
+      Swal.fire({
+        icon: 'error',
+        title: 'Oops!',
+        text: 'Gagal menyimpan artikel, cek kembali inputanmu.'
+      })
     }
   })
 }
 
+// Submit artikel (pending)
 const sendArticle = () => {
   form.status = 'pending'
   submit()
 }
 
+// Simpan draft
 const saveDraft = () => {
   form.status = 'draft'
   submit()
 }
 </script>
+
 
 <template>
   <AuthenticatedLayout>

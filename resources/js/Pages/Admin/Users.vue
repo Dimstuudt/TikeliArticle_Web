@@ -5,6 +5,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import PrimaryButton from '@/Components/PrimaryButton.vue'
 import DangerButton from '@/Components/DangerButton.vue'
 import Modal from '@/Components/Modal.vue'
+import Swal from 'sweetalert2'
 import { Archive } from 'lucide-vue-next'
 
 const props = defineProps({ users: Array })
@@ -18,7 +19,7 @@ const form = useForm({
   name: '',
   email: '',
   username: '',
-  roles: [], // ✅ pakai array untuk Spatie
+  roles: [],
   is_active: true,
   trusted_writer: false,
   password: '',
@@ -35,14 +36,14 @@ const openModal = (user = null) => {
     form.name = user.name
     form.email = user.email
     form.username = user.username
-    form.roles = user.roles || [] // ✅ ambil dari Spatie
+    form.roles = user.roles || []
     form.is_active = !!user.is_active
     form.trusted_writer = !!user.trusted_writer
     form.password = ''
     form.password_confirmation = ''
   } else {
     form.reset()
-    form.roles = [] // default kosong
+    form.roles = []
     form.is_active = true
     form.trusted_writer = false
   }
@@ -61,16 +62,64 @@ const saveUser = () => {
   if (editMode.value) {
     form.put(route('admin.users.update', selectedUser.value.id), {
       preserveScroll: true,
-      onSuccess: () => closeModal(),
-      onError: () => console.log(form.errors),
+      onSuccess: () => {
+        closeModal()
+        Swal.fire({
+          icon: 'success',
+          title: 'Berhasil!',
+          text: 'User berhasil diperbarui.',
+          timer: 2000,
+          showConfirmButton: false,
+        })
+      },
+      onError: () => Swal.fire('Oops!', 'Terjadi kesalahan', 'error'),
     })
   } else {
     form.post(route('admin.users.store'), {
       preserveScroll: true,
-      onSuccess: () => closeModal(),
-      onError: () => console.log(form.errors),
+      onSuccess: () => {
+        closeModal()
+        Swal.fire({
+          icon: 'success',
+          title: 'Berhasil!',
+          text: 'User berhasil ditambahkan.',
+          timer: 2000,
+          showConfirmButton: false,
+        })
+      },
+      onError: () => Swal.fire('Oops!', 'Terjadi kesalahan', 'error'),
     })
   }
+}
+
+// --- Delete user pakai SweetAlert2 ---
+const deleteUser = (id) => {
+  Swal.fire({
+    title: 'Yakin ingin menghapus?',
+    text: "Data user akan masuk trash!",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Ya, hapus!',
+    cancelButtonText: 'Batal'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      form.delete(route('admin.users.destroy', id), {
+        preserveScroll: true,
+        onSuccess: () => {
+          Swal.fire({
+            icon: 'success',
+            title: 'Terhapus!',
+            text: 'User berhasil dihapus.',
+            timer: 2000,
+            showConfirmButton: false,
+          })
+        },
+        onError: () => Swal.fire('Oops!', 'Gagal hapus user', 'error'),
+      })
+    }
+  })
 }
 
 // --- Toggle aktif/nonaktif ---
@@ -87,8 +136,15 @@ const toggleStatus = (user) => {
     preserveScroll: true,
     onSuccess: () => {
       user.is_active = !user.is_active
+      Swal.fire({
+        icon: 'success',
+        title: 'Berhasil!',
+        text: 'Status user diperbarui',
+        timer: 1500,
+        showConfirmButton: false,
+      })
     },
-    onError: () => alert('Gagal update status'),
+    onError: () => Swal.fire('Oops!', 'Gagal update status', 'error'),
   })
 }
 
@@ -106,18 +162,16 @@ const toggleTrusted = (user) => {
     preserveScroll: true,
     onSuccess: () => {
       user.trusted_writer = !user.trusted_writer
+      Swal.fire({
+        icon: 'success',
+        title: 'Berhasil!',
+        text: 'Status Trusted Writer diperbarui',
+        timer: 1500,
+        showConfirmButton: false,
+      })
     },
-    onError: () => alert('Gagal update trusted writer'),
+    onError: () => Swal.fire('Oops!', 'Gagal update trusted writer', 'error'),
   })
-}
-
-// --- Delete user ---
-const deleteUser = (id) => {
-  if (confirm('Yakin hapus user ini?')) {
-    form.delete(route('admin.users.destroy', id), {
-      preserveScroll: true,
-    })
-  }
 }
 
 // --- Password validation ---
@@ -134,6 +188,7 @@ const filteredUsers = computed(() => {
   )
 })
 </script>
+
 
 <template>
   <Head title="Manajemen User" />

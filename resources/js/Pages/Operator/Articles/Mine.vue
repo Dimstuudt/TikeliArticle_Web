@@ -2,6 +2,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import { Head, Link, useForm, router } from '@inertiajs/vue3'
 import { ref, computed } from 'vue'
+import Swal from 'sweetalert2'
 
 const props = defineProps({
   articles: Array,
@@ -33,12 +34,36 @@ const applyFilters = () => {
   })
 }
 
+// 🔹 SweetAlert delete
 const destroy = (id) => {
-  if (confirm('Yakin ingin menghapus artikel ini?')) {
-    form.delete(`/operator/articles/${id}`, {
-      preserveScroll: true,
-    })
-  }
+  Swal.fire({
+    title: 'Yakin ingin menghapus artikel ini?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Ya, hapus!',
+    cancelButtonText: 'Batal'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      form.delete(`/operator/articles/${id}`, {
+        preserveScroll: true,
+        onSuccess: () => {
+          Swal.fire({
+            icon: 'success',
+            title: 'Artikel berhasil dihapus!',
+            timer: 1500,
+            showConfirmButton: false
+          })
+        },
+        onError: () => {
+          Swal.fire({
+            icon: 'error',
+            title: 'Gagal menghapus artikel',
+            text: 'Coba lagi nanti.'
+          })
+        }
+      })
+    }
+  })
 }
 
 const stripHtml = (html) => {
@@ -64,6 +89,7 @@ const totalByStatus = computed(() => {
   return totals
 })
 </script>
+
 
 <template>
   <AuthenticatedLayout>

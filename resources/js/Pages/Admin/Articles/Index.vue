@@ -2,17 +2,36 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import { Head, router, Link } from '@inertiajs/vue3'
 import { defineProps, computed, ref } from 'vue'
+import Swal from 'sweetalert2'
 
 const props = defineProps({
   articles: Array,
 })
 
-// Approve artikel
+// 🔹 Approve artikel pakai SweetAlert
 const approve = (id) => {
-  router.put(`/admin/articles/${id}/approve`, {}, { preserveScroll: true })
+  Swal.fire({
+    title: 'Approve artikel ini?',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: 'Ya, approve',
+    cancelButtonText: 'Batal'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      router.put(`/admin/articles/${id}/approve`, {}, {
+        preserveScroll: true,
+        onSuccess: () => {
+          Swal.fire('Diapprove!', 'Artikel berhasil diapprove.', 'success')
+        },
+        onError: () => {
+          Swal.fire('Gagal!', 'Artikel gagal diapprove.', 'error')
+        }
+      })
+    }
+  })
 }
 
-// Reject modal
+// 🔹 Reject artikel pakai modal + SweetAlert
 const showRejectModal = ref(false)
 const rejectReason = ref('')
 const rejectingArticleId = ref(null)
@@ -25,7 +44,7 @@ const openRejectModal = (id) => {
 
 const reject = () => {
   if (!rejectReason.value.trim()) {
-    alert('Alasan penolakan wajib diisi.')
+    Swal.fire('Oops!', 'Alasan penolakan wajib diisi.', 'warning')
     return
   }
 
@@ -37,7 +56,11 @@ const reject = () => {
       onSuccess: () => {
         showRejectModal.value = false
         rejectingArticleId.value = null
+        Swal.fire('Ditolak!', 'Artikel berhasil ditolak.', 'success')
       },
+      onError: () => {
+        Swal.fire('Gagal!', 'Artikel gagal ditolak.', 'error')
+      }
     }
   )
 }
@@ -70,6 +93,7 @@ const closeModal = () => {
   selectedArticle.value = null
 }
 </script>
+
 
 <template>
   <AuthenticatedLayout>

@@ -4,6 +4,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import { QuillEditor } from '@vueup/vue-quill'
 import '@vueup/vue-quill/dist/vue-quill.snow.css'
 import { onMounted, ref } from 'vue'
+import Swal from 'sweetalert2'
 
 const props = defineProps({
   article: Object
@@ -46,14 +47,29 @@ const submit = (status) => {
       forceFormData: true,
       preserveScroll: true,
       onSuccess: () => {
-        router.visit('/operator/articles/mine')
+        Swal.fire({
+          icon: 'success',
+          title: status === 'draft' ? 'Draft diperbarui!' : 'Artikel terkirim!',
+          showConfirmButton: false,
+          timer: 1500
+        }).then(() => {
+          router.visit('/operator/articles/mine')
+        })
       },
+      onError: () => {
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops!',
+          text: 'Gagal menyimpan artikel, cek inputanmu.'
+        })
+      }
     })
 }
 
 const sendForApproval = () => submit('pending')
 const saveAsDraft = () => submit('draft')
 </script>
+
 
 <template>
   <AuthenticatedLayout>

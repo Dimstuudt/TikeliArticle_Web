@@ -3,6 +3,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import { Head, Link, router } from '@inertiajs/vue3'
 import { ref } from 'vue'
 import { Trash2, RotateCcw, ArrowLeft } from 'lucide-vue-next'
+import Swal from 'sweetalert2'
 
 const props = defineProps({
   users: Array
@@ -10,16 +11,54 @@ const props = defineProps({
 
 // 🔹 Restore user
 const restore = (id) => {
-  router.put(route('admin.users.restore', id), {}, { preserveScroll: true })
+  Swal.fire({
+    title: 'Restore user ini?',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: 'Ya, restore',
+    cancelButtonText: 'Batal'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      router.put(route('admin.users.restore', id), {}, {
+        preserveScroll: true,
+        onSuccess: () => {
+          Swal.fire('Ter-restore!', 'User berhasil dikembalikan.', 'success')
+        },
+        onError: () => {
+          Swal.fire('Gagal!', 'User gagal di-restore.', 'error')
+        }
+      })
+    }
+  })
 }
 
 // 🔹 Hapus permanen
 const forceDelete = (id) => {
-  if (confirm('Yakin mau hapus user ini secara permanen?')) {
-    router.delete(route('admin.users.forceDelete', id), { preserveScroll: true })
-  }
+  Swal.fire({
+    title: 'Hapus permanen user?',
+    text: "User akan hilang selamanya!",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Ya, hapus permanen',
+    cancelButtonText: 'Batal'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      router.delete(route('admin.users.forceDelete', id), {
+        preserveScroll: true,
+        onSuccess: () => {
+          Swal.fire('Terhapus!', 'User berhasil dihapus permanen.', 'success')
+        },
+        onError: () => {
+          Swal.fire('Gagal!', 'User gagal dihapus.', 'error')
+        }
+      })
+    }
+  })
 }
 </script>
+
 
 <template>
   <Head title="Trashed Users" />

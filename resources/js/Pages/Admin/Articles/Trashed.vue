@@ -2,6 +2,7 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import { Head, Link, router } from '@inertiajs/vue3'
 import { ref } from 'vue'
+import Swal from 'sweetalert2'
 
 const props = defineProps({
   articles: Array,
@@ -9,16 +10,51 @@ const props = defineProps({
 
 // Restore artikel
 const restore = (id) => {
-  if (confirm("Yakin mau restore artikel ini?")) {
-    router.put(`/admin/articles/approved/${id}/restore`, {}, { preserveScroll: true })
-  }
+  Swal.fire({
+    title: 'Restore artikel ini?',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: 'Ya, restore',
+    cancelButtonText: 'Batal'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      router.put(`/admin/articles/approved/${id}/restore`, {}, {
+        preserveScroll: true,
+        onSuccess: () => {
+          Swal.fire('Ter-restore!', 'Artikel berhasil dikembalikan.', 'success')
+        },
+        onError: () => {
+          Swal.fire('Gagal!', 'Artikel gagal di-restore.', 'error')
+        }
+      })
+    }
+  })
 }
 
 // Hapus permanen artikel
 const forceDelete = (id) => {
-  if (confirm("Yakin mau hapus permanen artikel ini?")) {
-    router.delete(`/admin/articles/approved/${id}/force`, { preserveScroll: true })
-  }
+  Swal.fire({
+    title: 'Hapus permanen artikel?',
+    text: "Artikel akan hilang selamanya!",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Ya, hapus permanen',
+    cancelButtonText: 'Batal'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      router.delete(`/admin/articles/approved/${id}/force`, {
+        preserveScroll: true,
+        onSuccess: () => {
+          Swal.fire('Terhapus!', 'Artikel dihapus permanen.', 'success')
+        },
+        onError: () => {
+          Swal.fire('Gagal!', 'Artikel gagal dihapus.', 'error')
+        }
+      })
+    }
+  })
 }
 </script>
 
