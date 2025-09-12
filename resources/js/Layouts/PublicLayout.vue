@@ -87,7 +87,9 @@ const handleSubmit = (data) => {
   <div class="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col transition-colors duration-300">
 
    <!-- Navbar -->
-<header class="bg-blue-600 dark:bg-gray-800 text-white shadow px-6 py-3 flex justify-between items-center">
+<header
+  class="sticky top-0 z-50 bg-blue-600 dark:bg-gray-800 text-white shadow px-6 py-3 flex justify-between items-center"
+>
   <!-- Logo -->
   <Link href="/welcome" class="text-2xl font-bold">Tikeli</Link>
 
@@ -156,7 +158,10 @@ const handleSubmit = (data) => {
               class="h-7 w-7 rounded-full object-cover border-2 border-white"
               alt="User"
             />
-            <span class="ml-2">{{ user.name }}</span>
+           <span class="ml-2">
+  {{ user.name.split(' ').slice(0, 2).join(' ') }}
+</span>
+
             <svg class="ml-2 h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
               <path
                 fill-rule="evenodd"
