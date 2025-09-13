@@ -215,15 +215,21 @@ const now = ref(new Date())
   <div class="flex items-center gap-1 text-gray-400 dark:text-gray-500">
     <!-- Nama + badge -->
     <span class="flex items-center gap-1">
-      {{ user.name }}
-      <span
-        v-if="user.trusted_writer"
-        class="flex items-center justify-center w-3 h-3 bg-green-500 rounded-full p-[1px]"
-        title="Trusted Writer"
-      >
-        <CheckCircle class="w-2.5 h-2.5 text-white" :stroke-width="2" />
-      </span>
-    </span>
+  {{
+    (() => {
+      const words = user.name.split(' ').slice(0, 2).join(' ')
+      return words.length > 11 ? words.slice(0, 12) + '…' : words
+    })()
+  }}
+  <span
+    v-if="user.trusted_writer"
+    class="flex items-center justify-center w-3 h-3 bg-green-500 rounded-full p-[1px]"
+    title="Trusted Writer"
+  >
+    <CheckCircle class="w-2.5 h-2.5 text-white" :stroke-width="2" />
+  </span>
+</span>
+
 
     <!-- Separator -->
     <span>•</span>
