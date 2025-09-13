@@ -667,14 +667,22 @@ html {
           <div class="text-xs text-gray-500 dark:text-gray-400 mt-4 flex justify-between items-center">
             <!-- Penulis & waktu -->
             <div class="flex items-center gap-1">
-              <span class="flex items-center gap-1 font-medium text-gray-700 dark:text-gray-300">
-                {{ article.author?.name ?? 'Anonim' }}
-                <CheckCircle
-                  v-if="article.trusted_writer"
-                  class="w-3 h-3 text-white bg-green-500 rounded-full p-[1px]"
-                  :stroke-width="2"
-                />
-              </span>
+            <span class="flex items-center gap-1 font-medium text-gray-700 dark:text-gray-300">
+  {{
+    (article.author?.name ?? 'Anonim')
+      .split(' ')
+      .slice(0, 2)
+      .join(' ')
+      .slice(0, 11)
+  }}{{ (article.author?.name ?? 'Anonim').split(' ')[0].length > 9 ? '…' : '' }}
+  <CheckCircle
+    v-if="article.trusted_writer"
+    class="w-3 h-3 text-white bg-green-500 rounded-full p-[1px]"
+    :stroke-width="2"
+  />
+</span>
+
+
               <span>•</span>
               <span>
                 {{

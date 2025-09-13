@@ -173,101 +173,90 @@ const totalByStatus = computed(() => {
             Belum ada artikel yang ditemukan.
           </div>
 
- <!-- Daftar artikel -->
-<div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Daftar artikel -->
+<div v-else class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
   <div
     v-for="article in articles"
     :key="article.id"
-    class="border border-gray-200 p-5 rounded-xl shadow-md bg-white flex flex-col hover:shadow-lg transition h-full"
+    class="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition flex flex-col"
   >
-    <!-- Cover + Kategori -->
-    <div class="relative w-full h-40">
+    <!-- Cover -->
+    <div class="relative w-full aspect-video">
       <img
         v-if="article.cover_url"
         :src="article.cover_url"
         alt="Cover"
-        class="w-full h-full object-cover rounded-md"
+        class="w-full h-full object-cover rounded-t-xl"
       />
       <div
         v-else
-        class="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400 text-sm italic rounded-md"
+        class="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400 text-xs italic rounded-t-xl"
       >
         Tidak ada cover
       </div>
-      <div
+      <span
         v-if="article.category"
-        class="absolute top-2 right-2 bg-indigo-600 text-white text-[10px] px-2 py-0.5 rounded-full shadow-sm uppercase"
+        class="absolute top-2 right-2 bg-indigo-600 text-white text-[10px] px-2 py-0.5 rounded-full uppercase shadow-sm"
       >
         {{ article.category }}
-      </div>
-    </div>
-
-    <!-- Judul + Status -->
-    <div class="flex justify-between items-center mt-3">
-      <h3 class="text-lg font-semibold text-gray-800">{{ article.title }}</h3>
-      <span
-        class="px-2 py-0.5 text-xs font-semibold rounded-full capitalize"
-        :class="{
-          'bg-yellow-100 text-yellow-800': article.status === 'pending',
-          'bg-green-100 text-green-800': article.status === 'approved',
-          'bg-red-100 text-red-800': article.status === 'rejected',
-          'bg-gray-200 text-gray-700': article.status === 'draft',
-        }"
-      >
-        {{ article.status }}
       </span>
     </div>
 
-    <!-- Wrapper Summary + Status/Alasan -->
-    <div class="flex flex-col flex-grow mt-2 mb-2">
+    <!-- Isi -->
+    <div class="flex flex-col flex-grow p-4 divide-y divide-gray-100">
+      <!-- Judul + Status -->
+      <div class="flex items-center justify-between pb-2">
+        <h3 class="text-base font-semibold text-gray-800 line-clamp-1">
+          {{ article.title }}
+        </h3>
+        <span
+          class="px-2 py-0.5 text-[11px] font-medium rounded-full capitalize"
+          :class="{
+            'bg-yellow-100 text-yellow-800': article.status === 'pending',
+            'bg-green-100 text-green-800': article.status === 'approved',
+            'bg-red-100 text-red-800': article.status === 'rejected',
+            'bg-gray-200 text-gray-700': article.status === 'draft',
+          }"
+        >
+          {{ article.status }}
+        </span>
+      </div>
+
       <!-- Ringkasan -->
-      <div
-        class="text-sm text-gray-700 overflow-auto p-2 border border-gray-100 rounded flex-grow"
-        style="min-height: 60px; max-height: 120px;"
-      >
+      <div class="pt-2 text-sm text-gray-600 line-clamp-3">
         {{ stripHtml(article.summary) }}
       </div>
 
-      <!-- Alasan ditolak -->
-      <div
-        v-if="article.status === 'rejected' && article.rejection_reason"
-        class="text-xs p-2 rounded-md border border-red-200 bg-red-50 mt-2 overflow-auto"
-        style="min-height: 40px; max-height: 60px;"
-      >
-        <strong class="text-red-700">Alasan Ditolak:</strong>
-        <span class="text-red-700">{{ article.rejection_reason }}</span>
+      <!-- Alasan / Approved note -->
+      <div v-if="article.status === 'rejected' && article.rejection_reason" class="pt-2 text-xs text-red-700 bg-red-50 border border-red-200 rounded-md p-2">
+        <strong>Alasan Ditolak:</strong> {{ article.rejection_reason }}
+      </div>
+      <div v-if="article.status === 'approved'" class="pt-2 text-xs text-green-700 bg-green-50 border border-green-200 rounded-md p-2">
+        <strong>Approved</strong>
       </div>
 
-      <!-- Approved -->
+      <!-- Aksi -->
       <div
-        v-if="article.status === 'approved'"
-        class="text-xs p-2 rounded-md border border-green-200 bg-green-50 mt-2 overflow-auto"
-        style="min-height: 40px; max-height: 60px;"
+        v-if="['draft', 'rejected', 'pending'].includes(article.status)"
+        class="flex justify-end gap-2 pt-3"
       >
-        <strong class="text-green-700">Approved</strong>
+        <Link
+          :href="`/operator/articles/${article.id}/edit`"
+          class="bg-blue-600 text-white text-xs px-3 py-1.5 rounded hover:bg-blue-700 transition"
+        >
+          Edit
+        </Link>
+        <button
+          @click="destroy(article.id)"
+          class="bg-red-600 text-white text-xs px-3 py-1.5 rounded hover:bg-red-700 transition"
+        >
+          Hapus
+        </button>
       </div>
-    </div>
-
-    <!-- Aksi Edit & Hapus -->
-    <div
-      v-if="['draft', 'rejected', 'pending'].includes(article.status)"
-      class="flex justify-end space-x-2 pt-2 border-t border-gray-100 mt-auto"
-    >
-      <Link
-        :href="`/operator/articles/${article.id}/edit`"
-        class="bg-blue-600 text-white text-xs px-4 py-1.5 rounded hover:bg-blue-700 transition"
-      >
-        Edit
-      </Link>
-      <button
-        @click="destroy(article.id)"
-        class="bg-red-600 text-white text-xs px-4 py-1.5 rounded hover:bg-red-700 transition"
-      >
-        Hapus
-      </button>
     </div>
   </div>
 </div>
+
 
 
 

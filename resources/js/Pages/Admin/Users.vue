@@ -215,7 +215,7 @@ const filteredUsers = computed(() => {
             />
           </svg>
           <h2 class="text-lg sm:text-xl font-semibold text-blue-800 truncate">
-            Approved Articles
+            Users Management
           </h2>
         </div>
 
@@ -307,6 +307,8 @@ const filteredUsers = computed(() => {
           </tbody>
         </table>
       </div>
+
+
     </div>
   </div>
 </div>

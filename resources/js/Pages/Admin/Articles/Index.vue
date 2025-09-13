@@ -137,142 +137,176 @@ const closeModal = () => {
             Tidak ada artikel yang perlu ditinjau.
           </div>
 
-          <!-- Grid Artikel -->
-          <div v-else class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div
-              v-for="article in filteredArticles"
-              :key="article.id"
-              class="border border-gray-200 rounded-lg shadow p-4 bg-white flex flex-col justify-between"
-            >
-              <!-- Informasi Artikel -->
-              <fieldset class="space-y-2">
-                <legend class="text-sm font-bold text-gray-700 mb-2">Informasi Artikel</legend>
+         <!-- Grid Artikel -->
+<div v-else class="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+  <div
+    v-for="article in filteredArticles"
+    :key="article.id"
+    class="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition flex flex-col"
+  >
+    <!-- Cover -->
+    <div class="relative w-full aspect-video">
+      <img
+        v-if="article.cover_url"
+        :src="article.cover_url"
+        alt="Cover Artikel"
+        class="w-full h-full object-cover rounded-t-xl"
+      />
+      <div
+        v-else
+        class="w-full h-full flex items-center justify-center text-gray-400 text-sm italic bg-gray-100 rounded-t-xl"
+      >
+        Tidak ada cover
+      </div>
+    </div>
 
-                <!-- Cover Artikel -->
-                <div>
-                  <label class="block text-xs text-gray-600">Cover:</label>
-                  <img
-                    v-if="article.cover_url"
-                    :src="article.cover_url"
-                    alt="Cover Artikel"
-                    class="w-full h-40 object-cover rounded"
-                  />
-                  <div v-else class="text-sm text-gray-400 italic">Tidak ada cover</div>
-                </div>
+    <!-- Konten -->
+    <div class="flex flex-col flex-grow p-4 space-y-3">
+      <!-- Judul + Status + Kategori -->
+      <div class="flex flex-wrap justify-between items-center gap-2">
+        <h3 class="text-base font-semibold text-gray-800 line-clamp-1">
+          {{ article.title }}
+        </h3>
+        <div class="flex gap-2">
+          <span
+            class="px-2 py-0.5 text-[11px] font-medium rounded-full capitalize"
+            :class="{
+              'bg-yellow-100 text-yellow-800': article.status === 'pending',
+              'bg-green-100 text-green-800': article.status === 'approved',
+              'bg-red-100 text-red-800': article.status === 'rejected',
+            }"
+          >
+            {{ article.status }}
+          </span>
+          <span
+            v-if="article.category"
+            class="px-2 py-0.5 text-[11px] font-medium rounded-full bg-blue-100 text-blue-800 capitalize"
+          >
+            {{ article.category }}
+          </span>
+        </div>
+      </div>
 
-                <!-- Judul Artikel -->
-                <div>
-                  <label class="block text-xs text-gray-600">Judul:</label>
-                  <p class="text-base font-medium text-gray-800">{{ article.title }}</p>
-                </div>
-              </fieldset>
+      <!-- Ringkasan -->
+      <p class="text-sm text-gray-600 line-clamp-3">
+        {{ stripHtml(article.summary) }}
+      </p>
+    </div>
 
-              <!-- Ringkasan Artikel dengan scroll jika panjang -->
-              <fieldset class="border border-gray-200 rounded p-2 mt-2 flex-1 overflow-hidden">
-                <legend class="text-xs font-semibold text-gray-500 px-1">Ringkasan</legend>
-                <div
-                  class="text-sm text-gray-700 overflow-y-auto"
-                  style="min-height: 3rem; max-height: 6rem;"
-                >
-                  {{ stripHtml(article.summary) }}
-                </div>
-              </fieldset>
+    <!-- Footer Aksi -->
+    <div
+      class="flex justify-between items-center gap-2 p-4 border-t border-gray-100"
+    >
+      <button
+        @click="openModal(article)"
+        class="bg-blue-500 text-white text-xs px-4 py-1.5 rounded hover:bg-blue-600 transition"
+      >
+        Detail
+      </button>
 
-              <!-- Status & Kategori -->
-              <div class="mt-2">
-                <label class="block text-xs text-gray-600">Status & Kategori:</label>
-                <div class="flex flex-wrap gap-2 mt-1">
-                  <span
-                    class="inline-block px-2 py-1 text-xs font-semibold rounded-full"
-                    :class="{
-                      'bg-yellow-100 text-yellow-800': article.status === 'pending',
-                      'bg-red-100 text-red-800': article.status === 'rejected',
-                    }"
-                  >
-                    {{ article.status }}
-                  </span>
-                  <span
-                    class="inline-block px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 capitalize"
-                  >
-                    {{ article.category }}
-                  </span>
-                </div>
-              </div>
+      <div v-if="article.status === 'pending'" class="flex gap-2">
+        <button
+          @click="approve(article.id)"
+          class="bg-green-600 text-white text-xs px-4 py-1.5 rounded hover:bg-green-700 transition"
+        >
+          Setujui
+        </button>
+        <button
+          @click="openRejectModal(article.id)"
+          class="bg-red-600 text-white text-xs px-4 py-1.5 rounded hover:bg-red-700 transition"
+        >
+          Tolak
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
-              <!-- Tombol Aksi: Lihat, Setujui, Tolak -->
-              <div class="flex flex-wrap justify-between items-center gap-2 pt-2 border-t border-gray-200 mt-2">
-                <button
-                  @click="openModal(article)"
-                  class="bg-blue-500 text-white text-xs px-4 py-1 rounded hover:bg-blue-600 transition"
-                >
-                  Lihat Detail
-                </button>
-
-                <div v-if="article.status === 'pending'" class="flex gap-2">
-                  <button
-                    @click="approve(article.id)"
-                    class="bg-green-600 text-white text-xs px-4 py-1 rounded hover:bg-green-700 transition"
-                  >
-                    Setujui
-                  </button>
-                  <button
-                    @click="openRejectModal(article.id)"
-                    class="bg-red-600 text-white text-xs px-4 py-1 rounded hover:bg-red-700 transition"
-                  >
-                    Tolak
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
 
-    <!-- Modal Detail Artikel -->
-    <div
-      v-if="showModal"
-      class="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center"
+   <!-- Modal Detail Artikel -->
+<div
+  v-if="showModal"
+  class="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center"
+>
+  <div
+    class="bg-white w-full max-w-4xl rounded shadow-lg p-6 relative overflow-y-auto max-h-screen"
+  >
+    <button
+      @click="closeModal"
+      class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-2xl"
     >
-      <div class="bg-white w-full max-w-2xl rounded shadow-lg p-6 relative overflow-y-auto max-h-screen">
-        <button @click="closeModal" class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+      &times;
+    </button>
 
-        <fieldset class="space-y-4 mb-4 border border-gray-200 rounded p-4">
-          <legend class="text-sm font-semibold text-gray-700">Detail Artikel</legend>
+    <fieldset class="space-y-4 mb-4 border border-gray-200 rounded p-4">
+      <legend class="text-sm font-semibold text-gray-700">
+        Detail Artikel
+      </legend>
 
-          <div>
-            <label class="block text-xs text-gray-600">Judul:</label>
-            <p class="text-gray-800">{{ selectedArticle?.title }}</p>
-          </div>
-
-          <div>
-            <label class="block text-xs text-gray-600">Cover:</label>
-            <img
-              v-if="selectedArticle?.cover_url"
-              :src="selectedArticle.cover_url"
-              alt="Cover"
-              class="w-full h-48 object-cover mt-1 rounded"
-            />
-            <p v-else class="text-sm text-gray-400 italic mt-1">Tidak ada cover</p>
-          </div>
-
-          <fieldset class="border border-gray-200 rounded p-2">
-            <legend class="text-xs font-semibold text-gray-500 px-1">Ringkasan</legend>
-            <p class="text-sm text-gray-700">{{ stripHtml(selectedArticle?.summary) }}</p>
-          </fieldset>
-
-          <div>
-            <label class="block text-xs text-gray-600">Isi Artikel:</label>
-            <div class="prose max-w-full" v-html="selectedArticle?.content || 'Tidak tersedia'"></div>
-          </div>
-
-          <div v-if="selectedArticle?.status === 'rejected' && selectedArticle?.rejection_reason">
-            <label class="block text-xs text-red-600">Alasan Penolakan:</label>
-            <p class="text-red-700">{{ selectedArticle.rejection_reason }}</p>
-          </div>
-        </fieldset>
+      <div>
+        <label class="block text-xs text-gray-600">Judul:</label>
+        <p class="text-gray-800">{{ selectedArticle?.title }}</p>
       </div>
-    </div>
+
+      <div>
+        <label class="block text-xs text-gray-600">Cover:</label>
+        <img
+          v-if="selectedArticle?.cover_url"
+          :src="selectedArticle.cover_url"
+          alt="Cover"
+          class="w-full h-48 object-cover mt-1 rounded"
+        />
+        <p v-else class="text-sm text-gray-400 italic mt-1">
+          Tidak ada cover
+        </p>
+      </div>
+
+      <fieldset class="border border-gray-200 rounded p-2">
+        <legend class="text-xs font-semibold text-gray-500 px-1">
+          Ringkasan
+        </legend>
+        <div
+          class="prose prose-gray dark:prose-invert max-w-none text-sm
+            [&_h1]:text-2xl [&_h2]:text-xl [&_h3]:text-lg
+            [&_ul]:list-disc [&_ul]:pl-6
+            [&_ol]:list-decimal [&_ol]:pl-6
+            [&_blockquote]:border-l-4 [&_blockquote]:border-gray-300 [&_blockquote]:pl-4 [&_blockquote]:italic"
+          v-html="selectedArticle?.summary || 'Tidak ada ringkasan'"
+        ></div>
+      </fieldset>
+
+      <div>
+        <label class="block text-xs text-gray-600">Isi Artikel:</label>
+        <div
+          class="prose prose-gray dark:prose-invert max-w-none
+            [&_h1]:text-3xl [&_h2]:text-2xl [&_h3]:text-xl
+            [&_pre]:bg-gray-900 [&_pre]:text-white [&_pre]:p-3 [&_pre]:rounded [&_pre]:overflow-x-auto [&_pre]:font-mono [&_pre]:text-sm [&_pre]:my-2
+            [&_code]:text-red-500 [&_p]:leading-relaxed
+            [&_p.ql-align-center]:text-center
+            [&_p.ql-align-right]:text-right
+            [&_blockquote]:border-l-4 [&_blockquote]:border-gray-300 dark:[&_blockquote]:border-gray-600 [&_blockquote]:pl-4 [&_blockquote]:italic"
+          v-html="selectedArticle?.content || 'Tidak tersedia'"
+        ></div>
+      </div>
+
+      <div
+        v-if="
+          selectedArticle?.status === 'rejected' &&
+          selectedArticle?.rejection_reason
+        "
+      >
+        <label class="block text-xs text-red-600">Alasan Penolakan:</label>
+        <p class="text-red-700">
+          {{ selectedArticle.rejection_reason }}
+        </p>
+      </div>
+    </fieldset>
+  </div>
+</div>
+
 
     <!-- Modal Alasan Penolakan -->
     <div
