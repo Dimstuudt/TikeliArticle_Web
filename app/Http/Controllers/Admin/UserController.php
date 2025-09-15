@@ -171,4 +171,25 @@ class UserController extends Controller
 }
 
 
+  public function bulkRestore(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        if (!empty($ids)) {
+            User::onlyTrashed()->whereIn('id', $ids)->restore();
+        }
+
+        return back()->with('success', count($ids).' user berhasil direstore.');
+    }
+
+    // 🔹 Bulk Force Delete
+    public function bulkForceDelete(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        if (!empty($ids)) {
+            User::onlyTrashed()->whereIn('id', $ids)->forceDelete();
+        }
+
+        return back()->with('success', count($ids).' user berhasil dihapus permanen.');
+    }
+
 }

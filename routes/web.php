@@ -86,6 +86,10 @@ Route::middleware([
 
     //bulk destroy users
       Route::delete('/users/bulk', [UserController::class, 'bulkDestroy'])->name('users.bulkDestroy');
+      // Bulk actions for trashed users
+Route::put('/users/bulk/restore', [UserController::class, 'bulkRestore'])->name('users.bulkRestore');
+Route::delete('/users/bulk/force', [UserController::class, 'bulkForceDelete'])->name('users.bulkForceDelete');
+
 
     // ===============================
 // 🔹 USER MANAGEMENT
