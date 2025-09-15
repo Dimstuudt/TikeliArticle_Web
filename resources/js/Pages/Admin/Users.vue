@@ -187,6 +187,38 @@ const filteredUsers = computed(() => {
     user.username.toLowerCase().includes(search.value.toLowerCase())
   )
 })
+
+const selectedUsers = ref([])
+
+const bulkDelete = () => {
+  if (selectedUsers.value.length === 0) {
+    Swal.fire('Oops!', 'Pilih minimal satu user dulu.', 'warning')
+    return
+  }
+
+  Swal.fire({
+    title: 'Yakin?',
+    text: `${selectedUsers.value.length} user akan masuk trash!`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Ya, hapus',
+    cancelButtonText: 'Batal'
+  }).then((result) => {
+    if (result.isConfirmed) {
+    router.delete(route('admin.users.bulkDestroy'), {
+  data: { ids: selectedUsers.value.map(u => u.id) },
+  preserveScroll: true,
+  onSuccess: () => {
+    Swal.fire('Sukses!', 'User berhasil dihapus.', 'success')
+    selectedUsers.value = []
+  },
+  onError: () => Swal.fire('Oops!', 'Gagal hapus user.', 'error'),
+})
+
+    }
+  })
+}
+
 </script>
 
 
@@ -244,10 +276,20 @@ const filteredUsers = computed(() => {
     <div class="py-12">
   <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
     <div class="bg-white shadow-xl sm:rounded-lg p-6">
+
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
         <h3 class="text-lg font-bold text-gray-700">Daftar User</h3>
+
+
         <PrimaryButton @click="openModal()">Tambah User</PrimaryButton>
       </div>
+
+<!-- Tombol Bulk Delete -->
+        <div class="mb-4">
+            <DangerButton @click="bulkDelete" :disabled="selectedUsers.length === 0">
+                Hapus Terpilih ({{ selectedUsers.length }})
+            </DangerButton>
+        </div>
 
       <!-- Input Pencarian -->
       <div class="mb-4">
@@ -259,54 +301,88 @@ const filteredUsers = computed(() => {
         />
       </div>
 
+
+
+
       <!-- Table Wrapper -->
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm text-left min-w-[600px]">
-          <thead class="bg-gray-100">
-            <tr>
-              <th class="px-4 py-2">Nama</th>
-              <th class="px-4 py-2">Username</th>
-              <th class="px-4 py-2">Email</th>
-              <th class="px-4 py-2">Roles</th>
-              <th class="px-4 py-2">Status</th>
-              <th class="px-4 py-2">Trusted</th>
-              <th class="px-4 py-2">Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="user in filteredUsers" :key="user.id" class="border-t">
-              <td class="px-4 py-2">{{ user.name }}</td>
-              <td class="px-4 py-2">{{ user.username }}</td>
-              <td class="px-4 py-2">{{ user.email }}</td>
-              <td class="px-4 py-2 capitalize">{{ Array.isArray(user.roles) ? user.roles.join(', ') : '-' }}</td>
-              <td class="px-4 py-2">
-                <button
-                  @click="toggleStatus(user)"
-                  class="text-xs px-2 py-1 rounded-full font-semibold transition"
-                  :class="user.is_active ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-red-100 text-red-700 hover:bg-red-200'"
-                >
-                  {{ user.is_active ? 'Aktif' : 'Nonaktif' }}
-                </button>
-              </td>
-              <td class="px-4 py-2">
-                <button
-                  @click="toggleTrusted(user)"
-                  class="text-xs px-2 py-1 rounded-full font-semibold transition"
-                  :class="user.trusted_writer ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'"
-                >
-                  {{ user.trusted_writer ? 'Trusted' : 'Biasa' }}
-                </button>
-              </td>
-              <td class="px-4 py-2">
-                <div class="flex flex-wrap gap-2">
-                  <PrimaryButton size="sm" @click="openModal(user)">Edit</PrimaryButton>
-                  <DangerButton size="sm" @click="deleteUser(user.id)">Hapus</DangerButton>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+  <DataTable
+  v-model:selection="selectedUsers"
+  :value="filteredUsers"
+  dataKey="id"
+  paginator
+  rows="10"
+  stripedRows
+  removableSort
+  sortMode="multiple"
+  responsiveLayout="scroll"
+  size="small"
+  class="text-sm"
+>
+  <!-- Checkbox Select All -->
+  <Column selectionMode="multiple" headerStyle="width: 3rem" />
+
+  <!-- Kolom Data -->
+  <Column field="name" header="Nama" sortable style="width: 120px" />
+  <Column field="username" header="Username" sortable style="width: 100px" />
+  <Column field="email" header="Email" sortable style="width: 150px" />
+
+  <!-- Roles -->
+  <Column header="Roles" style="width: 100px">
+    <template #body="{ data }">
+      <span class="capitalize truncate block max-w-[80px]">
+        {{ Array.isArray(data.roles) ? data.roles.join(', ') : '-' }}
+      </span>
+    </template>
+  </Column>
+
+  <!-- Status -->
+  <Column header="Status" style="width: 90px">
+    <template #body="{ data }">
+      <Button
+        :label="data.is_active ? 'Aktif' : 'Nonaktif'"
+        size="small"
+        text
+        :severity="data.is_active ? 'success' : 'danger'"
+        @click="toggleStatus(data)"
+      />
+    </template>
+  </Column>
+
+  <!-- Trusted -->
+  <Column header="Trusted" style="width: 90px">
+    <template #body="{ data }">
+      <Button
+        :label="data.trusted_writer ? 'Trusted' : 'Biasa'"
+        size="small"
+        text
+        :severity="data.trusted_writer ? 'success' : 'secondary'"
+        @click="toggleTrusted(data)"
+      />
+    </template>
+  </Column>
+
+  <!-- Aksi -->
+  <Column header="Aksi" style="width: 120px">
+    <template #body="{ data }">
+      <div class="flex gap-1 flex-wrap">
+        <Button
+          icon="pi pi-pencil"
+          size="small"
+          text
+          @click="openModal(data)"
+        />
+        <Button
+          icon="pi pi-trash"
+          severity="danger"
+          size="small"
+          text
+          @click="deleteUser(data.id)"
+        />
       </div>
+    </template>
+  </Column>
+</DataTable>
+
 
 
     </div>

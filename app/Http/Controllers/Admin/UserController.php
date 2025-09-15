@@ -156,4 +156,19 @@ class UserController extends Controller
 
         return back()->with('success', 'Status Trusted Writer berhasil diperbarui.');
     }
+
+   public function bulkDestroy(Request $request)
+{
+    $ids = $request->ids;
+
+    if (!$ids || !is_array($ids)) {
+        return back()->withErrors(['message' => 'Tidak ada user dipilih']);
+    }
+
+    User::whereIn('id', $ids)->delete(); // ini soft delete kalau pakai SoftDeletes
+
+    return back()->with('success', count($ids).' user berhasil dihapus!');
+}
+
+
 }

@@ -84,6 +84,9 @@ Route::middleware([
         Route::delete('/reports/{report}', [ReportController::class, 'destroy'])->name('reports.destroy');
     });
 
+    //bulk destroy users
+      Route::delete('/users/bulk', [UserController::class, 'bulkDestroy'])->name('users.bulkDestroy');
+
     // ===============================
 // 🔹 USER MANAGEMENT
 // ===============================
@@ -92,6 +95,7 @@ Route::middleware('permission:manage users')->group(function () {
     Route::post('/users', [UserController::class, 'store'])->name('users.store');
     Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
     Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+
 
     // Toggle aktif/nonaktif & trusted writer
     Route::patch('/users/{user}/toggle-active', [UserController::class, 'toggleActive'])->name('users.toggleActive');
