@@ -72,17 +72,44 @@ class ApprovedArticleController extends Controller
             ->with('success', 'Artikel berhasil dihapus permanen.');
     }
 
-    public function bulkDestroy(Request $request)
+   public function bulkDestroy(Request $request)
 {
     $request->validate([
         'ids' => 'required|array',
-        'ids.*' => 'integer|exists:articles,id',
     ]);
 
     // Soft delete
     Article::whereIn('id', $request->ids)->delete();
 
-    return back()->with('success', count($request->ids).' artikel berhasil dihapus.');
+    return back()->with('success', 'Artikel berhasil dipindahkan ke trash.');
 }
+
+public function bulkRestore(Request $request)
+{
+    $request->validate([
+        'ids' => 'required|array',
+    ]);
+
+    Article::onlyTrashed()->whereIn('id', $request->ids)->restore();
+
+    return back()->with('success', 'Artikel berhasil direstore.');
+}
+
+public function bulkForceDelete(Request $request)
+{
+    $ids = $request->input('ids', []);
+
+    if (empty($ids)) {
+        return response()->json(['message' => 'Tidak ada artikel yang dipilih.'], 400);
+    }
+
+    // Cari artikel yang sudah dihapus (soft deleted) dan force delete
+    Article::onlyTrashed()
+        ->whereIn('id', $ids)
+        ->forceDelete();
+
+    return back()->with('success', count($ids) . ' artikel berhasil dihapus permanen.');
+}
+
 
 }

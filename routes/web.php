@@ -192,9 +192,19 @@ Route::get('/email/verify/{id}/{hash}', VerifyEmailController::class)
 Route::get('/verified', fn () => Inertia::render('Auth/EmailVerified'))
     ->middleware('auth');
 
-    // routes/web.php
+// Bulk actions for approved articles
 Route::delete('/admin/approved-articles/bulk-destroy', [ApprovedArticleController::class, 'bulkDestroy'])
     ->name('admin.approved-articles.bulkDestroy');
+
+
+
+ Route::prefix('admin/articles/approved')->name('admin.articles.approved.')->group(function () {
+    // Trashed page → restore & force delete
+    Route::put('bulk-restore', [ApprovedArticleController::class, 'bulkRestore'])
+        ->name('bulkRestore');
+    Route::delete('bulk-force', [ApprovedArticleController::class, 'bulkForceDelete'])
+        ->name('bulkForceDelete');
+});
 
 
 // === Auth routes dari Laravel Breeze ===
