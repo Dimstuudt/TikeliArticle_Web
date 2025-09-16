@@ -12,53 +12,65 @@ use Inertia\Inertia;
 class ForumController extends Controller
 {
     // List semua thread + leaderboard
-    public function index()
-    {
-        $threads = Thread::with(['user', 'posts.user'])
-            ->latest()
-            ->paginate(6);
+public function index()
+{
+    $threads = Thread::with(['user', 'posts.user'])
+        ->latest()
+        ->paginate(6);
 
-        // Ambil leaderboard top 5
-        $p = config('points');
+    // Ambil leaderboard top 5
+    $p = config('points');
 
-        $leaderboard = User::withCount([
-            'articles as approved_count' => fn($q) => $q->where('status', 'approved'),
-            'articleLikes as total_likes',
-        ])
-        ->with(['articles' => fn($q) => $q->withCount('comments'), 'roles'])
-        ->get()
-        ->map(function ($u) use ($p) {
-            $total_hits = $u->articles->sum('hits');
-            $articleIds = $u->articles->pluck('id');
-            $total_views = ArticleView::whereIn('article_id', $articleIds)->count();
-            $total_comments = $u->articles->sum('comments_count');
+    $leaderboard = User::withCount([
+        'articles as approved_count' => fn($q) => $q->where('status', 'approved'),
+        'articleLikes as total_likes',
+    ])
+    ->with(['articles' => fn($q) => $q->withCount('comments'), 'roles'])
+    ->get()
+    ->map(function ($u) use ($p) {
+        $total_hits = $u->articles->sum('hits');
+        $articleIds = $u->articles->pluck('id');
+        $total_views = ArticleView::whereIn('article_id', $articleIds)->count();
+        $total_comments = $u->articles->sum('comments_count');
 
-            $u->total_points =
-                ($u->approved_count ?? 0) * $p['approved'] +
-                ($total_views ?? 0)    * $p['view'] +
-                ($u->total_likes ?? 0) * $p['like'] +
-                ($total_hits ?? 0)     * $p['hit'] +
-                ($total_comments ?? 0) * $p['comment'];
+        $u->total_points =
+            ($u->approved_count ?? 0) * $p['approved'] +
+            ($total_views ?? 0)    * $p['view'] +
+            ($u->total_likes ?? 0) * $p['like'] +
+            ($total_hits ?? 0)     * $p['hit'] +
+            ($total_comments ?? 0) * $p['comment'];
 
-            // Ambil nama role pertama dari Spatie
-            $u->role = $u->roles->pluck('name')->first() ?? 'User';
+        // Ambil nama role pertama dari Spatie
+        $u->role = $u->roles->pluck('name')->first() ?? 'User';
 
-            return $u;
-        })
-        ->sortByDesc('total_points')
-        ->values()
-        ->take(5); // top 5 user
+        // Pastikan ada photo dan trusted_writer untuk frontend
+        $u->profile_photo_url = $u->profile_photo_path
+            ? asset('storage/' . $u->profile_photo_path)
+            : null;
 
-        return Inertia::render('Forum/Index', [
-            'threads' => $threads,
-            'leaderboard' => $leaderboard,
-            'authUserId' => auth()->id(),
-            // Tambahkan auth.user supaya trusted_writer bisa diakses di frontend
-            'auth' => [
-                'user' => auth()->user()?->only('id', 'name', 'trusted_writer') ?? null,
-            ],
-        ]);
-    }
+        return $u;
+    })
+    ->sortByDesc('total_points')
+    ->values()
+    ->take(5); // top 5 user
+
+    return Inertia::render('Forum/Index', [
+        'threads' => $threads,
+        'leaderboard' => $leaderboard,
+        'authUserId' => auth()->id(), // buat highlight di frontend
+        'auth' => [
+            'user' => auth()->user()?->only(
+                'id',
+                'name',
+                'username',
+                'trusted_writer',
+                'profile_photo_path',
+                'profile_photo_url'
+            ) ?? null,
+        ],
+    ]);
+}
+
 
     // Show detail thread + semua posts
     public function show(Thread $thread)
