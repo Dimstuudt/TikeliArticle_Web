@@ -192,6 +192,11 @@ Route::get('/email/verify/{id}/{hash}', VerifyEmailController::class)
 Route::get('/verified', fn () => Inertia::render('Auth/EmailVerified'))
     ->middleware('auth');
 
+    // routes/web.php
+Route::delete('/admin/approved-articles/bulk-destroy', [ApprovedArticleController::class, 'bulkDestroy'])
+    ->name('admin.approved-articles.bulkDestroy');
+
+
 // === Auth routes dari Laravel Breeze ===
 require __DIR__.'/auth.php';
 require __DIR__.'/forum.php';

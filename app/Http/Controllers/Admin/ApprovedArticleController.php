@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Article;
 use Inertia\Inertia;
+use Illuminate\Http\Request;
 
 class ApprovedArticleController extends Controller
 {
@@ -70,4 +71,18 @@ class ApprovedArticleController extends Controller
         return redirect()->route('admin.approved-articles.trashed')
             ->with('success', 'Artikel berhasil dihapus permanen.');
     }
+
+    public function bulkDestroy(Request $request)
+{
+    $request->validate([
+        'ids' => 'required|array',
+        'ids.*' => 'integer|exists:articles,id',
+    ]);
+
+    // Soft delete
+    Article::whereIn('id', $request->ids)->delete();
+
+    return back()->with('success', count($request->ids).' artikel berhasil dihapus.');
+}
+
 }
