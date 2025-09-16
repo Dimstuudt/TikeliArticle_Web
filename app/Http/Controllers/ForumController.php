@@ -25,7 +25,7 @@ class ForumController extends Controller
             'articles as approved_count' => fn($q) => $q->where('status', 'approved'),
             'articleLikes as total_likes',
         ])
-        ->with(['articles' => fn($q) => $q->withCount('comments'), 'roles']) // ← tambahkan roles
+        ->with(['articles' => fn($q) => $q->withCount('comments'), 'roles'])
         ->get()
         ->map(function ($u) use ($p) {
             $total_hits = $u->articles->sum('hits');
@@ -52,7 +52,11 @@ class ForumController extends Controller
         return Inertia::render('Forum/Index', [
             'threads' => $threads,
             'leaderboard' => $leaderboard,
-            'authUserId' => auth()->id(), // buat highlight di frontend
+            'authUserId' => auth()->id(),
+            // Tambahkan auth.user supaya trusted_writer bisa diakses di frontend
+            'auth' => [
+                'user' => auth()->user()?->only('id', 'name', 'trusted_writer') ?? null,
+            ],
         ]);
     }
 
