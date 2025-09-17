@@ -6,6 +6,7 @@ import Swal from 'sweetalert2'
 
 const props = defineProps({
   articles: Array,
+  requests: Array,
 })
 
 // 🔹 Approve artikel pakai SweetAlert
@@ -92,6 +93,19 @@ const closeModal = () => {
   showModal.value = false
   selectedArticle.value = null
 }
+
+const handleRequestAction = (id, action) => {
+  router.put(route('admin.article-requests.update', id), { action }, {
+    preserveScroll: true,
+    onSuccess: () => {
+      Swal.fire('Berhasil!', `Permohonan ${action} diproses.`, 'success')
+    },
+    onError: () => {
+      Swal.fire('Gagal!', 'Terjadi kesalahan.', 'error')
+    }
+  })
+}
+
 </script>
 
 
@@ -221,6 +235,65 @@ const closeModal = () => {
     </div>
   </div>
 </div>
+
+<!-- 🔹 Daftar Permohonan Artikel -->
+<div class="mt-10">
+  <h2 class="text-lg font-semibold mb-4">Permohonan Artikel</h2>
+
+  <div v-if="!props.requests.length" class="text-gray-500 text-sm italic">
+    Tidak ada permohonan artikel.
+  </div>
+
+  <div v-else class="overflow-x-auto bg-white rounded-lg shadow">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-4 py-2 text-left text-sm">Artikel</th>
+          <th class="px-4 py-2 text-left text-sm">User</th>
+          <th class="px-4 py-2 text-left text-sm">Tipe</th>
+          <th class="px-4 py-2 text-left text-sm">Alasan</th>
+          <th class="px-4 py-2 text-left text-sm">Status</th>
+          <th class="px-4 py-2 text-left text-sm">Aksi</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200">
+        <tr v-for="req in props.requests" :key="req.id">
+          <td class="px-4 py-2">{{ req.article?.title }}</td>
+          <td class="px-4 py-2">{{ req.user?.name }}</td>
+          <td class="px-4 py-2 capitalize">{{ req.type }}</td>
+          <td class="px-4 py-2">{{ req.reason }}</td>
+          <td class="px-4 py-2">
+            <span
+              class="px-2 py-1 rounded text-xs font-medium"
+              :class="{
+                'bg-yellow-100 text-yellow-800': req.status === 'pending',
+                'bg-green-100 text-green-800': req.status === 'approved',
+                'bg-red-100 text-red-800': req.status === 'rejected',
+              }"
+            >
+              {{ req.status }}
+            </span>
+          </td>
+          <td class="px-4 py-2 space-x-2" v-if="req.status === 'pending'">
+            <button
+              @click="handleRequestAction(req.id, 'approve')"
+              class="px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-xs"
+            >
+              Approve
+            </button>
+            <button
+              @click="handleRequestAction(req.id, 'reject')"
+              class="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-xs"
+            >
+              Reject
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
 
         </div>
       </div>

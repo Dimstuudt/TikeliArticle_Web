@@ -88,6 +88,56 @@ const totalByStatus = computed(() => {
 
   return totals
 })
+
+// 🔹 Request action
+const requestAction = (id) => {
+  Swal.fire({
+    title: 'Kirim permohonan?',
+    input: 'textarea',
+    inputLabel: 'Alasan Permohonan',
+    inputPlaceholder: 'Tuliskan alasan permohonan di sini...',
+    inputAttributes: {
+      'aria-label': 'Tuliskan alasan'
+    },
+    showCancelButton: true,
+    confirmButtonText: 'Kirim',
+    cancelButtonText: 'Batal',
+    inputValidator: (value) => {
+      if (!value) return 'Alasan wajib diisi!'
+    }
+  }).then((result) => {
+    if (result.isConfirmed) {
+     router.post(`/operator/articles/${id}/request`, {
+  type: 'to_draft',
+  reason: result.value
+}, {
+  preserveScroll: true,
+  onSuccess: () => {
+    Swal.fire({
+      icon: 'success',
+      title: 'Permohonan berhasil dikirim!',
+      timer: 1500,
+      showConfirmButton: false
+    })
+  },
+   onError: (errors) => {
+    Swal.fire({
+      icon: 'error',
+      title: errors?.response?.statusText || 'Gagal kirim permohonan',
+      text: errors?.response?.data?.message || 'Gagal Mengirim Permohonan Hal ini dapat terjadi jika kamu sudah mengirim permohonan untuk artikel ini.'
+    })
+  }
+})
+
+    }
+  })
+}
+
+
+
+
+
+
 </script>
 
 
@@ -235,24 +285,35 @@ const totalByStatus = computed(() => {
         <strong>Approved</strong>
       </div>
 
-      <!-- Aksi -->
-      <div
-        v-if="['draft', 'rejected', 'pending'].includes(article.status)"
-        class="flex justify-end gap-2 pt-3"
-      >
-        <Link
-          :href="`/operator/articles/${article.id}/edit`"
-          class="bg-blue-600 text-white text-xs px-3 py-1.5 rounded hover:bg-blue-700 transition"
-        >
-          Edit
-        </Link>
-        <button
-          @click="destroy(article.id)"
-          class="bg-red-600 text-white text-xs px-3 py-1.5 rounded hover:bg-red-700 transition"
-        >
-          Hapus
-        </button>
-      </div>
+     <!-- Aksi -->
+<div class="flex justify-end gap-2 pt-3">
+  <!-- Kalau draft, rejected, pending: boleh edit & hapus -->
+  <template v-if="['draft', 'rejected', 'pending'].includes(article.status)">
+    <Link
+      :href="`/operator/articles/${article.id}/edit`"
+      class="bg-blue-600 text-white text-xs px-3 py-1.5 rounded hover:bg-blue-700 transition"
+    >
+      Edit
+    </Link>
+    <button
+      @click="destroy(article.id)"
+      class="bg-red-600 text-white text-xs px-3 py-1.5 rounded hover:bg-red-700 transition"
+    >
+      Hapus
+    </button>
+  </template>
+
+  <!-- Kalau sudah approved: tampilkan tombol Request -->
+  <template v-else-if="article.status === 'approved'">
+    <button
+      @click="requestAction(article.id)"
+      class="bg-indigo-600 text-white text-xs px-3 py-1.5 rounded hover:bg-indigo-700 transition"
+    >
+      Request
+    </button>
+  </template>
+</div>
+
     </div>
   </div>
 </div>

@@ -137,6 +137,19 @@ Route::middleware('permission:manage users')->group(function () {
 
     });
 
+// ===============================
+// 🔹 ARTICLE REQUESTS MANAGEMENT
+// ===============================
+Route::middleware('permission:manage articles')->group(function () {
+    Route::prefix('article-requests')->name('article-requests.')->group(function () {
+        Route::put('/{id}', [\App\Http\Controllers\Admin\ArticleRequestController::class, 'update'])
+            ->name('update');
+    });
+});
+
+
+
+
     // ===============================
     // 🔹 ROLE & PERMISSION MANAGEMENT
     // ===============================
@@ -152,6 +165,10 @@ Route::middleware('permission:manage users')->group(function () {
         Route::post('/permissions', [RolePermissionController::class, 'storePermission'])->name('permissions.store');
         Route::delete('/permissions/{permission}', [RolePermissionController::class, 'destroyPermission'])->name('permissions.destroy');
     });
+
+
+
+
 });
 
 // === OPERATOR Routes ===
@@ -205,6 +222,11 @@ Route::delete('/admin/approved-articles/bulk-destroy', [ApprovedArticleControlle
     Route::delete('bulk-force', [ApprovedArticleController::class, 'bulkForceDelete'])
         ->name('bulkForceDelete');
 });
+
+//request
+Route::post('/operator/articles/{article}/request', [ArticleController::class, 'requestAction'])
+    ->name('operator.articles.request');
+
 
 
 // === Auth routes dari Laravel Breeze ===

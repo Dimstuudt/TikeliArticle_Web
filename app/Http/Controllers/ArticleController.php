@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 use App\Models\User;
+use App\Models\ArticleRequest;
 
 use App\Models\Article;
 use Illuminate\Http\Request;
@@ -9,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class ArticleController extends Controller
 {
@@ -225,6 +227,7 @@ class ArticleController extends Controller
 
         return Inertia::render('Admin/Articles/Index', [
             'articles' => $articles,
+                'requests' => ArticleRequest::with(['article', 'user'])->latest()->get(), // 🔹 ini yang bikin Vue nggak blank lagi
         ]);
     }
 
@@ -578,6 +581,38 @@ public function destroy($id)
 
     return redirect()->back()->with('success', 'Artikel berhasil dihapus');
 }
+
+ public function requestAction(Request $request, Article $article)
+{
+    if ($article->user_id !== auth()->id()) {
+        abort(403, 'Unauthorized action.');
+    }
+
+    $existing = \DB::table('article_requests')
+        ->where('article_id', $article->id)
+        ->where('user_id', auth()->id())
+        ->where('status', 'pending')
+        ->first();
+
+    if ($existing) {
+        throw ValidationException::withMessages([
+            'reason' => ['Kamu sudah memiliki permohonan yang sedang diproses untuk artikel ini.']
+        ]);
+    }
+
+    \DB::table('article_requests')->insert([
+        'article_id' => $article->id,
+        'user_id' => auth()->id(),
+        'type' => $request->input('type'),
+        'reason' => $request->input('reason'),
+        'status' => 'pending',
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    return back()->with('success', 'Permohonan berhasil dikirim.');
+}
+
 
 
 
