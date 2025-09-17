@@ -285,34 +285,34 @@ const requestAction = (id) => {
         <strong>Approved</strong>
       </div>
 
-     <!-- Aksi -->
-<div class="flex justify-end gap-2 pt-3">
-  <!-- Kalau draft, rejected, pending: boleh edit & hapus -->
+     
+<!-- Aksi -->
+<div class="flex justify-end gap-2 pt-3 border-t mt-3 pt-3">
   <template v-if="['draft', 'rejected', 'pending'].includes(article.status)">
     <Link
       :href="`/operator/articles/${article.id}/edit`"
-      class="bg-blue-600 text-white text-xs px-3 py-1.5 rounded hover:bg-blue-700 transition"
+      class="inline-flex items-center bg-blue-600 text-white text-xs px-3 py-1.5 rounded hover:bg-blue-700 transition"
     >
-      Edit
+      ✏️ Edit
     </Link>
     <button
       @click="destroy(article.id)"
-      class="bg-red-600 text-white text-xs px-3 py-1.5 rounded hover:bg-red-700 transition"
+      class="inline-flex items-center bg-red-600 text-white text-xs px-3 py-1.5 rounded hover:bg-red-700 transition"
     >
-      Hapus
+      🗑️ Hapus
     </button>
   </template>
 
-  <!-- Kalau sudah approved: tampilkan tombol Request -->
   <template v-else-if="article.status === 'approved'">
     <button
       @click="requestAction(article.id)"
-      class="bg-indigo-600 text-white text-xs px-3 py-1.5 rounded hover:bg-indigo-700 transition"
+      class="inline-flex items-center bg-indigo-600 text-white text-xs px-3 py-1.5 rounded hover:bg-indigo-700 transition"
     >
-      Request
+      📩 Ajukan Permohonan
     </button>
   </template>
 </div>
+
 
     </div>
   </div>

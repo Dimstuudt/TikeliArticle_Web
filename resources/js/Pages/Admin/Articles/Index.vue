@@ -236,63 +236,79 @@ const handleRequestAction = (id, action) => {
   </div>
 </div>
 
-<!-- 🔹 Daftar Permohonan Artikel -->
-<div class="mt-10">
-  <h2 class="text-lg font-semibold mb-4">Permohonan Artikel</h2>
+  <!-- 🔹 Daftar Permohonan Artikel -->
+  <div class="mt-10">
+    <h2 class="text-lg font-semibold mb-4">Permohonan Artikel</h2>
 
-  <div v-if="!props.requests.length" class="text-gray-500 text-sm italic">
-    Tidak ada permohonan artikel.
-  </div>
+    <div v-if="!props.requests.length" class="text-gray-500 text-sm italic">
+      Tidak ada permohonan artikel.
+    </div>
 
-  <div v-else class="overflow-x-auto bg-white rounded-lg shadow">
-    <table class="min-w-full divide-y divide-gray-200">
-      <thead class="bg-gray-50">
-        <tr>
-          <th class="px-4 py-2 text-left text-sm">Artikel</th>
-          <th class="px-4 py-2 text-left text-sm">User</th>
-          <th class="px-4 py-2 text-left text-sm">Tipe</th>
-          <th class="px-4 py-2 text-left text-sm">Alasan</th>
-          <th class="px-4 py-2 text-left text-sm">Status</th>
-          <th class="px-4 py-2 text-left text-sm">Aksi</th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-gray-200">
-        <tr v-for="req in props.requests" :key="req.id">
-          <td class="px-4 py-2">{{ req.article?.title }}</td>
-          <td class="px-4 py-2">{{ req.user?.name }}</td>
-          <td class="px-4 py-2 capitalize">{{ req.type }}</td>
-          <td class="px-4 py-2">{{ req.reason }}</td>
-          <td class="px-4 py-2">
+    <div v-else class="bg-white rounded-lg shadow p-4">
+      <DataTable
+        :value="props.requests"
+        stripedRows
+        paginator
+        :rows="5"
+        :rowsPerPageOptions="[5,10,20]"
+        responsiveLayout="scroll"
+        class="text-sm"
+      >
+        <!-- Artikel -->
+        <Column field="article.title" header="Artikel" sortable />
+
+        <!-- User -->
+        <Column field="user.name" header="User" sortable />
+
+        <!-- Tipe -->
+        <Column field="type" header="Tipe">
+          <template #body="slotProps">
+            <span class="capitalize">{{ slotProps.data.type }}</span>
+          </template>
+        </Column>
+
+        <!-- Alasan -->
+        <Column field="reason" header="Alasan" />
+
+        <!-- Status -->
+        <Column field="status" header="Status" sortable>
+          <template #body="slotProps">
             <span
-              class="px-2 py-1 rounded text-xs font-medium"
+              class="px-2 py-1 rounded-full text-xs font-medium"
               :class="{
-                'bg-yellow-100 text-yellow-800': req.status === 'pending',
-                'bg-green-100 text-green-800': req.status === 'approved',
-                'bg-red-100 text-red-800': req.status === 'rejected',
+                'bg-yellow-100 text-yellow-800': slotProps.data.status === 'pending',
+                'bg-green-100 text-green-800': slotProps.data.status === 'approved',
+                'bg-red-100 text-red-800': slotProps.data.status === 'rejected',
               }"
             >
-              {{ req.status }}
+              {{ slotProps.data.status }}
             </span>
-          </td>
-          <td class="px-4 py-2 space-x-2" v-if="req.status === 'pending'">
-            <button
-              @click="handleRequestAction(req.id, 'approve')"
-              class="px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-xs"
-            >
-              Approve
-            </button>
-            <button
-              @click="handleRequestAction(req.id, 'reject')"
-              class="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-xs"
-            >
-              Reject
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+          </template>
+        </Column>
+
+        <!-- Aksi -->
+        <Column header="Aksi" :exportable="false">
+          <template #body="slotProps">
+            <div v-if="slotProps.data.status === 'pending'" class="flex gap-2">
+              <Button
+                label="Approve"
+                size="small"
+                severity="success"
+                @click="handleRequestAction(slotProps.data.id, 'approve')"
+              />
+              <Button
+                label="Reject"
+                size="small"
+                severity="danger"
+                @click="handleRequestAction(slotProps.data.id, 'reject')"
+              />
+            </div>
+            <span v-else class="text-gray-400 text-xs italic">Selesai</span>
+          </template>
+        </Column>
+      </DataTable>
+    </div>
   </div>
-</div>
 
 
         </div>
